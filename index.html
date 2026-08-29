@@ -1,1 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spartan Biolabs - Research Use Only</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: #0f0f0f;
+            border: 2px solid #D4AF37;
+            border-radius: 8px;
+            padding: 40px;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.3);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #D4AF37;
+            padding-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .brand-name {
+            color: #D4AF37;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .subtext {
+            color: #999;
+            font-size: 12px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+
+        .modal-content {
+            color: #ccc;
+            line-height: 1.8;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .modal-content h3 {
+            color: #D4AF37;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-content p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .disclaimer-highlight {
+            color: #D4AF37;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 3px solid #D4AF37;
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            background: rgba(212, 175, 55, 0.05);
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: #D4AF37;
+        }
+
+        .checkbox-group label {
+            color: #ccc;
+            cursor: pointer;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-agree {
+            background: #D4AF37;
+            color: #1a1a1a;
+        }
+
+        .btn-agree:hover:not(:disabled) {
+            background: #FFD700;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .btn-agree:disabled {
+            background: #555;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .btn-decline {
+            background: transparent;
+            color: #D4AF37;
+            border: 2px solid #D4AF37;
+        }
+
+        .btn-decline:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .footer-text {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+            border-top: 1px solid #333;
+            padding-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .modal {
+                padding: 25px;
+                margin: 20px;
+            }
+
+            .brand-name {
+                font-size: 20px;
+            }
+
+            button {
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="logo">⚔️</div>
+                <div class="brand-name">SPARTAN BIOLABS</div>
+                <div class="subtext">RESEARCH PRODUCTS</div>
+            </div>
+
+            <div class="modal-content">
+                <h3>🧬 Research Use Only — Important Notice</h3>
+                
+                <p>
+                    All products offered by Spartan Biolabs are intended strictly for laboratory research use only. Products are not intended for human or veterinary use, consumption, clinical use, diagnostic purposes, or therapeutic applications.
+                </p>
+
+                <p>
+                    By purchasing from Spartan Biolabs, the purchaser accepts responsibility for ensuring that all products are handled, stored, and used in accordance with applicable laws, regulations, and appropriate laboratory practices.
+                </p>
+
+                <p>
+                    Spartan Biolabs makes no representations regarding the suitability of its products for any purpose outside of laboratory research. The purchaser assumes responsibility for the handling, storage, use, and compliance associated with purchased products.
+                </p>
+
+                <div class="disclaimer-highlight">
+                    🚫 Research Use Only • Not for Human or Veterinary Use
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="agreeCheckbox" onchange="updateButton()">
+                <label for="agreeCheckbox">I understand and agree to the terms above</label>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-decline" onclick="window.history.back()">Decline</button>
+                <button class="btn-agree" id="agreeButton" disabled onclick="proceed()">Proceed to Products</button>
+            </div>
+
+            <div class="footer-text">
+                Precision • Verification • Research
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateButton() {
+            const checkbox = document.getElementById('agreeCheckbox');
+            const button = document.getElementById('agreeButton');
+            button.disabled = !checkbox.checked;
+        }
+
+        function proceed() {
+            window.location.href = 'https://linktr.ee/spartanbiolabs.info';
+        }
+
+        document.body.style.overflow = 'hidden';
+    </script>
+</body>
+</html>
