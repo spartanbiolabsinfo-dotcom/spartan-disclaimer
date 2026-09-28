@@ -305,6 +305,38 @@
   .pd-lot{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid rgba(212,175,55,.45);border-radius:8px;text-decoration:none;color:var(--gold-hi);background:rgba(12,12,13,.7)}
   .pd-lot span:first-child{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600}
   .pd-lot-none{font-size:13px;color:var(--muted)}
+
+  /* ===== Hero header (mockup layout) ===== */
+  .wrap{position:relative}
+  .wa-corner{position:absolute;top:10px;right:16px;z-index:5;display:flex;align-items:center;gap:8px;padding:7px 12px 7px 14px;border-left:1px solid rgba(212,175,55,.55);background:rgba(8,8,9,.55);color:#efe9dc;font:500 13px Inter,system-ui,sans-serif;text-decoration:none;text-shadow:0 1px 3px #000}
+  .wa-corner svg{width:22px;height:22px;color:#fff}
+  .wa-corner:hover,.wa-corner:focus-visible{color:var(--gold-hi)}
+  .hero-cta{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:6px}
+  .cta{flex:1 1 0;max-width:240px;min-width:150px;display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 18px;border-radius:6px;font:700 15.5px Inter,system-ui,sans-serif;text-decoration:none;text-shadow:none;border:1.5px solid var(--gold);background:rgba(8,8,9,.82);color:#f3ecdc;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+  .cta svg{width:22px;height:22px;flex:none}
+  .cta.gold{background:linear-gradient(180deg,#f0d487 0%,#d8b04c 55%,#c39a38 100%);color:#15110a;border-color:#e6c46a;box-shadow:0 0 18px rgba(212,175,55,.35),0 6px 20px rgba(0,0,0,.45)}
+  .cta:not(.gold):hover,.cta:not(.gold):focus-visible,.cta.on{background:rgba(212,175,55,.16);box-shadow:0 0 16px rgba(212,175,55,.35)}
+  .cta.gold:hover,.cta.gold:focus-visible{filter:brightness(1.07)}
+  .social-line{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:16px}
+  .social-line a{display:flex;align-items:center;gap:8px;padding:4px 16px;color:#ece6d8;font:500 14px Inter,system-ui,sans-serif;text-decoration:none;text-shadow:0 1px 3px #000}
+  .social-line a + a{border-left:1px solid rgba(212,175,55,.55)}
+  .social-line svg{width:21px;height:21px;color:#f3ecdc}
+  .social-line a:hover span,.social-line a:focus-visible span{color:var(--gold-hi)}
+  .social-line.foot{margin:10px 0 12px}
+  .cta span{white-space:nowrap}
+  @media (max-width:420px){ .social-line a{padding:4px 11px;font-size:13px} .cta{min-width:0;padding:13px 8px;gap:7px;font-size:14px} .cta svg{width:19px;height:19px} .wa-corner span{font-size:12px} }
+
+  /* ===== Underline tabs ===== */
+  nav.tabs{display:flex;justify-content:center;align-items:center;gap:0;background:linear-gradient(rgba(10,10,11,.9),rgba(10,10,11,.78));border:none;border-top:1px solid rgba(212,175,55,.22);border-bottom:1px solid rgba(212,175,55,.22);border-radius:0;padding:4px 0;margin:22px -16px 6px;box-shadow:none}
+  nav.tabs a{flex:0 0 auto;min-width:120px;background:none !important;box-shadow:none !important;border-radius:0;padding:10px 18px 9px;font:600 22px Cinzel,Georgia,serif;letter-spacing:.04em;color:#8f887a !important;border-bottom:2px solid transparent;text-align:center}
+  nav.tabs a.active{color:#f3ecdc !important;border-bottom-color:var(--gold)}
+  nav.tabs .tdiv{width:1px;height:26px;background:rgba(212,175,55,.5);margin:0 22px}
+  @media (max-width:420px){ nav.tabs a{font-size:19px;min-width:104px} nav.tabs .tdiv{margin:0 10px} }
+
+  /* ===== Catalog section headings: gold rule ===== */
+  h2.sect{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;border-radius:0;padding:0;margin:30px 0 14px;font:600 24px Cinzel,Georgia,serif;letter-spacing:.03em;color:#f3ecdc;text-shadow:0 2px 8px #000}
+  h2.sect::before{content:"";flex:0 0 22px;height:1.5px;background:var(--gold)}
+  h2.sect::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--gold),rgba(212,175,55,.15))}
   @media (max-width:600px){
     .modal{padding:22px}
     .brand-name{font-size:20px}
@@ -345,16 +377,19 @@
 <div class="bgart" aria-hidden="true"></div>
 
 <div class="wrap">
+  <a class="wa-corner wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.7 7.4L3.5 20.5l1.4-4.1A8.5 8.5 0 1 1 20.5 11.8z"/><path d="M9 8.6c.2-.4.5-.4.8-.4h.4c.2 0 .4 0 .5.4l.6 1.4c.1.2 0 .4-.1.6l-.5.6c-.1.1-.1.3 0 .5.6 1 1.4 1.8 2.4 2.3.2.1.4.1.5 0l.6-.7c.2-.2.4-.2.6-.1l1.4.7c.2.1.3.3.3.5v.4c0 .5-.3 1-.8 1.2-.6.2-1.4.3-2.6-.2-1.6-.7-3-2.1-3.8-3.6-.5-1-.6-1.8-.4-2.6z" fill="currentColor" stroke="none"/></svg><span>WhatsApp Support</span></a>
   <header class="site over">
     <h1 class="sr">Spartan Biolabs: Precision, Verification, Research</h1>
-    <div class="quick">
-      <a class="wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener">💬 WhatsApp Support</a>
-      <a href="#coa" id="coaHeadBtn">📋 COA Lookup</a>
+    <div class="hero-cta">
+      <a href="#catalog" class="cta gold" id="exploreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.2l2.3 10.4a1.5 1.5 0 0 0 1.5 1.1h8.3a1.5 1.5 0 0 0 1.5-1.1L20.5 8H6.1"/><circle cx="9.5" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg><span>Explore Catalog</span></a>
+      <a href="#coa" class="cta" id="coaHeadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 16.5h5"/></svg><span>COA Lookup</span></a>
     </div>
+    <div class="social-line"><a href="https://www.instagram.com/Spartan.bio.labs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg><span>Instagram</span></a><a href="https://www.tiktok.com/@spartanblabs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on TikTok"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.3 2.3 1.7 3.9 4 4.1v3.1c-1.5.1-2.9-.4-4-1.2v6.3c0 3.4-2.6 5.7-5.8 5.7-3.1 0-5.6-2.5-5.6-5.6 0-3.5 3.1-6 6.6-5.4v3.3c-1.6-.4-3.3.7-3.3 2.2 0 1.3 1 2.3 2.3 2.3 1.4 0 2.4-1 2.4-2.6V3h3.4z"/></svg><span>TikTok</span></a><a href="https://linktr.ee/spartanbiolabs.info" target="_blank" rel="noopener" aria-label="All Spartan Biolabs links on Linktree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 13.5V21"/><path d="M12 3v7"/><path d="M5.5 5.5 12 10l6.5-4.5"/><path d="M4 11h16"/><path d="M5.5 16.5 12 12l6.5 4.5"/></svg><span>Linktree</span></a></div>
   </header>
 
   <nav class="tabs">
     <a href="#catalog" data-tab="catalog" class="active">Catalog</a>
+    <span class="tdiv" aria-hidden="true"></span>
     <a href="#order" data-tab="order" id="orderTab">Order</a>
   </nav>
 
@@ -435,6 +470,7 @@
   <footer class="site">
     <p>Every Spartan Biolabs peptide lot is independently verified by a third-party laboratory.</p>
     <p><a class="wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener">WhatsApp: +1 (208) 957-1737</a></p>
+    <div class="social-line foot"><a href="https://www.instagram.com/Spartan.bio.labs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg><span>Instagram</span></a><a href="https://www.tiktok.com/@spartanblabs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on TikTok"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.3 2.3 1.7 3.9 4 4.1v3.1c-1.5.1-2.9-.4-4-1.2v6.3c0 3.4-2.6 5.7-5.8 5.7-3.1 0-5.6-2.5-5.6-5.6 0-3.5 3.1-6 6.6-5.4v3.3c-1.6-.4-3.3.7-3.3 2.2 0 1.3 1 2.3 2.3 2.3 1.4 0 2.4-1 2.4-2.6V3h3.4z"/></svg><span>TikTok</span></a><a href="https://linktr.ee/spartanbiolabs.info" target="_blank" rel="noopener" aria-label="All Spartan Biolabs links on Linktree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 13.5V21"/><path d="M12 3v7"/><path d="M5.5 5.5 12 10l6.5-4.5"/><path d="M4 11h16"/><path d="M5.5 16.5 12 12l6.5 4.5"/></svg><span>Linktree</span></a></div>
     <p style="font-size:11px;color:#555;margin-top:10px">Research Use Only. Not for human or veterinary use.</p>
   </footer>
 </div>
@@ -580,7 +616,7 @@ function renderCatalog(){
   $("catalog").innerHTML = CATEGORIES.map(cat => {
     const items = PRODUCTS.filter(p => p.cat === cat);
     if (!items.length) return "";
-    return `<h2>${cat}</h2><div class="grid">` + items.map(p => `
+    return `<h2 class="sect">${cat}</h2><div class="grid">` + items.map(p => `
       <a class="card ${qty[p.id] ? "in" : ""}" href="#p/${p.id}">
         ${photo(p)}
         <div class="cn">${esc(p.name)}</div>
@@ -1129,6 +1165,11 @@ async function fillProductLots(p){
     ? `<div class="pd-lots-k">Verified lots</div>` + lots.map(c => `<a class="pd-lot" href="#coa/${encodeURIComponent(c.lot)}"><span>${esc(c.lot)}</span><span>${c.purity ? esc(c.purity) + "% · " : ""}View COA →</span></a>`).join("")
     : `<div class="pd-lots-k">Verified lots</div><div class="pd-lot-none">The COA for this product's current lot will be posted here.</div>`;
 }
+$("exploreBtn").addEventListener("click", e => {
+  e.preventDefault();
+  const go = () => document.querySelector("nav.tabs").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (location.hash !== "#catalog" && location.hash !== "") { location.hash = "#catalog"; setTimeout(go, 60); } else go();
+});
 document.querySelectorAll('input[name=pay]').forEach(r => r.onchange = renderSummary);
 loadCustomer();
 
