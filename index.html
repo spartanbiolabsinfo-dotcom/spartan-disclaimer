@@ -143,6 +143,13 @@
   .ruo{display:flex;gap:10px;align-items:flex-start;margin-top:18px;font-size:13px;color:var(--muted)}
   .ruo input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--gold)}
   .err{color:#e07a7a;font-size:13px;margin-top:8px;min-height:18px}
+  .sent{margin-top:4px;background:rgba(10,10,11,.9);border:1.5px solid var(--good);border-radius:10px;padding:14px;display:grid;gap:6px}
+  .sent[hidden]{display:none}
+  .sent b{color:var(--good);font-size:15px}
+  .sent p{margin:0;font-size:14px}
+  .sent-actions{display:flex;flex-wrap:wrap;gap:6px 18px}
+  .sent .linkbtn{color:var(--gold-hi);font-size:14px;padding:6px 0}
+  .btn.place{letter-spacing:.14em;font-weight:800}
 
   /* ===== Bottom bar ===== */
   .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(11,11,12,.96);border-top:1px solid var(--line);padding:12px 16px;z-index:20}
@@ -472,7 +479,15 @@
     <h2 class="step"><span class="n">5</span>Review &amp; Send</h2>
     <div class="sum" id="summary"></div>
     <div class="err" id="err"></div>
-    <p class="note" style="margin-top:6px">You'll receive a quote confirmation and payment details by reply. Questions? <a class="wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener">Message us on WhatsApp</a>.</p>
+    <div class="sent" id="sent" hidden role="status">
+      <b>Order <span id="sentId"></span> is ready ✓</b>
+      <p>WhatsApp opened with your order. <strong>Tap send in WhatsApp</strong> to finish. We'll reply with your final total and payment details.</p>
+      <div class="sent-actions">
+        <button type="button" class="linkbtn" id="sentPdf">Save my copy (PDF)</button>
+        <button type="button" class="linkbtn" id="sentAgain">WhatsApp didn't open? Try again</button>
+      </div>
+    </div>
+    <p class="note" style="margin-top:6px">Tap <b>Place Order</b> to send it to us on WhatsApp. You'll receive a quote confirmation and payment details by reply. Questions? <a class="wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener">Message us on WhatsApp</a>.</p>
   </section>
 
   <footer class="site">
@@ -488,8 +503,7 @@
   <a class="btn primary" href="#order" id="cartBtn">Review Order</a>
 </div></div>
 <div class="bar hidden" id="orderBar"><div class="in">
-  <button class="btn secondary pdfbar" id="pdfBtn" aria-label="View my order as a PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="14 3 14 9 20 9"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="17.5" x2="13" y2="17.5"/></svg>View PDF</button>
-  <button class="btn primary" id="send">Send Order via WhatsApp</button>
+  <button class="btn primary place" id="send">PLACE ORDER</button>
 </div></div>
 
 <!-- ===== COA VIEWER ===== -->
@@ -519,7 +533,6 @@
     <div class="pv-actions">
       <p class="pv-msg" id="pvMsg" role="status"></p>
       <button type="button" class="btn secondary" id="pvDownload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 21h14"/></svg>Download PDF</button>
-      <button type="button" class="btn primary" id="pvSend">Send via WhatsApp</button>
     </div>
   </div>
 </div>
@@ -723,7 +736,7 @@ function renderSummary(){
 }
 
 function refreshAll(){
-  currentOrderId = null;
+  currentOrderId = null; if ($("sent")) $("sent").hidden = true;
   const c = calc();
   $("orderTab").textContent = c.count ? `Order (${c.count})` : "Order";
   $("cartBtn").textContent = `Review Order · ${c.count} item${c.count === 1 ? "" : "s"} · ${money(c.subtotal)}`;
@@ -790,10 +803,14 @@ function validate(){
   if (!checkSig()) return "Type your full name as your signature in step 4. It must match the name in step 3.";
   return "";
 }
+function openWhatsApp(){ window.open(`${WA_URL}?text=${encodeURIComponent(buildMessage())}`, "_blank"); }
 $("send").onclick = () => {
-  const e = validate(); $("err").textContent = e; if (e) return;
+  const e = validate(); $("err").textContent = e;
+  if (e) { $("err").scrollIntoView({ block:"center", behavior:"smooth" }); return; }
   stampNow(); saveCustomer();
-  window.open(`${WA_URL}?text=${encodeURIComponent(buildMessage())}`, "_blank");
+  openWhatsApp();
+  $("sentId").textContent = orderId(); $("sent").hidden = false;
+  $("sent").scrollIntoView({ block:"center", behavior:"smooth" });
 };
 
 // ----- Customer PDF copy (an order request, not an invoice) -----
@@ -960,20 +977,16 @@ function closeViewer(){
   if ($("gate").classList.contains("hidden")) document.body.classList.remove("locked");
   if (lastFocus) lastFocus.focus();
 }
-$("pdfBtn").onclick = () => {
-  const e = validate(); $("err").textContent = e; if (e) { $("err").scrollIntoView({ block:"center", behavior:"smooth" }); return; }
-  stampNow(); saveCustomer();
-  openViewer();
-};
+$("sentPdf").onclick = () => openViewer();
+$("sentAgain").onclick = () => openWhatsApp();
 $("pvDownload").onclick = () => {
   if (!window.jspdf) { $("pvMsg").textContent = "The PDF tool is still loading. Try again in a moment."; return; }
   try {
     const { doc, id } = buildOrderPdf();
     doc.save(`Spartan-Order-${id}.pdf`);
     $("pvMsg").textContent = "Downloaded. Check your Downloads folder.";
-  } catch (err) { $("pvMsg").textContent = "Couldn't make the PDF on this device. Your order can still be sent with the WhatsApp button."; }
+  } catch (err) { $("pvMsg").textContent = "Couldn't make the PDF on this device. Your order was still sent on WhatsApp."; }
 };
-$("pvSend").onclick = () => { closeViewer(); $("send").click(); };
 $("pvClose").onclick = closeViewer;
 $("viewer").addEventListener("click", e => { if (e.target === $("viewer")) closeViewer(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("viewer").hidden) closeViewer(); });
