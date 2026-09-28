@@ -614,6 +614,24 @@ document.querySelectorAll(".wa-link").forEach(a => a.href = WA_URL);
 const money = n => "$" + n.toFixed(2).replace(/\.00$/, "");
 const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
 const qty = Object.fromEntries(PRODUCTS.map(p => [p.id, 0]));
+// Cart survives a refresh: saved on this device for 7 days, cleared once the order is sent.
+const CART_KEY = "spartan_cart", CART_DAYS = 7;
+let savedPay = null;
+try {
+  const c = JSON.parse(localStorage.getItem(CART_KEY) || "null");
+  if (c && !c.placed && Date.now() - c.t < CART_DAYS * 864e5) {
+    for (const [id, n] of Object.entries(c.q || {})) if (id in qty) qty[id] = Math.max(0, Math.min(99, n | 0));
+    savedPay = c.pay || null;
+  } else if (c) localStorage.removeItem(CART_KEY);
+} catch (e) {}
+function saveCart(placed){
+  try {
+    const q = Object.fromEntries(Object.entries(qty).filter(([, n]) => n > 0));
+    const pay = (document.querySelector('input[name=pay]:checked') || {}).value;
+    if (!Object.keys(q).length) localStorage.removeItem(CART_KEY);
+    else localStorage.setItem(CART_KEY, JSON.stringify({ q, pay, t: Date.now(), placed: !!placed }));
+  } catch (e) {}
+}
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
 const imgSrc = p => p.img === undefined ? IMG_DIR + p.id + ".jpg" : p.img;
 const noPhoto = p => `<div class="none"><img src="images/helmet-192.png" alt="" class="noph-logo"><span>${esc(p.name)}</span></div>`;
@@ -737,7 +755,7 @@ function renderSummary(){
 }
 
 function refreshAll(){
-  currentOrderId = null; if ($("sent")) $("sent").hidden = true;
+  currentOrderId = null; if ($("sent")) $("sent").hidden = true; saveCart();
   const c = calc();
   $("orderTab").textContent = c.count ? `Order (${c.count})` : "Order";
   $("cartBtn").textContent = `Review Order · ${c.count} item${c.count === 1 ? "" : "s"} · ${money(c.subtotal)}`;
@@ -814,7 +832,7 @@ $("send").onclick = () => {
 };
 // Step 2: PLACE ORDER inside the review sends it on WhatsApp
 function placeOrder(){
-  openWhatsApp();
+  openWhatsApp(); saveCart(true);
   $("sentId").textContent = orderId(); $("sent").hidden = false;
   $("sent").scrollIntoView({ block:"center", behavior:"smooth" });
 }
@@ -1171,7 +1189,8 @@ async function fillProductLots(p){
     ? `<div class="pd-lots-k">Verified lots</div>` + lots.map(c => `<a class="pd-lot" href="#coa/${encodeURIComponent(c.lot)}"><span>${esc(c.lot)}</span><span>${c.purity ? esc(c.purity) + "% · " : ""}View COA →</span></a>`).join("")
     : `<div class="pd-lots-k">Verified lots</div><div class="pd-lot-none">The COA for this product's current lot will be posted here.</div>`;
 }
-document.querySelectorAll('input[name=pay]').forEach(r => r.onchange = renderSummary);
+if (savedPay) { const r = document.querySelector(`input[name=pay][value="${savedPay}"]`); if (r) r.checked = true; }
+document.querySelectorAll('input[name=pay]').forEach(r => r.onchange = () => { renderSummary(); saveCart(); });
 loadCustomer();
 
 refreshAll(); route();
