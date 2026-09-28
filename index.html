@@ -297,8 +297,9 @@
   .cv-pages{display:grid;gap:10px;background:#221f19;border:1px solid #3a3528;border-radius:8px;padding:8px}
   .cv-pages canvas{width:100%;height:auto;background:#fff;border-radius:2px}
   .cv-msg{color:var(--text);padding:14px;margin:0}
-  .cv-actions{display:flex;justify-content:center}
-  .cv-actions .coa-btn{min-width:220px}
+  .cv-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:520px;width:100%;margin:0 auto}
+  .cv-actions #cvShop{grid-column:1 / -1;font-size:15px;padding:13px 14px}
+  .cv-actions .coa-btn{text-align:center}
   .pd-lots{margin-top:16px;display:grid;gap:6px}
   .pd-lots-k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
   .pd-lot{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid rgba(212,175,55,.45);border-radius:8px;text-decoration:none;color:var(--gold-hi);background:rgba(12,12,13,.7)}
@@ -455,7 +456,11 @@
       <button type="button" class="pv-x" id="cvClose" aria-label="Close certificate">✕</button>
     </div>
     <div class="cv-pages" id="cvPages"></div>
-    <div class="cv-actions"><a class="coa-btn primary" id="cvDl" download>Download PDF</a></div>
+    <div class="cv-actions">
+      <a class="coa-btn primary" id="cvShop" href="#catalog" hidden>Shop this product →</a>
+      <a class="coa-btn" id="cvCat" href="#catalog">Browse the catalog</a>
+      <a class="coa-btn" id="cvDl" download>Download PDF</a>
+    </div>
   </div>
 </div>
 
@@ -682,7 +687,7 @@ function refreshAll(){
 }
 
 // ----- Routing: #catalog, #coa, #coa/<lot>, #order, #p/<id> -----
-let view = "catalog";
+let view = "catalog", routedOnce = false;
 function route(){
   const h = location.hash.replace(/^#/, "");
   const prevView = view;
@@ -691,7 +696,7 @@ function route(){
   else if (h === "coa" || h.startsWith("coa/")) {
     view = "coa";
     loadCoas().then(renderCoaResults); renderCoaResults();
-    if (h.startsWith("coa/")) { const lot = decodeURIComponent(h.slice(4)); $("coaQ").value = lot; openCoa(lot); }
+    if (h.startsWith("coa/")) { const lot = decodeURIComponent(h.slice(4)); $("coaQ").value = lot; if (!routedOnce) coaFromScan = true; openCoa(lot); }
   }
   else view = "catalog";
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + view));
@@ -699,6 +704,7 @@ function route(){
   $("coaHeadBtn").classList.toggle("on", view === "coa");
   updateBars();
   if (!(view === "coa" && prevView === "coa")) window.scrollTo(0, 0);
+  routedOnce = true;
 }
 function updateBars(){
   const has = calc().count > 0;
@@ -1066,12 +1072,15 @@ async function openCoa(lot){
   if (!c || !c.file) {
     $("cvLot").textContent = lot; $("cvSub").textContent = "";
     $("cvPages").innerHTML = `<p class="cv-msg">We couldn't find a certificate for lot ${esc(lot)}. Check the lot number on your label, or message us on WhatsApp.</p>`;
-    $("cvDl").hidden = true; return;
+    $("cvDl").hidden = true; $("cvShop").hidden = true; return;
   }
   const url = COA_DIR + encodeURIComponent(c.file);
   $("cvLot").textContent = c.lot;
   $("cvSub").textContent = [c.product, c.date && "Tested " + coaDate(c.date), c.purity && c.purity + "% purity"].filter(Boolean).join(" · ");
   $("cvDl").href = url; $("cvDl").hidden = false;
+  const prod = byId[c.productId];
+  $("cvShop").hidden = !prod;
+  if (prod) { $("cvShop").href = "#p/" + prod.id; $("cvShop").textContent = `Shop ${prod.name} ${prod.spec} →`; }
   $("cvPages").innerHTML = `<p class="cv-msg">Loading certificate…</p>`;
   try {
     if (!window.pdfjsLib) throw new Error("no pdfjs");
@@ -1094,11 +1103,18 @@ async function openCoa(lot){
     if (my === coaTok) $("cvPages").innerHTML = `<p class="cv-msg">This certificate can't be shown on the page here. <a href="${url}" target="_blank" rel="noopener">Open the PDF</a> instead.</p>`;
   }
 }
-function closeCoa(){
+// Visitors who arrive from a vial QR code (#coa/<lot> on page load) go on to the catalog when they close the certificate.
+let coaFromScan = false;
+function hideCoa(){
   coaTok++; $("coaViewer").hidden = true;
   if ($("gate").classList.contains("hidden")) document.body.classList.remove("locked");
+}
+function closeCoa(){
+  hideCoa();
+  if (coaFromScan) { coaFromScan = false; location.hash = "#catalog"; return; }
   if (location.hash.startsWith("#coa/")) history.replaceState(null, "", "#coa");
 }
+["cvShop","cvCat"].forEach(id => $(id).addEventListener("click", () => { coaFromScan = false; hideCoa(); }));
 $("cvClose").onclick = closeCoa;
 $("coaViewer").addEventListener("click", e => { if (e.target === $("coaViewer")) closeCoa(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("coaViewer").hidden) closeCoa(); });
