@@ -322,6 +322,7 @@
   .cta.gold{background:linear-gradient(180deg,#f0d487 0%,#d8b04c 55%,#c39a38 100%);color:#15110a;border-color:#e6c46a;box-shadow:0 0 18px rgba(212,175,55,.35),0 6px 20px rgba(0,0,0,.45)}
   .cta:not(.gold):hover,.cta:not(.gold):focus-visible,.cta.on{background:rgba(212,175,55,.16);box-shadow:0 0 16px rgba(212,175,55,.35)}
   .cta.gold:hover,.cta.gold:focus-visible{filter:brightness(1.07)}
+  .cta.gold.on{filter:brightness(1.08);box-shadow:0 0 24px rgba(232,200,116,.55),0 6px 20px rgba(0,0,0,.45)}
   .social-line{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:16px}
   .social-line a{display:flex;align-items:center;gap:8px;padding:4px 16px;color:#ece6d8;font:500 14px Inter,system-ui,sans-serif;text-decoration:none;text-shadow:0 1px 3px #000}
   .social-line a + a{border-left:1px solid rgba(212,175,55,.55)}
@@ -393,8 +394,7 @@
     <h1 class="brand"><img src="images/logo.png" alt="Spartan Biolabs" width="640" height="647"></h1>
     <div class="brand-tag">Precision. Verification. Research.</div>
     <div class="hero-cta">
-      <a href="#catalog" class="cta gold" id="exploreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.2l2.3 10.4a1.5 1.5 0 0 0 1.5 1.1h8.3a1.5 1.5 0 0 0 1.5-1.1L20.5 8H6.1"/><circle cx="9.5" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg><span>Explore Catalog</span></a>
-      <a href="#coa" class="cta" id="coaHeadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 16.5h5"/></svg><span>COA Lookup</span></a>
+      <a href="#coa" class="cta gold" id="coaHeadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 16.5h5"/></svg><span>COA Lookup</span></a>
     </div>
     <div class="social-line"><a href="https://www.instagram.com/Spartan.bio.labs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg><span>Instagram</span></a><a href="https://www.tiktok.com/@spartanblabs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on TikTok"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.3 2.3 1.7 3.9 4 4.1v3.1c-1.5.1-2.9-.4-4-1.2v6.3c0 3.4-2.6 5.7-5.8 5.7-3.1 0-5.6-2.5-5.6-5.6 0-3.5 3.1-6 6.6-5.4v3.3c-1.6-.4-3.3.7-3.3 2.2 0 1.3 1 2.3 2.3 2.3 1.4 0 2.4-1 2.4-2.6V3h3.4z"/></svg><span>TikTok</span></a><a href="https://linktr.ee/spartanbiolabs.info" target="_blank" rel="noopener" aria-label="All Spartan Biolabs links on Linktree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 13.5V21"/><path d="M12 3v7"/><path d="M5.5 5.5 12 10l6.5-4.5"/><path d="M4 11h16"/><path d="M5.5 16.5 12 12l6.5 4.5"/></svg><span>Linktree</span></a></div>
   </header>
@@ -1177,11 +1177,6 @@ async function fillProductLots(p){
     ? `<div class="pd-lots-k">Verified lots</div>` + lots.map(c => `<a class="pd-lot" href="#coa/${encodeURIComponent(c.lot)}"><span>${esc(c.lot)}</span><span>${c.purity ? esc(c.purity) + "% · " : ""}View COA →</span></a>`).join("")
     : `<div class="pd-lots-k">Verified lots</div><div class="pd-lot-none">The COA for this product's current lot will be posted here.</div>`;
 }
-$("exploreBtn").addEventListener("click", e => {
-  e.preventDefault();
-  const go = () => document.querySelector("nav.tabs").scrollIntoView({ behavior: "smooth", block: "start" });
-  if (location.hash !== "#catalog" && location.hash !== "") { location.hash = "#catalog"; setTimeout(go, 60); } else go();
-});
 document.querySelectorAll('input[name=pay]').forEach(r => r.onchange = renderSummary);
 loadCustomer();
 
