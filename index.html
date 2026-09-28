@@ -27,17 +27,17 @@
      Raise the .55/.7 numbers to darken it, lower them to make the poster stronger. */
   .bgart{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--bg)}
   /* Layer 1: blurred, darker copy fills the sides on wide screens */
-  .bgart::before{content:"";position:absolute;inset:-40px;background:url("images/bg.jpg") center / cover no-repeat;filter:blur(28px) brightness(.35)}
+  .bgart::before{content:"";position:absolute;inset:-40px;background:url("images/bg-temple.jpg") center / cover no-repeat;filter:blur(28px) brightness(.35)}
   /* Layer 2: the sharp poster, full height, with a dark tint so the page stays readable */
   .bgart::after{content:"";position:absolute;inset:0;background:
       linear-gradient(rgba(11,11,12,.12),rgba(11,11,12,.5)),
-      url("images/bg.jpg") center top / auto 100% no-repeat}
+      url("images/bg-temple.jpg") center top / auto 100% no-repeat}
   /* The poster's own logo is the page title; the header just leaves room for it */
   header.site.over{padding-top:52px}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
   /* ===== Disclaimer gate ===== */
-  .gate{position:fixed;inset:0;background:linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.72)),url("images/bg.jpg") center / cover no-repeat,#000;display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+  .gate{position:fixed;inset:0;background:linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.72)),url("images/bg-temple.jpg") center / cover no-repeat,#000;display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
   .gate.hidden{display:none}
   .modal{background:#0f0f0f;border:2px solid var(--gold);border-radius:8px;padding:32px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 0 50px rgba(212,175,55,.3)}
   .modal-header{text-align:center;margin-bottom:24px;border-bottom:2px solid var(--gold);padding-bottom:18px}
