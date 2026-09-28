@@ -1,0 +1,19 @@
+{
+  "updated": "2026-09-28",
+  "coas": [
+    {
+      "lot": "RT30-08-26",
+      "productId": "reta30",
+      "product": "GLP-3 (RT) 30mg",
+      "date": "2026-09-05",
+      "purity": "99.86",
+      "content": "30.31 mg",
+      "result": "pass",
+      "tests": [
+        "Identity / purity",
+        "Content"
+      ],
+      "file": ""
+    }
+  ]
+}
