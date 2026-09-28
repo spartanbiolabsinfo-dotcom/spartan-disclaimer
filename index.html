@@ -202,7 +202,7 @@
   .pdfbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;padding:13px;border-radius:10px;background:rgba(12,12,13,.9);border:1.5px solid var(--gold);color:var(--gold-hi);font:600 15px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 0 12px rgba(212,175,55,.2)}
   .pdfbtn svg{width:18px;height:18px}
   .pdfbtn:active{background:var(--gold);color:#111}
-  .pdfbar{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+  .pdfbar{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;flex:0 0 auto !important;padding:14px 16px}
   .pdfbar svg{width:17px;height:17px}
 
   /* ===== Remember me ===== */
@@ -220,9 +220,8 @@
   .verify .ruo{margin-top:6px}
   .sig{font-family:"Brush Script MT","Segoe Script","Snell Roundhand",cursive;font-size:24px !important;letter-spacing:.02em}
   .sig.ok{border-color:var(--good) !important}
-  .dobmsg,.sigmeta{font-size:12.5px;margin:0;min-height:16px;color:var(--muted)}
-  .dobmsg.ok,.sigmeta.ok{color:var(--good)}
-  .dobmsg.bad{color:#e07a7a}
+  .sigmeta{font-size:12.5px;margin:0;min-height:16px;color:var(--muted)}
+  .sigmeta.ok{color:var(--good)}
 
   /* ===== PDF viewer ===== */
   .viewer{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.94);display:flex;justify-content:center;align-items:flex-start;padding:max(12px,env(safe-area-inset-top)) 12px 0;overflow-y:auto}
@@ -453,17 +452,14 @@
       <label for="addr">Shipping address</label><textarea id="addr" autocomplete="street-address" placeholder="Street, City, State, ZIP"></textarea>
       <label for="notes">Notes (optional)</label><input id="notes">
       <div class="remember">
-        <label class="rem-toggle"><input type="checkbox" id="remember"><span>Remember my details on this device<small>Saves your name, contact info, address and date of birth on this phone only. We never see it until you send an order.</small></span></label>
+        <label class="rem-toggle"><input type="checkbox" id="remember"><span>Remember my details on this device<small>Saves your name, contact info and address on this phone only. We never see it until you send an order.</small></span></label>
         <button type="button" class="linkbtn" id="forgetBtn" hidden>Forget my saved details</button>
       </div>
     </div>
 
     <h2 class="step"><span class="n">4</span>Verify Age &amp; Sign</h2>
     <div class="verify">
-      <p class="vlead">Spartan Biolabs sells to adults 21 and over for laboratory research only. Complete all three items to place an order.</p>
-      <label for="dob">Date of birth</label>
-      <input id="dob" type="date" autocomplete="bday">
-      <p class="dobmsg" id="dobMsg" aria-live="polite"></p>
+      <p class="vlead">Spartan Biolabs sells to adults 21 and over for laboratory research only. Tick the confirmation and sign to place an order.</p>
       <div class="ruo">
         <input type="checkbox" id="ruo">
         <label for="ruo">I confirm I am 21 or older, and that all products are purchased strictly for laboratory research use only. They are not for human or animal consumption.</label>
@@ -782,9 +778,7 @@ function buildMessage(){
   L.push(`Payment: ${c.pay}`, "");
   L.push(`Name: ${$("name").value.trim()}`, `Email: ${$("email").value.trim()}`, `Phone: ${$("phone").value.trim()}`, `Ship to: ${$("addr").value.trim()}`);
   if ($("notes").value.trim()) L.push(`Notes: ${$("notes").value.trim()}`);
-  const dob = $("dob").value;
-  L.push("", `DOB: ${usDate(dob)} (age ${ageFrom(dob)})`);
-  L.push("Confirmed 21+ and research use only.");
+  L.push("", "Confirmed 21+ and research use only.");
   L.push(`E-signature: /s/ ${$("sig").value.trim()} (${niceStamp(signedAt || stampNow())})`);
   return L.join("\n");
 }
@@ -792,8 +786,6 @@ function validate(){
   if (!calc().items.length) return "Add at least one product.";
   if (!$("name").value.trim() || !$("addr").value.trim()) return "Please enter your name and shipping address.";
   if (!$("email").value.trim() && !$("phone").value.trim()) return "Please enter an email or phone number.";
-  if (ageFrom($("dob").value) === null) return "Please enter your date of birth in step 4.";
-  if (!checkDob()) return `You must be ${MIN_AGE} or older to place an order.`;
   if (!$("ruo").checked) return "Please tick the 21+ and research-use confirmation in step 4.";
   if (!checkSig()) return "Type your full name as your signature in step 4. It must match the name in step 3.";
   return "";
@@ -881,8 +873,8 @@ function buildOrderPdf(){
 
   // age & research-use acknowledgment with e-signature
   {
-    const dob = $("dob").value, sigName = clean($("sig").value.trim());
-    const ack = doc.splitTextToSize(`I confirm I am 21 or older (date of birth ${usDate(dob)}, age ${ageFrom(dob)}) and that all products are purchased strictly for laboratory research use only, not for human or animal consumption.`, R-M-28);
+    const sigName = clean($("sig").value.trim());
+    const ack = doc.splitTextToSize(`I confirm I am 21 or older and that all products are purchased strictly for laboratory research use only, not for human or animal consumption.`, R-M-28);
     const ah = 30 + ack.length*13 + 46;
     need(ah + 12);
     doc.setFillColor(255,255,255); doc.setDrawColor(...GOLD); doc.setLineWidth(1); doc.roundedRect(M,y,R-M,ah,4,4,"FD");
@@ -912,7 +904,6 @@ function buildOrderPdf(){
 // ----- View PDF: on-screen preview with a Download button inside -----
 function previewHtml(){
   const c = calc(), id = orderId();
-  const dob = $("dob").value;
   const m2 = n => "$" + (Math.round(n*100)/100).toFixed(2);
   const today = new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
   const notes = $("notes").value.trim();
@@ -941,7 +932,7 @@ function previewHtml(){
       </div>
       <div class="pv-ack">
         <div class="pv-k">Age &amp; research-use acknowledgment</div>
-        <p>I confirm I am 21 or older (date of birth ${esc(usDate(dob))}, age ${ageFrom(dob)}) and that all products are purchased strictly for laboratory research use only, not for human or animal consumption.</p>
+        <p>I confirm I am 21 or older and that all products are purchased strictly for laboratory research use only, not for human or animal consumption.</p>
         <div class="pv-sig">${esc($("sig").value.trim())}</div>
         <div class="pv-mut pv-small">Electronic signature · ${esc(niceStamp(signedAt || stampNow()))}</div>
       </div>
@@ -988,26 +979,9 @@ $("viewer").addEventListener("click", e => { if (e.target === $("viewer")) close
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("viewer").hidden) closeViewer(); });
 
 
-// ----- Age check, e-signature, remember me -----
-const MIN_AGE = 21;
+// ----- Age confirmation, e-signature, remember me -----
 const CUST_KEY = "spartan_customer";
 const normName = t => String(t || "").trim().toLowerCase().replace(/[^a-z]/g, "");
-function ageFrom(iso){
-  if (!iso) return null;
-  const [y, m, d] = iso.split("-").map(Number); if (!y || !m || !d) return null;
-  const now = new Date();
-  let age = now.getFullYear() - y;
-  if (now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d)) age--;
-  return age;
-}
-const usDate = iso => { const [y, m, d] = iso.split("-"); return `${m}/${d}/${y}`; };
-function checkDob(){
-  const el = $("dobMsg"), age = ageFrom($("dob").value);
-  if (age === null) { el.textContent = ""; el.className = "dobmsg"; return false; }
-  if (age < 0 || age > 120) { el.textContent = "Please check the date."; el.className = "dobmsg bad"; return false; }
-  if (age < MIN_AGE) { el.textContent = `You must be ${MIN_AGE} or older to order.`; el.className = "dobmsg bad"; return false; }
-  el.textContent = `Age ${age} ✓`; el.className = "dobmsg ok"; return true;
-}
 function checkSig(){
   const sig = $("sig"), meta = $("sigMeta");
   const match = normName(sig.value) && normName(sig.value) === normName($("name").value);
@@ -1017,7 +991,6 @@ function checkSig(){
   else { meta.textContent = "Doesn't match the full name in step 3 yet."; meta.className = "sigmeta"; }
   return !!match;
 }
-$("dob").addEventListener("input", checkDob);
 $("sig").addEventListener("input", checkSig);
 $("name").addEventListener("input", checkSig);
 
@@ -1029,14 +1002,15 @@ function loadCustomer(){
   let c = null;
   try { c = JSON.parse(localStorage.getItem(CUST_KEY) || "null"); } catch (e) {}
   if (!c) return;
-  ["name","email","phone","addr","dob"].forEach(k => { if (c[k] && !$(k).value) $(k).value = c[k]; });
+  ["name","email","phone","addr"].forEach(k => { if (c[k] && !$(k).value) $(k).value = c[k]; });
+  if ("dob" in c) { delete c.dob; try { localStorage.setItem(CUST_KEY, JSON.stringify(c)); } catch (e) {} }
   $("remember").checked = true; $("forgetBtn").hidden = false;
-  checkDob(); checkSig();
+  checkSig();
 }
 function saveCustomer(){
   try {
     if ($("remember").checked) {
-      const c = {}; ["name","email","phone","addr","dob"].forEach(k => c[k] = $(k).value.trim());
+      const c = {}; ["name","email","phone","addr"].forEach(k => c[k] = $(k).value.trim());
       localStorage.setItem(CUST_KEY, JSON.stringify(c)); $("forgetBtn").hidden = false;
     } else localStorage.removeItem(CUST_KEY);
   } catch (e) {}
@@ -1044,8 +1018,8 @@ function saveCustomer(){
 $("remember").addEventListener("change", () => { if (!$("remember").checked) { try { localStorage.removeItem(CUST_KEY); } catch (e) {} $("forgetBtn").hidden = true; } });
 $("forgetBtn").onclick = () => {
   try { localStorage.removeItem(CUST_KEY); } catch (e) {}
-  ["name","email","phone","addr","dob","sig"].forEach(k => $(k).value = "");
-  $("remember").checked = false; $("forgetBtn").hidden = true; checkDob(); checkSig();
+  ["name","email","phone","addr","sig"].forEach(k => $(k).value = "");
+  $("remember").checked = false; $("forgetBtn").hidden = true; checkSig();
   $("err").textContent = "Your saved details were removed from this device.";
 };
 
