@@ -63,7 +63,7 @@
   .tag{color:var(--muted);font-size:12px;letter-spacing:.25em;text-transform:uppercase;margin-top:6px}
   .quick{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:14px}
   .quick a{font-size:13px;text-decoration:none;color:var(--gold-hi);border:1px solid rgba(212,175,55,.5);border-radius:999px;padding:6px 14px}
-  .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;margin:18px 0 6px;position:sticky;top:8px;z-index:10}
+  .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;margin:18px 0 6px;position:sticky;top:8px;z-index:10}
   .tabs a{padding:11px;border-radius:8px;text-align:center;text-decoration:none;color:var(--muted);font:600 14px Inter,sans-serif;letter-spacing:.05em}
   .tabs a.active{background:var(--gold);color:#111}
   .panel{display:none}
@@ -163,6 +163,7 @@
 
   /* ===== Clickable buttons: gold, solid and easy to spot ===== */
   .quick a{background:rgba(12,12,13,.85);border:1.5px solid var(--gold);color:var(--gold-hi);font-weight:600;padding:8px 16px;box-shadow:0 0 12px rgba(212,175,55,.25)}
+  .quick a.on{background:var(--gold);color:#111;text-shadow:none}
   .quick a:active,.quick a:hover{background:var(--gold);color:#111;text-shadow:none}
   .tabs{background:rgba(12,12,13,.85);border:1.5px solid rgba(212,175,55,.55)}
   .tabs a:not(.active){color:var(--gold-hi)}
@@ -347,13 +348,12 @@
     <h1 class="sr">Spartan Biolabs: Precision, Verification, Research</h1>
     <div class="quick">
       <a class="wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener">💬 WhatsApp Support</a>
-      <a href="#coa">📋 COA Lookup</a>
+      <a href="#coa" id="coaHeadBtn">📋 COA Lookup</a>
     </div>
   </header>
 
   <nav class="tabs">
     <a href="#catalog" data-tab="catalog" class="active">Catalog</a>
-    <a href="#coa" data-tab="coa">COAs</a>
     <a href="#order" data-tab="order" id="orderTab">Order</a>
   </nav>
 
@@ -371,6 +371,7 @@
 
   <!-- ===== COA LOOKUP ===== -->
   <section class="panel" id="panel-coa">
+    <a href="#catalog" class="back">← Back to catalog</a>
     <h2 class="step"><span class="n">✓</span>Certificate Lookup</h2>
     <p class="note">Every peptide lot is third-party tested before it ships. Enter the lot number printed on your vial label to see its certificate of analysis.</p>
     <div class="coa-search">
@@ -694,7 +695,8 @@ function route(){
   }
   else view = "catalog";
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + view));
-  document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === (view === "order" ? "order" : view === "coa" ? "coa" : "catalog")));
+  document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === (view === "order" ? "order" : view === "coa" ? "" : "catalog")));
+  $("coaHeadBtn").classList.toggle("on", view === "coa");
   updateBars();
   if (!(view === "coa" && prevView === "coa")) window.scrollTo(0, 0);
 }
