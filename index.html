@@ -27,10 +27,10 @@
   .bgart::before{content:"";position:absolute;inset:-40px;background:url("images/bg.jpg") center / cover no-repeat;filter:blur(28px) brightness(.35)}
   /* Layer 2: the sharp poster, full height, with a dark tint so the page stays readable */
   .bgart::after{content:"";position:absolute;inset:0;background:
-      linear-gradient(rgba(11,11,12,.35),rgba(11,11,12,.6)),
+      linear-gradient(rgba(11,11,12,.12),rgba(11,11,12,.5)),
       url("images/bg.jpg") center top / auto 100% no-repeat}
   /* The poster's own logo is the page title; the header just leaves room for it */
-  header.site.over{padding-top:27vh}
+  header.site.over{padding-top:52px}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
   /* ===== Disclaimer gate ===== */
@@ -337,6 +337,13 @@
   h2.sect{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;border-radius:0;padding:0;margin:30px 0 14px;font:600 24px Cinzel,Georgia,serif;letter-spacing:.03em;color:#f3ecdc;text-shadow:0 2px 8px #000}
   h2.sect::before{content:"";flex:0 0 22px;height:1.5px;background:var(--gold)}
   h2.sect::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--gold),rgba(212,175,55,.15))}
+
+  /* ===== Brand logo ===== */
+  h1.brand{margin:0 auto;line-height:0}
+  h1.brand img{width:min(58vw,230px);height:auto;filter:drop-shadow(0 6px 18px rgba(0,0,0,.7))}
+  .brand-tag{margin:10px 0 18px;color:#f1ead9;font:600 12px Inter,system-ui,sans-serif;letter-spacing:.32em;text-transform:uppercase;text-shadow:0 1px 4px #000}
+  .gate-logo{width:150px;height:auto;display:block;margin:0 auto 4px}
+  @media (max-width:420px){ .brand-tag{font-size:10.5px;letter-spacing:.24em} }
   @media (max-width:600px){
     .modal{padding:22px}
     .brand-name{font-size:20px}
@@ -351,8 +358,7 @@
 <div class="gate" id="gate">
   <div class="modal">
     <div class="modal-header">
-      <div class="logo">⚔️</div>
-      <div class="brand-name">SPARTAN BIOLABS</div>
+      <img class="gate-logo" src="images/logo.png" alt="Spartan Biolabs">
       <div class="subtext">RESEARCH PRODUCTS</div>
     </div>
     <div class="modal-content">
@@ -379,7 +385,8 @@
 <div class="wrap">
   <a class="wa-corner wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.7 7.4L3.5 20.5l1.4-4.1A8.5 8.5 0 1 1 20.5 11.8z"/><path d="M9 8.6c.2-.4.5-.4.8-.4h.4c.2 0 .4 0 .5.4l.6 1.4c.1.2 0 .4-.1.6l-.5.6c-.1.1-.1.3 0 .5.6 1 1.4 1.8 2.4 2.3.2.1.4.1.5 0l.6-.7c.2-.2.4-.2.6-.1l1.4.7c.2.1.3.3.3.5v.4c0 .5-.3 1-.8 1.2-.6.2-1.4.3-2.6-.2-1.6-.7-3-2.1-3.8-3.6-.5-1-.6-1.8-.4-2.6z" fill="currentColor" stroke="none"/></svg><span>WhatsApp Support</span></a>
   <header class="site over">
-    <h1 class="sr">Spartan Biolabs: Precision, Verification, Research</h1>
+    <h1 class="brand"><img src="images/logo.png" alt="Spartan Biolabs" width="640" height="647"></h1>
+    <div class="brand-tag">Precision. Verification. Research.</div>
     <div class="hero-cta">
       <a href="#catalog" class="cta gold" id="exploreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.2l2.3 10.4a1.5 1.5 0 0 0 1.5 1.1h8.3a1.5 1.5 0 0 0 1.5-1.1L20.5 8H6.1"/><circle cx="9.5" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg><span>Explore Catalog</span></a>
       <a href="#coa" class="cta" id="coaHeadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 16.5h5"/></svg><span>COA Lookup</span></a>
