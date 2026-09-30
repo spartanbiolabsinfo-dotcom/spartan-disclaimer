@@ -410,7 +410,7 @@
     <h1 class="brand"><img src="images/logo.png" alt="Spartan Biolabs" width="640" height="647"></h1>
     <div class="brand-tag">Precision. Verification. Research.</div>
     <div class="hero-cta">
-      <a href="#coa" class="cta gold" id="coaHeadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 16.5h5"/></svg><span>COA Lookup</span></a>
+      <a href="#coa" class="cta gold" id="coaHeadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 16.5h5"/></svg><span>COA Library</span></a>
     </div>
     <div class="social-line"><a href="https://www.instagram.com/Spartan.bio.labs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg><span>Instagram</span></a><a href="https://www.tiktok.com/@spartanblabs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on TikTok"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.3 2.3 1.7 3.9 4 4.1v3.1c-1.5.1-2.9-.4-4-1.2v6.3c0 3.4-2.6 5.7-5.8 5.7-3.1 0-5.6-2.5-5.6-5.6 0-3.5 3.1-6 6.6-5.4v3.3c-1.6-.4-3.3.7-3.3 2.2 0 1.3 1 2.3 2.3 2.3 1.4 0 2.4-1 2.4-2.6V3h3.4z"/></svg><span>TikTok</span></a><a href="https://linktr.ee/spartanbiolabs.info" target="_blank" rel="noopener" aria-label="All Spartan Biolabs links on Linktree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 13.5V21"/><path d="M12 3v7"/><path d="M5.5 5.5 12 10l6.5-4.5"/><path d="M4 11h16"/><path d="M5.5 16.5 12 12l6.5 4.5"/></svg><span>Linktree</span></a></div>
   </header>
@@ -436,11 +436,11 @@
   <!-- ===== COA LOOKUP ===== -->
   <section class="panel" id="panel-coa">
     <a href="#catalog" class="back">← Back to catalog</a>
-    <h2 class="step"><span class="n">✓</span>Certificate Lookup</h2>
+    <h2 class="step"><span class="n">✓</span>COA Library</h2>
     <p class="note">Every peptide lot is third-party tested before it ships. Enter the lot number printed on your vial label to see its certificate of analysis.</p>
     <div class="coa-search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-      <input id="coaQ" type="search" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="Lot number or product, e.g. RT30-08-26" aria-label="Search certificates by lot number or product">
+      <input id="coaQ" type="search" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="Search lot # or product" aria-label="Search certificates by lot number or product">
     </div>
     <div class="coa-count" id="coaCount"></div>
     <div class="coa-list" id="coaResults"></div>
@@ -788,7 +788,7 @@ function route(){
   else if (h === "coa" || h.startsWith("coa/")) {
     view = "coa";
     loadCoas().then(renderCoaResults); renderCoaResults();
-    if (h.startsWith("coa/")) { const lot = decodeURIComponent(h.slice(4)); $("coaQ").value = lot; if (!routedOnce) { coaFromScan = true; try { history.replaceState(null, "", "#catalog"); history.pushState(null, "", "#coa/" + h.slice(4)); } catch (e) {} } openCoa(lot); }
+    if (h.startsWith("coa/")) { const lot = decodeURIComponent(h.slice(4)); if (!routedOnce) { coaFromScan = true; try { history.replaceState(null, "", "#catalog"); history.pushState(null, "", "#coa/" + h.slice(4)); } catch (e) {} } openCoa(lot); }
   }
   else view = "catalog";
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + view));
