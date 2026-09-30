@@ -782,12 +782,13 @@ let view = "catalog", routedOnce = false;
 function route(){
   const h = location.hash.replace(/^#/, "");
   const prevView = view;
+  if (!h.startsWith("coa/") && !$("coaViewer").hidden) hideCoa();   // back button closes an open certificate
   if (h.startsWith("p/")) { view = "product"; renderProduct(h.slice(2)); }
   else if (h === "order") view = "order";
   else if (h === "coa" || h.startsWith("coa/")) {
     view = "coa";
     loadCoas().then(renderCoaResults); renderCoaResults();
-    if (h.startsWith("coa/")) { const lot = decodeURIComponent(h.slice(4)); $("coaQ").value = lot; if (!routedOnce) coaFromScan = true; openCoa(lot); }
+    if (h.startsWith("coa/")) { const lot = decodeURIComponent(h.slice(4)); $("coaQ").value = lot; if (!routedOnce) { coaFromScan = true; try { history.replaceState(null, "", "#catalog"); history.pushState(null, "", "#coa/" + h.slice(4)); } catch (e) {} } openCoa(lot); }
   }
   else view = "catalog";
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + view));
@@ -1053,12 +1054,16 @@ function openViewer(d, mode){
   lastFocus = document.activeElement;
   $("viewer").hidden = false; document.body.classList.add("locked");
   $("pvDownload").focus();
+  // the phone's back button closes the PDF instead of leaving the page
+  if (!(history.state && history.state.pv)) { try { history.pushState({ pv: 1 }, "", location.href); } catch (e) {} }
 }
-function closeViewer(){
+function hideViewer(){
   $("viewer").hidden = true;
   if ($("gate").classList.contains("hidden")) document.body.classList.remove("locked");
   if (lastFocus) lastFocus.focus();
 }
+function closeViewer(){ hideViewer(); if (history.state && history.state.pv) history.back(); }
+window.addEventListener("popstate", () => { if (!$("viewer").hidden && !(history.state && history.state.pv)) hideViewer(); });
 $("sentPdf").onclick = () => { const o = myOrders()[0]; if (o) openViewer(o, "copy"); };
 $("sentAgain").onclick = () => openWhatsApp();
 $("pvDownload").onclick = () => {
@@ -1228,11 +1233,14 @@ function hideCoa(){
   if ($("gate").classList.contains("hidden")) document.body.classList.remove("locked");
 }
 function closeCoa(){
-  hideCoa();
-  if (coaFromScan) { coaFromScan = false; location.hash = "#catalog"; return; }
-  if (location.hash.startsWith("#coa/")) history.replaceState(null, "", "#coa");
+  hideCoa(); coaFromScan = false;
+  if (location.hash.startsWith("#coa/")) history.back();            // back to the page the certificate was opened from
 }
-["cvShop","cvCat"].forEach(id => $(id).addEventListener("click", () => { coaFromScan = false; hideCoa(); }));
+// "Shop" / "Catalog" from the certificate: swap the certificate out of the history so back doesn't reopen it
+["cvShop","cvCat"].forEach(id => $(id).addEventListener("click", e => {
+  e.preventDefault(); coaFromScan = false; hideCoa();
+  try { history.replaceState(null, "", $(id).getAttribute("href")); } catch (err) {} route();
+}));
 $("cvClose").onclick = closeCoa;
 $("coaViewer").addEventListener("click", e => { if (e.target === $("coaViewer")) closeCoa(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("coaViewer").hidden) closeCoa(); });
