@@ -440,6 +440,29 @@
     .coa-hero{max-width:900px;margin-left:auto;margin-right:auto;padding:34px 28px 28px}
     .feat-grid,.why,.home-contact{max-width:1000px;margin-left:auto;margin-right:auto}
   }
+
+  /* ===== Product photo gallery ===== */
+  .gal-one{display:block;width:100%;max-width:420px;margin:0 auto;padding:0;border:0;background:none;cursor:zoom-in}
+  .gal-one .ph{margin-bottom:8px}
+  .gal{max-width:420px;margin:0 auto 14px}
+  .gal-view{position:relative}
+  .gal-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:10px;border:1px solid var(--line)}
+  .gal-track::-webkit-scrollbar{display:none}
+  .gal-slide{flex:0 0 100%;scroll-snap-align:center;padding:0;border:0;background:#0f0f10;cursor:zoom-in}
+  .gal-slide .ph,.pd .gal .ph{max-width:none;margin:0;border:0;border-radius:0}
+  .gal-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:1.5px solid var(--gold);background:rgba(8,8,9,.75);color:var(--gold-hi);font:700 24px/1 Inter,sans-serif;cursor:pointer;display:grid;place-items:center;padding:0 0 3px}
+  .gal-nav.prev{left:8px} .gal-nav.next{right:8px}
+  .gal-cap{text-align:center;font-size:13px;color:var(--gold-hi);letter-spacing:.06em;text-transform:uppercase;margin:8px 0 6px;min-height:18px}
+  .gal-thumbs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .gal-th{width:84px;padding:0;border:1.5px solid var(--line);border-radius:8px;background:rgba(8,8,9,.8);overflow:hidden;cursor:pointer;color:var(--muted)}
+  .gal-th.on{border-color:var(--gold);color:var(--gold-hi)}
+  .gal-th .ph{aspect-ratio:1/1;margin:0;border:0;border-radius:0;max-width:none}
+  .gal-th .ph .none span{display:none}
+  .gal-th > span{display:block;font-size:10.5px;line-height:1.2;padding:4px 3px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .zoom{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 8px 0}
+  .zoom img{max-width:100%;max-height:calc(100% - 64px);object-fit:contain}
+  .zoom-bar{display:flex;align-items:center;gap:12px;justify-content:space-between;width:100%;max-width:720px;padding:12px 8px calc(12px + env(safe-area-inset-bottom,0px));color:#efe9dc;font-size:14px}
+  .zoom-bar button{border:1.5px solid var(--gold);background:rgba(8,8,9,.8);color:var(--gold-hi);border-radius:999px;padding:9px 16px;font:600 14px Inter,sans-serif;cursor:pointer}
 </style>
 </head>
 <body class="locked">
@@ -764,14 +787,22 @@ function saveCart(placed){
   } catch (e) {}
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
-const imgSrc = p => p.photo === "fs" ? (window.StoreImg && StoreImg.get(p)) : p.photo === "none" ? null : p.img === undefined ? IMG_DIR + p.id + ".jpg" : p.img;
+// Photos: a product can have several (main photo first). Each is a file in images/ ({repo}) or uploaded on the admin page ({k, v}).
+function photosOf(p){
+  if (Array.isArray(p.photos)) return p.photos;
+  if (p.photo === "fs") return [{ k: p.id, v: p.imgV || 0 }];
+  if (p.photo === "none" || p.img === null) return [];
+  return [{ repo: p.img || IMG_DIR + p.id + ".jpg" }];
+}
+const imgSrc = e => !e ? null : e.repo ? e.repo : (window.StoreImg && StoreImg.get(e));
 const noPhoto = p => `<div class="none"><img src="images/helmet-192.png" alt="" class="noph-logo"><span>${esc(p.name)}</span></div>`;
-function photo(p, cls = "", eager = false){
-  if (p.photo === "fs" && !imgSrc(p)) {            // photo uploaded on the admin page: shown as soon as it downloads
-    if (window.StoreImg) StoreImg.want(p);
-    return `<div class="ph ${cls}" data-fsimg="${esc(p.id)}" data-fallback="${esc(noPhoto(p))}"><div class="none"><img src="images/helmet-192.png" alt="" class="noph-logo"></div></div>`;
+function photo(p, cls = "", eager = false, idx = 0){
+  const e = photosOf(p)[idx];
+  if (e && e.k && !imgSrc(e)) {                   // uploaded on the admin page: shown as soon as it downloads
+    if (window.StoreImg) StoreImg.want(e, idx === 0);
+    return `<div class="ph ${cls}" data-fsimg="${esc(e.k)}" data-alt="${esc(p.name + " " + p.spec)}" data-fallback="${esc(noPhoto(p))}"><div class="none"><img src="images/helmet-192.png" alt="" class="noph-logo"></div></div>`;
   }
-  const src = imgSrc(p);
+  const src = imgSrc(e);
   const inner = src
     ? `<img src="${esc(src)}" alt="${esc(p.name + " " + p.spec)}" ${eager ? "" : 'loading="lazy"'} decoding="async" onerror="this.parentNode.innerHTML=this.parentNode.dataset.fallback">`
     : noPhoto(p);
@@ -843,6 +874,45 @@ $("homeCoa").addEventListener("submit", async e => {
   $("coaQ").value = q; location.hash = "#coa";
 });
 
+// ----- Product photo gallery (swipe, arrows, thumbnails; tap to see full size) -----
+function gallery(p){
+  const list = photosOf(p);
+  if (list.length < 2) return `<button type="button" class="gal-one" data-zoom="0" aria-label="See photo full size">${photo(p, "", true)}</button>` + (list[0] && list[0].label && list.length ? `<div class="gal-cap">${esc(list[0].label)}</div>` : "");
+  return `<div class="gal" data-n="${list.length}">
+    <div class="gal-view">
+      <div class="gal-track" id="galTrack">${list.map((e, i) => `<button type="button" class="gal-slide" data-zoom="${i}" aria-label="Photo ${i + 1} of ${list.length}${e.label ? ": " + esc(e.label) : ""}. See full size">${photo(p, "", i === 0, i)}</button>`).join("")}</div>
+      <button type="button" class="gal-nav prev" data-gstep="-1" aria-label="Previous photo">‹</button>
+      <button type="button" class="gal-nav next" data-gstep="1" aria-label="Next photo">›</button>
+    </div>
+    <div class="gal-cap" id="galCap">${esc(list[0].label || "")}</div>
+    <div class="gal-thumbs">${list.map((e, i) => `<button type="button" class="gal-th ${i ? "" : "on"}" data-gto="${i}" aria-label="Show ${esc(e.label || "photo " + (i + 1))}">${photo(p, "", false, i)}<span>${esc(e.label || "Photo " + (i + 1))}</span></button>`).join("")}</div>
+  </div>`;
+}
+function galIndex(){ const t = $("galTrack"); return t ? Math.round(t.scrollLeft / Math.max(1, t.clientWidth)) : 0; }
+function galGo(i){ const t = $("galTrack"); if (!t) return; const n = t.children.length; i = (i + n) % n; t.scrollTo({ left: i * t.clientWidth, behavior: "smooth" }); }
+function galSync(p){
+  const i = galIndex(), list = photosOf(p);
+  if ($("galCap")) $("galCap").textContent = (list[i] && list[i].label) || "";
+  document.querySelectorAll(".gal-th").forEach((b, j) => b.classList.toggle("on", j === i));
+}
+$("productView").addEventListener("click", e => {
+  const p = byId[(location.hash.match(/^#p\/(.+)$/) || [])[1]]; if (!p) return;
+  const st = e.target.closest("[data-gstep]"); if (st) { galGo(galIndex() + +st.dataset.gstep); return; }
+  const to = e.target.closest("[data-gto]"); if (to) { galGo(+to.dataset.gto); return; }
+  const z = e.target.closest("[data-zoom]"); if (z) openZoom(p, +z.dataset.zoom);
+});
+$("productView").addEventListener("scroll", e => { if (e.target.id === "galTrack") { clearTimeout(window.__galT); window.__galT = setTimeout(() => { const p = byId[location.hash.slice(3)]; if (p) galSync(p); }, 60); } }, true);
+// Full-size photo (pinch to zoom on phones)
+function openZoom(p, i){
+  const e = photosOf(p)[i]; const src = imgSrc(e); if (!src) return;
+  const z = document.createElement("div"); z.className = "zoom"; z.setAttribute("role", "dialog"); z.setAttribute("aria-label", "Photo full size");
+  z.innerHTML = `<img src="${esc(src)}" alt="${esc(p.name + " " + p.spec + (e.label ? " – " + e.label : ""))}"><div class="zoom-bar"><span>${esc(e.label || p.name + " " + p.spec)}</span><button type="button" aria-label="Close">✕ Close</button></div>`;
+  const close = () => { z.remove(); document.removeEventListener("keydown", esc_); };
+  const esc_ = ev => { if (ev.key === "Escape") close(); };
+  z.querySelector("button").onclick = close; z.addEventListener("click", ev => { if (ev.target === z) close(); });
+  document.addEventListener("keydown", esc_); document.body.appendChild(z);
+}
+
 // ----- Product page -----
 function renderProduct(id){
   const p = byId[id];
@@ -850,7 +920,7 @@ function renderProduct(id){
   const facts = { ...(p.facts || {}), "Form": p.form || DEFAULT_FORM, "Verification": p.tested || DEFAULT_TESTED };
   $("productView").innerHTML = `
     <div class="pd">
-      ${photo(p, "", true)}
+      ${gallery(p)}
       <div class="cat">${esc(p.cat)}</div>
       <h3>${esc(p.name)}</h3>
       <div class="spec">${esc(p.spec)}</div>
@@ -1452,6 +1522,7 @@ function normProduct(d){
   const facts = {}; (Array.isArray(d.facts) ? d.facts : []).forEach(x => { if (x && x.k) facts[x.k] = x.v || ""; });
   const p = { id: d.id, cat: d.cat || "", name: d.name || "", spec: d.spec || "", price: +d.price || 0, desc: d.desc || "", facts,
               photo: d.photo || "repo", imgV: d.imgV || 0,
+              photos: Array.isArray(d.photos) ? d.photos.filter(x => x && (x.k || x.repo)).slice(0, 8) : undefined,
               soldOut: d.status ? d.status === "soldout" : !!d.soldOut, soon: d.status === "soon", featured: !!d.featured };
   if (d.form) p.form = d.form; if (d.tested) p.tested = d.tested;
   return p;
@@ -1488,31 +1559,31 @@ window.storeLoaded = data => {
 // Photos uploaded on the admin page (kept on this device after the first download)
 window.StoreImg = (() => {
   const mem = {}, asked = new Set();
-  const key = p => "spartan_img_" + p.id + "_" + (p.imgV || 0);
-  function get(p){
-    const k = key(p); if (mem[k]) return mem[k];
-    try { const v = localStorage.getItem(k); if (v) return mem[k] = v; } catch (e) {}
+  const key = e => "spartan_img|" + e.k + "|" + (e.v || 0);
+  function get(e){
+    const k = key(e); if (mem[k]) return mem[k];
+    try { const v = localStorage.getItem(k); if (v) return mem[k] = v; } catch (er) {}
     return null;
   }
-  function fill(p, url){
+  function fill(e, url){
     document.querySelectorAll("[data-fsimg]").forEach(el => {
-      if (el.dataset.fsimg !== p.id) return;
-      el.innerHTML = url ? `<img src="${url}" alt="${esc(p.name + " " + p.spec)}" decoding="async">` : el.dataset.fallback;
+      if (el.dataset.fsimg !== e.k) return;
+      el.innerHTML = url ? `<img src="${url}" alt="${el.dataset.alt || ""}" decoding="async">` : el.dataset.fallback;
       el.removeAttribute("data-fsimg");
     });
   }
-  function want(p){
-    const k = key(p); if (asked.has(k)) return; asked.add(k);
-    whenCloud(api => api.image(p.id).then(url => {
+  function want(e, keep){                         // keep: main photos stay saved on this device; extra gallery photos don't (space)
+    const k = key(e); if (asked.has(k)) return; asked.add(k);
+    whenCloud(api => api.image(e.k).then(url => {
       if (url) {
         mem[k] = url;
-        try {
-          for (let i = localStorage.length - 1; i >= 0; i--) { const o = localStorage.key(i); if (o && o.startsWith("spartan_img_" + p.id + "_") && o !== k) localStorage.removeItem(o); }
+        if (keep) try {
+          for (let i = localStorage.length - 1; i >= 0; i--) { const o = localStorage.key(i); if (o && (o.startsWith("spartan_img|" + e.k + "|") || o.startsWith("spartan_img_")) && o !== k) localStorage.removeItem(o); }
           localStorage.setItem(k, url);
-        } catch (e) {}
+        } catch (er) {}
       }
-      fill(p, url);
-    }).catch(() => { asked.delete(k); fill(p, null); }));
+      fill(e, url);
+    }).catch(() => { asked.delete(k); fill(e, null); }));
   }
   return { get, want };
 })();

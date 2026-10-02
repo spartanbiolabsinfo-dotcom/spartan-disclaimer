@@ -110,6 +110,18 @@
   fieldset{border:0;display:grid;gap:8px}
   legend{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:6px}
 
+  /* photo gallery editor */
+  .galed{display:grid;gap:10px}
+  .gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+  .gal-t{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:8px;display:grid;gap:6px}
+  .gal-img{position:relative;aspect-ratio:1/1;border-radius:8px;overflow:hidden;background:#f4f6f9;display:grid;place-items:center}
+  .gal-img img{width:100%;height:100%;object-fit:cover}
+  .gal-img img.no{width:40%;height:auto;opacity:.45}
+  .gal-main{position:absolute;left:6px;top:6px;background:var(--acc,#1f3a5f);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.04em;border-radius:999px;padding:2px 8px}
+  .gal-t input{min-height:38px !important;font-size:14px !important;padding:6px 9px !important}
+  .gal-acts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .gal-acts .icon{width:auto;height:34px;font-size:13px}
+  .gal-empty{border:1px dashed var(--line);border-radius:12px;padding:16px;text-align:center;color:var(--muted);font-size:13.5px}
   /* photo picker */
   .photo{display:flex;gap:14px;align-items:center}
   .photo .pv{width:110px;height:110px;border-radius:12px;border:1px solid var(--line);background:#000;display:grid;place-items:center;overflow:hidden;flex:none}
@@ -262,14 +274,11 @@
   <div class="pane">
     <div class="top"><h3 id="pTitle">Edit product</h3><button class="icon" type="button" data-close aria-label="Close">✕</button></div>
     <form class="body f" id="pForm" autocomplete="off" novalidate>
-      <div class="photo">
-        <div class="pv" id="pPhoto"></div>
-        <div class="acts">
-          <label class="btn sm" style="display:inline-flex;color:var(--text);font-size:13.5px">Upload photo<input type="file" id="pFile" accept="image/*" hidden></label>
-          <button class="btn sm ghost" type="button" id="pNoPhoto">Remove photo</button>
-          <span class="muted" style="font-size:12px">Square photos look best. Big phone photos are shrunk automatically.</span>
-        </div>
-      </div>
+      <fieldset class="galed"><legend>Photos <span class="hint">Up to 6. The first one is the main photo on the store. Use ◀ ▶ to change the order.</span></legend>
+        <div class="gal-grid" id="pGal"></div>
+        <label class="btn sm" id="pAddPh" style="display:inline-flex;color:var(--text);font-size:13.5px;justify-self:start">+ Add photos<input type="file" id="pFile" accept="image/*" multiple hidden></label>
+        <datalist id="photoLabels"><option value="Product photo"><option value="Current batch vial"><option value="Current batch COA"></datalist>
+      </fieldset>
       <label>Product name <input type="text" id="pName" placeholder="e.g. GLP-3 (RT)" maxlength="80"></label>
       <div class="two">
         <label>Size / strength <input type="text" id="pSpec" placeholder="e.g. 30mg" maxlength="40"></label>
@@ -496,17 +505,26 @@ $("importBtn").onclick = async () => {
 };
 
 // ---------- photos ----------
-const thumbs = {};                      // product id + version -> data URL for uploaded photos
-function photoHtml(p, cls){
-  if (p.photo === "repo") return `<img src="${SITE}images/${esc(p.id)}.jpg" alt="" onerror="this.outerHTML='<img class=no src=../images/helmet-192.png alt=>'">`;
-  if (p.photo === "fs") {
-    const k = p.id + "@" + (p.imgV || 0);
-    if (thumbs[k]) return `<img src="${thumbs[k]}" alt="">`;
-    if (!(k in thumbs)) { thumbs[k] = null; getDoc(doc(db, "storeImages", p.id)).then(s => { thumbs[k] = s.exists() ? s.data().data : ""; render(); if (!$("pSheet").hidden) drawPhoto(); }).catch(() => {}); }
-    return `<img class="no" src="../images/helmet-192.png" alt="">`;
-  }
-  return `<img class="no" src="../images/helmet-192.png" alt="">`;
+// A product's photos: [{repo:"images/x.jpg"} | {k:"<storeImages doc id>", v} , label], first = main photo.
+const MAX_PHOTOS = 6;
+const NOPH = `<img class="no" src="../images/helmet-192.png" alt="">`;
+function photosOf(p){
+  if (Array.isArray(p.photos)) return p.photos;
+  if (p.photo === "repo") return [{ repo: "images/" + p.id + ".jpg", label: "Product photo" }];
+  if (p.photo === "fs") return [{ k: p.id, v: p.imgV || 0, label: "Product photo" }];
+  return [];
 }
+const thumbs = {};                      // storeImages id + version -> data URL
+function entryHtml(e){
+  if (!e) return NOPH;
+  if (e.data) return `<img src="${e.data}" alt="">`;
+  if (e.repo) return `<img src="${SITE}${esc(e.repo)}" alt="" onerror="this.outerHTML='<img class=no src=../images/helmet-192.png alt=>'">`;
+  const k = e.k + "@" + (e.v || 0);
+  if (thumbs[k]) return `<img src="${thumbs[k]}" alt="">`;
+  if (!(k in thumbs)) { thumbs[k] = null; getDoc(doc(db, "storeImages", e.k)).then(s => { thumbs[k] = s.exists() ? s.data().data : ""; render(); if (!$("pSheet").hidden) drawGallery(); }).catch(() => {}); }
+  return NOPH;
+}
+const photoHtml = p => entryHtml(photosOf(p)[0]);
 function loadImage(file){
   return new Promise((ok, no) => {
     const url = URL.createObjectURL(file), im = new Image();
@@ -569,12 +587,26 @@ const strip = p => { const { id, ...d } = p; return d; };
 
 // ---------- product editor ----------
 let ed = null;                          // working copy of the product being edited
-function drawPhoto(){
-  const fake = { ...ed.p, id: ed.p.id || "_new" };
-  if (ed.newPhoto) $("pPhoto").innerHTML = `<img src="${ed.newPhoto}" alt="">`;
-  else $("pPhoto").innerHTML = photoHtml(fake);
-  $("pNoPhoto").hidden = !ed.newPhoto && ed.p.photo === "none";
+function drawGallery(){
+  const g = ed.gal;
+  $("pGal").innerHTML = g.length ? g.map((e, i) => `
+    <div class="gal-t">
+      <div class="gal-img">${entryHtml(e)}${i === 0 ? '<span class="gal-main">Main</span>' : ""}</div>
+      <input type="text" list="photoLabels" data-gl="${i}" value="${esc(e.label || "")}" placeholder="Label (optional)" maxlength="40" aria-label="Label for photo ${i + 1}">
+      <div class="gal-acts">
+        <button class="icon" type="button" data-gm="${i}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="Move left">◀</button>
+        <button class="icon" type="button" data-gm="${i}" data-d="1" ${i === g.length - 1 ? "disabled" : ""} aria-label="Move right">▶</button>
+        <button class="icon" type="button" data-gx="${i}" aria-label="Remove photo ${i + 1}">✕</button>
+      </div>
+    </div>`).join("") : `<div class="gal-empty">No photos yet. The store shows the Spartan helmet until you add one.</div>`;
+  $("pAddPh").hidden = g.length >= MAX_PHOTOS;
 }
+$("pGal").addEventListener("input", e => { const i = e.target.dataset.gl; if (i !== undefined) ed.gal[+i].label = e.target.value; });
+$("pGal").addEventListener("click", e => {
+  const m = e.target.closest("[data-gm]"), x = e.target.closest("[data-gx]");
+  if (m) { const i = +m.dataset.gm, j = i + +m.dataset.d; [ed.gal[i], ed.gal[j]] = [ed.gal[j], ed.gal[i]]; drawGallery(); }
+  if (x) { ed.gal.splice(+x.dataset.gx, 1); drawGallery(); }
+});
 function factRow(k, v){
   const r = document.createElement("div"); r.className = "r";
   r.innerHTML = `<input type="text" placeholder="Label" maxlength="40" value="${esc(k)}"><input type="text" placeholder="Value" maxlength="160" value="${esc(v)}"><button class="icon" type="button" aria-label="Remove row">✕</button>`;
@@ -588,7 +620,8 @@ function showIdLine(){
 }
 function editProduct(id){
   const p = id ? products.find(x => x.id === id) : null;
-  ed = { isNew: !p, p: p ? JSON.parse(JSON.stringify(p)) : { photo: "none", imgV: 0, hidden: false, soldOut: false }, newPhoto: null };
+  ed = { isNew: !p, p: p ? JSON.parse(JSON.stringify(p)) : { photo: "none", imgV: 0, hidden: false, soldOut: false } };
+  ed.gal = JSON.parse(JSON.stringify(photosOf(ed.p)));
   $("pTitle").textContent = p ? "Edit product" : "New product";
   $("pName").value = ed.p.name || ""; $("pSpec").value = ed.p.spec || ""; $("pPrice").value = p ? ed.p.price : "";
   const cats = [...catsList()]; if (p && p.cat && !cats.includes(p.cat)) cats.push(p.cat);
@@ -602,18 +635,26 @@ function editProduct(id){
   $("pFormHint").textContent = "Leave blank to use the default."; $("pTestedHint").textContent = "Leave blank to use the default.";
   $("pShow").checked = !ed.p.hidden; $("pStatus").value = statusOf(ed.p); $("pFeat").checked = !!ed.p.featured;
   $("pDelete").hidden = !p; $("pErr").textContent = ""; $("pFile").value = "";
-  drawPhoto(); showIdLine(); openSheet("pSheet");
+  drawGallery(); showIdLine(); openSheet("pSheet");
 }
 $("addProduct").onclick = () => editProduct(null);
 $("pAddFact").onclick = () => { const r = factRow("", ""); $("pFacts").appendChild(r); r.querySelector("input").focus(); };
 ["pName", "pSpec"].forEach(i => $(i).addEventListener("input", showIdLine));
+const SUGGEST = ["Product photo", "Current batch vial", "Current batch COA"];
 $("pFile").onchange = async () => {
-  const f = $("pFile").files[0]; if (!f) return;
-  try { busy(true, "Shrinking photo…"); ed.newPhoto = await shrinkPhoto(f); drawPhoto(); }
-  catch (e) { toast(e.message, true); }
-  busy(false); $("pFile").value = "";
+  const files = [...$("pFile").files]; $("pFile").value = ""; if (!files.length) return;
+  const room = MAX_PHOTOS - ed.gal.length;
+  if (files.length > room) toast(`Only ${MAX_PHOTOS} photos per product. Added the first ${Math.max(0, room)}.`, true);
+  busy(true, "Shrinking photos…");
+  for (const f of files.slice(0, Math.max(0, room))) {
+    try {
+      const data = await shrinkPhoto(f);
+      const label = SUGGEST.find(l => !ed.gal.some(e => e.label === l)) || "";
+      ed.gal.push({ data, label });
+    } catch (e) { toast(e.message, true); }
+  }
+  busy(false); drawGallery();
 };
-$("pNoPhoto").onclick = () => { ed.newPhoto = null; ed.p.photo = "none"; drawPhoto(); };
 $("pSave").onclick = async () => {
   const name = $("pName").value.trim(), spec = $("pSpec").value.trim(), price = Math.round(parseFloat($("pPrice").value) * 100) / 100;
   const err = m => { $("pErr").textContent = m; };
@@ -630,8 +671,13 @@ $("pSave").onclick = async () => {
               form: $("pFormTxt").value.trim(), tested: $("pTested").value.trim(), hidden: !$("pShow").checked, featured: $("pFeat").checked, status: $("pStatus").value, soldOut: $("pStatus").value === "soldout", updated: Date.now() };
   if (ed.isNew) d.order = Math.max(0, ...products.map(p => +p.order || 0)) + 10;          // new products go to the end of their category
   const ops = [];
-  if (ed.newPhoto) { d.photo = "fs"; d.imgV = (+ed.p.imgV || 0) + 1; ops.push(["set", doc(db, "storeImages", id), { data: ed.newPhoto, v: d.imgV }]); thumbs[id + "@" + d.imgV] = ed.newPhoto; }
-  else if (d.photo === "none" && !ed.isNew) ops.push(["del", doc(db, "storeImages", id)]);   // photo removed
+  const photos = ed.gal.map(e => {
+    const label = (e.label || "").trim();
+    if (e.data) { const k = id + "__" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); ops.push(["set", doc(db, "storeImages", k), { data: e.data, v: 1 }]); thumbs[k + "@1"] = e.data; return { k, v: 1, label }; }
+    return e.k ? { k: e.k, v: e.v || 0, label } : { repo: e.repo, label };
+  });
+  photosOf(ed.p).filter(e => e.k && !photos.some(x => x.k === e.k)).forEach(e => ops.push(["del", doc(db, "storeImages", e.k)]));   // photos removed
+  d.photos = photos; d.photo = photos.length ? "gallery" : "none";
   ops.unshift(["set", doc(db, "storeProducts", id), d]);
   busy(true, "Saving…");
   try { await commitAll(ops); closeSheet("pSheet"); toast(ed.isNew ? `${name} added to the store.` : "Saved. The store shows it right away."); }
@@ -643,7 +689,8 @@ $("pDelete").onclick = async () => {
   const lots = coas.filter(c => c.productId === p.id).length;
   if (!confirm(`Delete ${p.name} ${p.spec} for good?` + (lots ? `\n\nIts ${lots} COA${lots === 1 ? " stays" : "s stay"} in the COA Library.` : "") + "\n\nTip: turning off \"Show on the store\" hides it instead.")) return;
   busy(true, "Deleting…");
-  try { await commitAll([["del", doc(db, "storeProducts", p.id)], ["del", doc(db, "storeImages", p.id)]]); closeSheet("pSheet"); toast("Deleted."); }
+  const imgs = new Set([p.id, ...photosOf(p).filter(e => e.k).map(e => e.k)]);
+  try { await commitAll([["del", doc(db, "storeProducts", p.id)], ...[...imgs].map(k => ["del", doc(db, "storeImages", k)])]); closeSheet("pSheet"); toast("Deleted."); }
   catch (e) { toast(failMsg(e), true); }
   busy(false);
 };
