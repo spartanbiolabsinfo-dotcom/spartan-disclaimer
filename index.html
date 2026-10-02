@@ -95,6 +95,8 @@
   .card .cd{color:#b8b3a8;font-size:12.5px;margin-top:8px;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .card .cp{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
   .card .price{color:var(--gold-hi);font-weight:600}
+  .card .soldout{font-size:11px;color:#ddd;border:1px solid #666;border-radius:999px;padding:2px 8px;background:rgba(0,0,0,.5)}
+  .addbtn:disabled{opacity:.55;cursor:not-allowed}
   .card .badge{font-size:11px;color:#111;background:var(--gold);border-radius:999px;padding:2px 8px}
   .card .more{font-size:12px;color:var(--gold-hi)}
 
@@ -507,7 +509,7 @@
 
   <footer class="site">
     <p>Every Spartan Biolabs peptide lot is independently verified by a third-party laboratory.</p>
-    <p><a class="wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener">WhatsApp: +1 (208) 957-1737</a></p>
+    <p><a class="wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener">WhatsApp: <span class="wa-num">+1 (208) 957-1737</span></a></p>
     <div class="social-line foot"><a href="https://www.instagram.com/Spartan.bio.labs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg><span>Instagram</span></a><a href="https://www.tiktok.com/@spartanblabs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on TikTok"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.3 2.3 1.7 3.9 4 4.1v3.1c-1.5.1-2.9-.4-4-1.2v6.3c0 3.4-2.6 5.7-5.8 5.7-3.1 0-5.6-2.5-5.6-5.6 0-3.5 3.1-6 6.6-5.4v3.3c-1.6-.4-3.3.7-3.3 2.2 0 1.3 1 2.3 2.3 2.3 1.4 0 2.4-1 2.4-2.6V3h3.4z"/></svg><span>TikTok</span></a><a href="https://linktr.ee/spartanbiolabs.info" target="_blank" rel="noopener" aria-label="All Spartan Biolabs links on Linktree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 13.5V21"/><path d="M12 3v7"/><path d="M5.5 5.5 12 10l6.5-4.5"/><path d="M4 11h16"/><path d="M5.5 16.5 12 12l6.5 4.5"/></svg><span>Linktree</span></a></div>
     <p style="font-size:11px;color:#555;margin-top:10px">Research Use Only. Not for human or veterinary use.</p>
   </footer>
@@ -557,15 +559,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js" defer></script>
 <script>
-// ============ EDIT HERE ============
-const WHATSAPP = "12089571737";   // every WhatsApp link on the page uses this
-const SHIPPING = 25;
-const PAY_DISCOUNT = { Zelle: 0.10, Crypto: 0.10, Card: 0 };
+// ============ BUILT-IN FALLBACK ============
+// The live catalog, COAs and settings are edited on the admin page (admin/) and saved in Firebase.
+// The values below are only used if Firebase can't be reached and nothing was saved on this device yet.
+let WHATSAPP = "12089571737";   // every WhatsApp link on the page uses this
+let SHIPPING = 25;
+let PAY_DISCOUNT = { Zelle: 0.10, Crypto: 0.10, Card: 0 };
 const VOLUME_TIERS = [];   // volume discounts are applied by hand on the invoice, not on the site
 
-const CATEGORIES = ["Metabolic", "Growth Hormone Axis", "Repair Blends", "Neuropeptides", "Mitochondrial & Cellular", "Other Research Peptides", "Supplies"];
+let CATEGORIES = ["Metabolic", "Growth Hormone Axis", "Repair Blends", "Neuropeptides", "Mitochondrial & Cellular", "Other Research Peptides", "Supplies"];
 
-const PRODUCTS = [
+let PRODUCTS = [
   { id:"reta30", cat:"Metabolic", name:"GLP-3 (RT)", spec:"30mg", price:150,
     desc:"A synthetic peptide that acts on three receptors at once: GLP-1, GIP and glucagon. It is studied in metabolic research on glucose regulation and energy balance.",
     facts:{ "Compound":"RT", "Amount":"30mg per vial" } },
@@ -616,26 +620,39 @@ const PRODUCTS = [
     facts:{ "Contents":"Sterile water, 0.9% benzyl alcohol", "Volume":"10ml" }, form:"Liquid, multi-draw vial", tested:"Diluent, not lot-tested" }
 ];
 // Defaults for every peptide (override per product with form: / tested:)
-const DEFAULT_FORM = "Lyophilized powder, single vial";
-const DEFAULT_TESTED = "Third-party tested by lot · COA included";
+let DEFAULT_FORM = "Lyophilized powder, single vial";
+let DEFAULT_TESTED = "Third-party tested by lot · COA included";
 // Photos: each product uses images/<id>.jpg automatically.
 // Set img:null on a product with no photo yet, or img:"images/other.jpg" to point elsewhere.
 const IMG_DIR = "images/";
 // ===================================
 
 const $ = id => document.getElementById(id);
-const WA_URL = "https://wa.me/" + WHATSAPP;
-document.querySelectorAll(".wa-link").forEach(a => a.href = WA_URL);
+let WA_URL = "https://wa.me/" + WHATSAPP;
+const fmtPhone = n => { const d = String(n).replace(/\D/g, ""); return d.length === 11 && d[0] === "1" ? `+1 (${d.slice(1,4)}) ${d.slice(4,7)}-${d.slice(7)}` : "+" + d; };
+function applyContact(){
+  WA_URL = "https://wa.me/" + WHATSAPP;
+  document.querySelectorAll(".wa-link").forEach(a => a.href = WA_URL);
+  document.querySelectorAll(".wa-num").forEach(e => e.textContent = fmtPhone(WHATSAPP));
+  document.querySelectorAll('input[name=pay]').forEach(r => { const pct = PAY_DISCOUNT[r.value] || 0, sm = r.parentNode.querySelector("small"); if (sm) sm.innerHTML = pct ? Math.round(pct * 100) + "% off" : "&nbsp;"; });
+}
+applyContact();
 const money = n => "$" + n.toFixed(2).replace(/\.00$/, "");
-const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
-const qty = Object.fromEntries(PRODUCTS.map(p => [p.id, 0]));
+let byId = {}, qty = {}, restoredQ = {};
+// Rebuild the lookup and cart counts whenever the catalog changes (sold-out or removed items drop out of the cart)
+function indexCatalog(){
+  byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
+  const next = {};
+  for (const p of PRODUCTS) next[p.id] = p.soldOut ? 0 : (p.id in qty ? qty[p.id] : Math.max(0, Math.min(99, restoredQ[p.id] | 0)));
+  qty = next;
+}
 // Cart survives a refresh: saved on this device for 7 days, cleared once the order is sent.
 const CART_KEY = "spartan_cart", CART_DAYS = 7;
 let savedPay = null;
 try {
   const c = JSON.parse(localStorage.getItem(CART_KEY) || "null");
   if (c && !c.placed && Date.now() - c.t < CART_DAYS * 864e5) {
-    for (const [id, n] of Object.entries(c.q || {})) if (id in qty) qty[id] = Math.max(0, Math.min(99, n | 0));
+    restoredQ = c.q || {};
     savedPay = c.pay || null;
   } else if (c) localStorage.removeItem(CART_KEY);
 } catch (e) {}
@@ -648,9 +665,13 @@ function saveCart(placed){
   } catch (e) {}
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
-const imgSrc = p => p.img === undefined ? IMG_DIR + p.id + ".jpg" : p.img;
+const imgSrc = p => p.photo === "fs" ? (window.StoreImg && StoreImg.get(p)) : p.photo === "none" ? null : p.img === undefined ? IMG_DIR + p.id + ".jpg" : p.img;
 const noPhoto = p => `<div class="none"><img src="images/helmet-192.png" alt="" class="noph-logo"><span>${esc(p.name)}</span></div>`;
 function photo(p, cls = "", eager = false){
+  if (p.photo === "fs" && !imgSrc(p)) {            // photo uploaded on the admin page: shown as soon as it downloads
+    if (window.StoreImg) StoreImg.want(p);
+    return `<div class="ph ${cls}" data-fsimg="${esc(p.id)}" data-fallback="${esc(noPhoto(p))}"><div class="none"><img src="images/helmet-192.png" alt="" class="noph-logo"></div></div>`;
+  }
   const src = imgSrc(p);
   const inner = src
     ? `<img src="${esc(src)}" alt="${esc(p.name + " " + p.spec)}" ${eager ? "" : 'loading="lazy"'} decoding="async" onerror="this.parentNode.innerHTML=this.parentNode.dataset.fallback">`
@@ -677,7 +698,7 @@ function renderCatalog(){
         <div class="cn">${esc(p.name)}</div>
         <div class="cs">${esc(p.spec)}</div>
         <div class="cd">${esc(p.desc)}</div>
-        <div class="cp"><span class="price">${money(p.price)}</span>${qty[p.id] ? `<span class="badge">${qty[p.id]} in order</span>` : `<span class="more">View →</span>`}</div>
+        <div class="cp"><span class="price">${money(p.price)}</span>${p.soldOut ? `<span class="soldout">Sold out</span>` : qty[p.id] ? `<span class="badge">${qty[p.id]} in order</span>` : `<span class="more">View →</span>`}</div>
       </a>`).join("") + `</div>`;
   }).join("");
 }
@@ -686,7 +707,7 @@ function renderCatalog(){
 function renderProduct(id){
   const p = byId[id];
   if (!p) { location.hash = "#catalog"; return; }
-  const facts = { ...p.facts, "Form": p.form || DEFAULT_FORM, "Verification": p.tested || DEFAULT_TESTED };
+  const facts = { ...(p.facts || {}), "Form": p.form || DEFAULT_FORM, "Verification": p.tested || DEFAULT_TESTED };
   $("productView").innerHTML = `
     <div class="pd">
       ${photo(p, "", true)}
@@ -696,18 +717,19 @@ function renderProduct(id){
       <div class="bigprice">${money(p.price)}</div>
       <p class="desc">${esc(p.desc)}</p>
       <div class="facts">${Object.entries(facts).map(([k,v]) => `<div><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join("")}</div>
-      <div class="addrow">
+      ${p.soldOut ? `<div class="addrow"><button class="addbtn" disabled>Sold out</button></div>` : `<div class="addrow">
         <div class="qty">
           <button data-step="-1" aria-label="Remove one">−</button>
           <span id="pdQty">${qty[p.id]}</span>
           <button data-step="1" aria-label="Add one">+</button>
         </div>
         <button class="addbtn" id="pdAdd">${qty[p.id] ? "Update Order" : "Add to Order"}</button>
-      </div>
+      </div>`}
       <div class="pd-lots" id="pdLots"></div>
       <div class="ruo-note">Research use only · Not for human or veterinary use</div>
     </div>`;
   fillProductLots(p);
+  if (p.soldOut) return;
   let local = Math.max(qty[p.id], 1);
   $("pdQty").textContent = local;
   $("productView").querySelectorAll("[data-step]").forEach(b => b.onclick = () => {
@@ -919,7 +941,7 @@ function buildOrderPdf(d){
     doc.setDrawColor(...LINE); doc.setLineWidth(0.8); doc.line(M,fy-14,R,fy-14);
     doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(...MUTED);
     doc.text("Every peptide lot is third-party tested. The COA for your lot is included in the package.",M,fy);
-    doc.text("Questions? WhatsApp +1 (208) 957-1737",M,fy+12);
+    doc.text("Questions? WhatsApp " + fmtPhone(WHATSAPP),M,fy+12);
     doc.setFont("helvetica","bold"); doc.setTextColor(...INK); doc.text("Research use only. Not for human or veterinary use.",M,fy+24);
   };
   const need = h => { if (y + h > 712) { footer(); doc.addPage(); header(); y = 132; } };
@@ -1039,7 +1061,7 @@ function previewHtml(d){
     </div>
     <div class="pv-foot">
       <div>Every peptide lot is third-party tested. The COA for your lot is included in the package.</div>
-      <div>Questions? WhatsApp +1 (208) 957-1737</div>
+      <div>Questions? WhatsApp ${esc(fmtPhone(WHATSAPP))}</div>
       <div><b>Research use only. Not for human or veterinary use.</b></div>
     </div>`;
 }
@@ -1130,12 +1152,29 @@ let coaList = null, coaLoading = null, coaLoadFailed = false;
 function loadCoas(){
   if (coaList) return Promise.resolve(coaList);
   if (coaLoading) return coaLoading;
-  coaLoading = fetch(COA_DIR + "coas.json?v=" + Date.now(), { cache:"no-store" })
+  const fromFile = () => fetch(COA_DIR + "coas.json?v=" + Date.now(), { cache:"no-store" })
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(j => { coaList = (j.coas || []).filter(c => c && c.lot); return coaList; })
-    .catch(() => { coaList = []; coaLoadFailed = true; return coaList; });
-  return coaLoading;
+    .then(j => (j.coas || []).filter(c => c && c.lot));
+  const my = coaLoading = (cloudCoas ? Promise.resolve(cloudCoas) : cloudWait.then(() => cloudCoas || fromFile()))
+    .then(list => { if (coaLoading === my) coaList = list; return list; })
+    .catch(() => { if (coaLoading === my) { coaList = []; coaLoadFailed = true; } return []; });
+  return my;
 }
+// Where a certificate's PDF lives: a file in coas/ on the site, or uploaded on the admin page (Firebase)
+const coaInCloud = c => c.file && typeof c.file === "object";
+function coaUrl(c){
+  if (!coaInCloud(c)) return Promise.resolve(COA_DIR + encodeURIComponent(c.file));
+  return new Promise((ok, no) => whenCloud(api => api.coaFile(c).then(ok, no)));
+}
+document.addEventListener("click", async e => {
+  const a = e.target.closest("[data-coadl]"); if (!a) return;
+  e.preventDefault();
+  const c = (coaList || []).find(x => x.lot === a.dataset.coadl); if (!c) return;
+  const was = a.textContent; a.textContent = "Preparing…";
+  try { const url = await coaUrl(c); const t = document.createElement("a"); t.href = url; t.download = c.lot + ".pdf"; document.body.appendChild(t); t.click(); t.remove(); }
+  catch (err) { alert("The certificate couldn't download. Check your connection and try again."); }
+  a.textContent = was;
+});
 const coaDate = iso => { if (!iso) return ""; const [y,m,d] = iso.split("-").map(Number); return new Date(y, m-1, d).toLocaleDateString("en-US",{ month:"short", day:"numeric", year:"numeric" }); };
 const coaNorm = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 function coaMatches(q){
@@ -1170,7 +1209,7 @@ function coaCard(c){
       <div class="coa-tags"><span class="coa-st ${st}">${st === "pass" ? "Passed" : st === "fail" ? "Did not pass" : "Results pending"}</span>${(c.tests || []).map(t => `<span class="coa-tag">${esc(t)}</span>`).join("")}</div>
     </div>
     <div class="coa-acts">
-      ${c.file ? `<a class="coa-btn primary" href="#coa/${encodeURIComponent(c.lot)}">View COA</a><a class="coa-btn" href="${COA_DIR + encodeURIComponent(c.file)}" download>Download</a>` : `<span class="coa-note">Certificate coming soon</span>`}
+      ${c.file ? `<a class="coa-btn primary" href="#coa/${encodeURIComponent(c.lot)}">View COA</a>${coaInCloud(c) ? `<a class="coa-btn" href="#" data-coadl="${esc(c.lot)}">Download</a>` : `<a class="coa-btn" href="${COA_DIR + encodeURIComponent(c.file)}" download>Download</a>`}` : `<span class="coa-note">Certificate coming soon</span>`}
     </div>
   </article>`;
 }
@@ -1197,15 +1236,18 @@ async function openCoa(lot){
     $("cvPages").innerHTML = `<p class="cv-msg">We couldn't find a certificate for lot ${esc(lot)}. Check the lot number on your label, or message us on WhatsApp.</p>`;
     $("cvDl").hidden = true; $("cvShop").hidden = true; return;
   }
-  const url = COA_DIR + encodeURIComponent(c.file);
   $("cvLot").textContent = c.lot;
   $("cvSub").textContent = [c.product, c.date && "Tested " + coaDate(c.date), c.purity && c.purity + "% purity"].filter(Boolean).join(" · ");
-  $("cvDl").href = url; $("cvDl").hidden = false;
+  $("cvDl").hidden = true;
   const prod = byId[c.productId];
   $("cvShop").hidden = !prod;
   if (prod) { $("cvShop").href = "#p/" + prod.id; $("cvShop").textContent = `Shop ${prod.name} ${prod.spec} →`; }
   $("cvPages").innerHTML = `<p class="cv-msg">Loading certificate…</p>`;
+  let url = "";
   try {
+    url = await coaUrl(c);
+    if (my !== coaTok) return;
+    $("cvDl").href = url; $("cvDl").setAttribute("download", c.lot + ".pdf"); $("cvDl").hidden = false;
     if (!window.pdfjsLib) throw new Error("no pdfjs");
     const buf = await (await fetch(url)).arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
@@ -1223,7 +1265,9 @@ async function openCoa(lot){
       if (my !== coaTok) return;
     }
   } catch (e) {
-    if (my === coaTok) $("cvPages").innerHTML = `<p class="cv-msg">This certificate can't be shown on the page here. <a href="${url}" target="_blank" rel="noopener">Open the PDF</a> instead.</p>`;
+    if (my === coaTok) $("cvPages").innerHTML = url
+      ? `<p class="cv-msg">This certificate can't be shown on the page here. <a href="${url}" target="_blank" rel="noopener">Open the PDF</a> instead.</p>`
+      : `<p class="cv-msg">This certificate couldn't load. Check your connection and try again, or message us on WhatsApp.</p>`;
   }
 }
 // Visitors who arrive from a vial QR code (#coa/<lot> on page load) go on to the catalog when they close the certificate.
@@ -1255,11 +1299,131 @@ async function fillProductLots(p){
     ? `<div class="pd-lots-k">Verified lots</div>` + lots.map(c => `<a class="pd-lot" href="#coa/${encodeURIComponent(c.lot)}"><span>${esc(c.lot)}</span><span>${c.purity ? esc(c.purity) + "% · " : ""}View COA →</span></a>`).join("")
     : `<div class="pd-lots-k">Verified lots</div><div class="pd-lot-none">The COA for this product's current lot will be posted here.</div>`;
 }
+// ----- Live store data: catalog, COAs and settings come from Firebase (edited on admin/) -----
+// The last copy is kept on this device so the page opens instantly; the fresh copy replaces it a moment later.
+const STORE_KEY = "spartan_store_v1";
+let cloudCoas = null, storeSig = "", cloudDone;
+const cloudWait = new Promise(r => cloudDone = r); setTimeout(() => cloudDone(), 6000);
+const cloudQ = [];
+function whenCloud(f){ if (window.StoreCloud) f(window.StoreCloud); else cloudQ.push(f); }
+window.storeCloudReady = () => cloudQ.splice(0).forEach(f => f(window.StoreCloud));
+function normProduct(d){
+  const facts = {}; (Array.isArray(d.facts) ? d.facts : []).forEach(x => { if (x && x.k) facts[x.k] = x.v || ""; });
+  const p = { id: d.id, cat: d.cat || "", name: d.name || "", spec: d.spec || "", price: +d.price || 0, desc: d.desc || "", facts,
+              photo: d.photo || "repo", imgV: d.imgV || 0, soldOut: !!d.soldOut };
+  if (d.form) p.form = d.form; if (d.tested) p.tested = d.tested;
+  return p;
+}
+function applyStore(data){
+  const st = data && data.settings;
+  if (!st || !st.imported) return false;
+  if (st.whatsapp) WHATSAPP = String(st.whatsapp).replace(/\D/g, "");
+  if (st.shipping !== undefined && Number.isFinite(+st.shipping)) SHIPPING = +st.shipping;
+  if (st.payDiscount) PAY_DISCOUNT = { Zelle: +st.payDiscount.Zelle || 0, Crypto: +st.payDiscount.Crypto || 0, Card: +st.payDiscount.Card || 0 };
+  if (Array.isArray(st.categories) && st.categories.length) CATEGORIES = st.categories.slice();
+  if (st.defaultForm) DEFAULT_FORM = st.defaultForm;
+  if (st.defaultTested) DEFAULT_TESTED = st.defaultTested;
+  PRODUCTS = (data.products || []).filter(d => d && d.id && !d.hidden)
+    .sort((a, b) => (+a.order || 0) - (+b.order || 0) || String(a.id).localeCompare(String(b.id))).map(normProduct);
+  for (const p of PRODUCTS) if (p.cat && !CATEGORIES.includes(p.cat)) CATEGORIES.push(p.cat);   // never lose a product to a renamed category
+  cloudCoas = (data.coas || []).filter(c => c && c.lot);
+  coaList = null; coaLoading = null; coaLoadFailed = false;
+  return true;
+}
+window.storeLoaded = data => {
+  cloudDone();
+  if (!data) return;                                   // offline: keep what's showing
+  const sig = JSON.stringify(data);
+  if (sig === storeSig) return;
+  storeSig = sig;
+  if (!applyStore(data)) { try { localStorage.removeItem(STORE_KEY); } catch (e) {} return; }
+  try { localStorage.setItem(STORE_KEY, sig); } catch (e) {}
+  indexCatalog(); applyContact();
+  refreshAll();
+  if (view === "product") renderProduct(location.hash.slice(3));
+  if (view === "coa") loadCoas().then(renderCoaResults);
+};
+// Photos uploaded on the admin page (kept on this device after the first download)
+window.StoreImg = (() => {
+  const mem = {}, asked = new Set();
+  const key = p => "spartan_img_" + p.id + "_" + (p.imgV || 0);
+  function get(p){
+    const k = key(p); if (mem[k]) return mem[k];
+    try { const v = localStorage.getItem(k); if (v) return mem[k] = v; } catch (e) {}
+    return null;
+  }
+  function fill(p, url){
+    document.querySelectorAll("[data-fsimg]").forEach(el => {
+      if (el.dataset.fsimg !== p.id) return;
+      el.innerHTML = url ? `<img src="${url}" alt="${esc(p.name + " " + p.spec)}" decoding="async">` : el.dataset.fallback;
+      el.removeAttribute("data-fsimg");
+    });
+  }
+  function want(p){
+    const k = key(p); if (asked.has(k)) return; asked.add(k);
+    whenCloud(api => api.image(p.id).then(url => {
+      if (url) {
+        mem[k] = url;
+        try {
+          for (let i = localStorage.length - 1; i >= 0; i--) { const o = localStorage.key(i); if (o && o.startsWith("spartan_img_" + p.id + "_") && o !== k) localStorage.removeItem(o); }
+          localStorage.setItem(k, url);
+        } catch (e) {}
+      }
+      fill(p, url);
+    }).catch(() => { asked.delete(k); fill(p, null); }));
+  }
+  return { get, want };
+})();
+try { const c = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); if (c && applyStore(c)) storeSig = JSON.stringify(c); } catch (e) {}
+indexCatalog(); applyContact();
+
 if (savedPay) { const r = document.querySelector(`input[name=pay][value="${savedPay}"]`); if (r) r.checked = true; }
 document.querySelectorAll('input[name=pay]').forEach(r => r.onchange = () => { renderSummary(); saveCart(); });
 loadCustomer();
 
 refreshAll(); route();
+</script>
+<script type="module">
+// Reads the live catalog, COAs and store settings from Firebase. Visitors can only read; edits happen on admin/.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js";
+const app = initializeApp({
+  apiKey: "AIzaSyB0p79ljDiBWzE9Pv0xJxQYg4nYOMMLFig",
+  authDomain: "spartan-ops.firebaseapp.com",
+  projectId: "spartan-ops",
+  storageBucket: "spartan-ops.firebasestorage.app",
+  messagingSenderId: "778791592007",
+  appId: "1:778791592007:web:5b248a41d2e9ea544e9162"
+});
+const db = getFirestore(app);
+const pdfs = {};
+window.StoreCloud = {
+  async image(id){ const s = await getDoc(doc(db, "storeImages", id)); return s.exists() ? s.data().data || null : null; },
+  coaFile(c){
+    const k = c._id + "@" + (c.file.v || 0);
+    return pdfs[k] || (pdfs[k] = (async () => {
+      const parts = await Promise.all(Array.from({ length: c.file.parts }, (_, i) => getDoc(doc(db, "storeCoaFiles", (c.file.key || c._id) + "_" + i))));
+      const b64 = parts.map(s => { if (!s.exists()) throw new Error("missing part"); return s.data().data; }).join("");
+      const bin = atob(b64), u8 = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      return URL.createObjectURL(new Blob([u8], { type: "application/pdf" }));
+    })().catch(e => { delete pdfs[k]; throw e; }));
+  }
+};
+window.storeCloudReady();
+try {
+  const s = await getDoc(doc(db, "store", "settings"));
+  const settings = s.exists() ? s.data() : null;
+  if (!settings || !settings.imported) window.storeLoaded({ settings });
+  else {
+    const [ps, cs] = await Promise.all([getDocs(collection(db, "storeProducts")), getDocs(collection(db, "storeCoas"))]);
+    window.storeLoaded({
+      settings,
+      products: ps.docs.map(d => ({ ...d.data(), id: d.id })),
+      coas: cs.docs.map(d => ({ ...d.data(), _id: d.id }))
+    });
+  }
+} catch (e) { window.storeLoaded(null); }
 </script>
 </body>
 </html>

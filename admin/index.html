@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Spartan Admin</title>
+<link rel="icon" type="image/png" sizes="192x192" href="../images/helmet-192.png">
+<link rel="apple-touch-icon" href="../images/helmet-512.png">
+<meta name="theme-color" content="#0b0b0c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0b0c; --panel:#151517; --panel2:#1c1c1f; --line:#2c2c31; --text:#ece8df; --muted:#9a968d;
+    --gold:#D4AF37; --gold-hi:#e3c574; --good:#7fbf7f; --warn:#e0a458; --bad:#e07a6a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg)}
+  body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.45;min-height:100vh;padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+  [hidden]{display:none !important}
+  a{color:var(--gold-hi)}
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{cursor:pointer}
+  .wrap{max-width:860px;margin:0 auto;padding:0 16px}
+
+  /* header */
+  header{position:sticky;top:0;z-index:20;background:rgba(11,11,12,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .hd{display:flex;align-items:center;gap:10px;padding:10px 0}
+  .hd img{width:34px;height:34px}
+  .brand{font-family:Cinzel,serif;font-weight:700;color:var(--gold);letter-spacing:.14em;font-size:16px;line-height:1.1}
+  .brand{flex:1;min-width:0}
+  .brand small{display:block;font-family:Inter,sans-serif;letter-spacing:.02em;color:var(--muted);font-weight:500;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hd .sp{flex:1}
+  .tabs{display:flex;gap:6px;padding:0 0 10px}
+  .tabs button{flex:1;min-height:42px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:14px}
+  .tabs button.on{border-color:var(--gold);color:#111;background:linear-gradient(180deg,#e9cd76,#c9a23a)}
+
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);font-weight:600;text-decoration:none;color:var(--text);font-size:14.5px}
+  .btn.gold{background:linear-gradient(180deg,#e9cd76,#c9a23a);border-color:#b8902c;color:#111}
+  .btn.danger{border-color:rgba(224,122,106,.55);color:var(--bad);background:transparent}
+  .btn.ghost{background:transparent}
+  .btn.sm{min-height:36px;padding:0 12px;font-size:13.5px}
+  .btn.nw{white-space:nowrap;padding:0 10px}
+  .bar h2 .muted{display:block;font-weight:500}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .icon{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);display:inline-grid;place-items:center;font-size:16px;flex:none}
+  .icon:disabled{opacity:.3}
+
+  /* screens */
+  .center{min-height:80vh;display:grid;place-items:center;text-align:center;padding:24px 16px}
+  .center .box{max-width:380px}
+  .center img{width:84px;margin-bottom:14px}
+  .center h1{font-family:Cinzel,serif;color:var(--gold);letter-spacing:.12em;font-size:22px;margin-bottom:8px}
+  .center p{color:var(--muted);margin-bottom:18px}
+  .center .btn{width:100%}
+
+  /* sections */
+  main{padding-top:14px}
+  .bar{display:flex;align-items:center;gap:10px;margin:4px 0 14px;flex-wrap:wrap}
+  .bar h2{font-size:18px;flex:1}
+  .muted{color:var(--muted);font-size:13.5px}
+  .banner{border:1px solid rgba(212,175,55,.5);background:rgba(212,175,55,.08);border-radius:12px;padding:14px;margin-bottom:16px}
+  .banner b{display:block;margin-bottom:4px;color:var(--gold-hi)}
+  .banner p{color:var(--muted);font-size:14px;margin-bottom:12px}
+  .cat-h{font-family:Cinzel,serif;color:var(--gold);letter-spacing:.08em;font-size:13.5px;margin:18px 0 8px;text-transform:uppercase}
+
+  .row{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--line);background:var(--panel);border-radius:12px;margin-bottom:8px}
+  .row.off{opacity:.62}
+  .row .th{width:56px;height:56px;border-radius:9px;background:#000 center/cover no-repeat;flex:none;display:grid;place-items:center;overflow:hidden;border:1px solid var(--line)}
+  .row .th img{width:100%;height:100%;object-fit:cover}
+  .row .th .no{width:28px;opacity:.5}
+  .row .info{flex:1;min-width:0;cursor:pointer}
+  .row .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .sub{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .moves{display:flex;flex-direction:column;gap:4px}
+  .row .moves .icon{width:34px;height:28px;font-size:12px}
+  .chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.03em;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:1px;border:1px solid var(--line);color:var(--muted)}
+  .chip.gold{border-color:rgba(212,175,55,.6);color:var(--gold-hi)}
+  .chip.good{border-color:rgba(127,191,127,.55);color:var(--good)}
+  .chip.warn{border-color:rgba(224,164,88,.6);color:var(--warn)}
+  .chip.bad{border-color:rgba(224,122,106,.6);color:var(--bad)}
+  .empty{border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--muted)}
+
+  /* forms */
+  .f{display:grid;gap:14px}
+  .f label{display:grid;gap:6px;font-size:13px;color:var(--muted);font-weight:600}
+  .f label > span.hint{font-weight:400;font-size:12px}
+  input[type=text],input[type=number],input[type=tel],input[type=date],select,textarea{width:100%;min-height:46px;border-radius:10px;border:1px solid var(--line);background:#0f0f11;padding:10px 12px;font-size:16px;color:var(--text)}
+  input[type=text],input[type=number],input[type=tel],input[type=date],select,textarea{font-weight:400}
+  .two > *,.three > *,.kv .r > *,.cats .r > *,.photo .acts,.f > *{min-width:0}
+  textarea{min-height:110px;resize:vertical;line-height:1.45}
+  input:focus,select:focus,textarea:focus{outline:2px solid rgba(212,175,55,.55);outline-offset:1px;border-color:var(--gold)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .money{position:relative} .money input{padding-left:26px} .money::before{content:"$";position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .pct{position:relative} .pct input{padding-right:30px} .pct::after{content:"%";position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .toggles{display:grid;gap:8px}
+  .tog{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text) !important;font-size:14.5px !important;font-weight:500 !important;cursor:pointer}
+  .tog input{width:22px;height:22px;accent-color:var(--gold);flex:none}
+  .tog small{display:block;color:var(--muted);font-size:12.5px;font-weight:400}
+  .kv{display:grid;gap:8px}
+  .kv .r{display:grid;grid-template-columns:1fr 1.4fr 38px;gap:8px}
+  .kv input{min-height:42px;font-size:15px}
+  fieldset{border:0;display:grid;gap:8px}
+  legend{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:6px}
+
+  /* photo picker */
+  .photo{display:flex;gap:14px;align-items:center}
+  .photo .pv{width:110px;height:110px;border-radius:12px;border:1px solid var(--line);background:#000;display:grid;place-items:center;overflow:hidden;flex:none}
+  .photo .pv img{width:100%;height:100%;object-fit:cover}
+  .photo .pv .no{width:44px;opacity:.45}
+  .photo .acts{display:grid;gap:8px;flex:1}
+
+  /* editor sheet */
+  .sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.66);display:flex;justify-content:center;align-items:flex-end}
+  .sheet .pane{background:var(--bg);width:100%;max-width:640px;max-height:100%;overflow:auto;border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;-webkit-overflow-scrolling:touch}
+  @media (min-width:700px){.sheet{align-items:center;padding:24px}.sheet .pane{border-radius:18px;border-bottom:1px solid var(--line);max-height:92vh}}
+  .sheet .top{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:14px 16px;background:rgba(11,11,12,.97);border-bottom:1px solid var(--line)}
+  .sheet .top h3{flex:1;font-size:17px}
+  .sheet .body{padding:16px}
+  .sheet .foot{position:sticky;bottom:0;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(11,11,12,.97);border-top:1px solid var(--line)}
+  .sheet .foot .btn.gold{flex:1}
+  .idline{font-size:12.5px;color:var(--muted);word-break:break-all}
+  body.modal{overflow:hidden}
+
+  /* settings categories */
+  .cats .r{display:grid;grid-template-columns:1fr 34px 34px 38px;gap:6px;align-items:center}
+  .cats .r .icon{width:34px;height:40px}
+  .cats .cnt{font-size:12px;color:var(--muted);margin:-2px 0 4px 4px}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;background:#1f1d17;border:1px solid rgba(212,175,55,.6);color:var(--text);border-radius:12px;padding:12px 16px;font-size:14px;box-shadow:0 12px 30px rgba(0,0,0,.5);max-width:calc(100vw - 32px)}
+  .toast.err{border-color:rgba(224,122,106,.7)}
+  .busy{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.55);display:grid;place-items:center;color:var(--gold-hi);font-weight:600}
+  .busy span{background:#151517;border:1px solid var(--line);padding:14px 20px;border-radius:12px}
+</style>
+</head>
+<body>
+
+<!-- Signed out / not allowed -->
+<div class="center" id="authView">
+  <div class="box">
+    <img src="../images/helmet-192.png" alt="">
+    <h1>SPARTAN ADMIN</h1>
+    <p id="authMsg">Sign in with the Spartan Biolabs Google account to edit the store.</p>
+    <button class="btn gold" id="signInBtn" type="button">Sign in with Google</button>
+    <p class="muted" id="authErr" style="margin-top:14px"></p>
+    <button class="btn ghost" id="switchBtn" type="button" hidden>Use a different account</button>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <div class="wrap">
+      <div class="hd">
+        <img src="../images/helmet-192.png" alt="">
+        <div class="brand">ADMIN<small id="who"></small></div>
+        <a class="btn sm ghost nw" href="../#catalog" target="_blank" rel="noopener">Store ↗</a>
+        <button class="btn sm ghost nw" id="signOutBtn" type="button">Sign out</button>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button type="button" data-tab="products" class="on">Products</button>
+        <button type="button" data-tab="coas">COA Library</button>
+        <button type="button" data-tab="settings">Settings</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="banner" id="setup" hidden>
+      <b>One-time setup</b>
+      <p>The store is still running from the product list built into the website. Copy it into the cloud once, and from then on everything you change here shows up on the store.</p>
+      <button class="btn gold" id="importBtn" type="button">Copy the current store into the cloud</button>
+    </div>
+    <div class="empty" id="loading">Loading…</div>
+
+    <section id="tab-products" hidden>
+      <div class="bar"><h2>Products <span class="muted" id="pCount"></span></h2><button class="btn gold" id="addProduct" type="button">+ Add product</button></div>
+      <div id="pList"></div>
+    </section>
+
+    <section id="tab-coas" hidden>
+      <div class="bar"><h2>COA Library <span class="muted" id="cCount"></span></h2><button class="btn gold" id="addCoa" type="button">+ Add COA</button></div>
+      <p class="muted" style="margin:-6px 0 14px">Each lot shows up in the store's COA Library and on its product's page. Vial QR codes link to <b>…/#coa/LOT-NUMBER</b>.</p>
+      <div id="cList"></div>
+    </section>
+
+    <section id="tab-settings" hidden>
+      <div class="bar"><h2>Store settings</h2></div>
+      <form class="f" id="setForm" autocomplete="off">
+        <label>WhatsApp number <span class="hint">Every WhatsApp button and the order PDFs use this. Include the country code (1 for the US).</span>
+          <input type="tel" id="sWa" inputmode="tel" placeholder="1 208 957 1737"></label>
+        <label>Shipping charged per order
+          <span class="money"><input type="number" id="sShip" inputmode="decimal" min="0" step="0.01"></span></label>
+        <fieldset><legend>Payment discounts (taken off the subtotal)</legend>
+          <div class="three">
+            <label>Zelle <span class="pct"><input type="number" id="sZelle" inputmode="decimal" min="0" max="90" step="0.5"></span></label>
+            <label>Crypto <span class="pct"><input type="number" id="sCrypto" inputmode="decimal" min="0" max="90" step="0.5"></span></label>
+            <label>Card <span class="pct"><input type="number" id="sCard" inputmode="decimal" min="0" max="90" step="0.5"></span></label>
+          </div>
+        </fieldset>
+        <label>Default "Form" line <span class="hint">Shown on every product page unless the product has its own.</span>
+          <input type="text" id="sForm"></label>
+        <label>Default "Verification" line
+          <input type="text" id="sTested"></label>
+        <fieldset class="cats"><legend>Categories (in the order the store shows them)</legend>
+          <div id="catRows"></div>
+          <button class="btn sm" id="addCat" type="button" style="justify-self:start">+ Add category</button>
+        </fieldset>
+        <button class="btn gold" type="submit" id="saveSettings">Save settings</button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<!-- Product editor -->
+<div class="sheet" id="pSheet" hidden role="dialog" aria-modal="true" aria-labelledby="pTitle">
+  <div class="pane">
+    <div class="top"><h3 id="pTitle">Edit product</h3><button class="icon" type="button" data-close aria-label="Close">✕</button></div>
+    <form class="body f" id="pForm" autocomplete="off" novalidate>
+      <div class="photo">
+        <div class="pv" id="pPhoto"></div>
+        <div class="acts">
+          <label class="btn sm" style="display:inline-flex;color:var(--text);font-size:13.5px">Upload photo<input type="file" id="pFile" accept="image/*" hidden></label>
+          <button class="btn sm ghost" type="button" id="pNoPhoto">Remove photo</button>
+          <span class="muted" style="font-size:12px">Square photos look best. Big phone photos are shrunk automatically.</span>
+        </div>
+      </div>
+      <label>Product name <input type="text" id="pName" placeholder="e.g. GLP-3 (RT)" maxlength="80"></label>
+      <div class="two">
+        <label>Size / strength <input type="text" id="pSpec" placeholder="e.g. 30mg" maxlength="40"></label>
+        <label>Price <span class="money"><input type="number" id="pPrice" inputmode="decimal" min="0" step="0.01"></span></label>
+      </div>
+      <div class="idline" id="pIdLine"></div>
+      <label>Category <select id="pCat"></select></label>
+      <label>Description <textarea id="pDesc" maxlength="1200"></textarea></label>
+      <fieldset class="kv"><legend>Details table (shown on the product page)</legend>
+        <div id="pFacts"></div>
+        <button class="btn sm" type="button" id="pAddFact" style="justify-self:start">+ Add row</button>
+      </fieldset>
+      <label>Form <span class="hint" id="pFormHint"></span><input type="text" id="pFormTxt" maxlength="120"></label>
+      <label>Verification <span class="hint" id="pTestedHint"></span><input type="text" id="pTested" maxlength="120"></label>
+      <div class="toggles">
+        <label class="tog"><input type="checkbox" id="pShow"><span>Show on the store<small>Turn off to hide it without deleting it.</small></span></label>
+        <label class="tog"><input type="checkbox" id="pSold"><span>Sold out<small>Still listed, but can't be added to an order.</small></span></label>
+      </div>
+      <p class="muted" id="pErr" style="color:var(--bad)"></p>
+    </form>
+    <div class="foot">
+      <button class="btn danger" type="button" id="pDelete">Delete</button>
+      <button class="btn gold" type="button" id="pSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- COA editor -->
+<div class="sheet" id="cSheet" hidden role="dialog" aria-modal="true" aria-labelledby="cTitle">
+  <div class="pane">
+    <div class="top"><h3 id="cTitle">Edit COA</h3><button class="icon" type="button" data-close aria-label="Close">✕</button></div>
+    <form class="body f" id="cForm" autocomplete="off" novalidate>
+      <label>Lot number <span class="hint" id="cLotHint">Exactly as printed on the vial label.</span><input type="text" id="cLot" placeholder="e.g. RT30-08-26" maxlength="40" autocapitalize="characters" spellcheck="false"></label>
+      <label>Product <select id="cProd"></select></label>
+      <div class="two">
+        <label>Test date <input type="date" id="cDate"></label>
+        <label>Result <select id="cResult"><option value="pass">Passed</option><option value="pending">Results pending</option><option value="fail">Did not pass</option></select></label>
+      </div>
+      <div class="two">
+        <label>Purity <span class="pct"><input type="number" id="cPurity" inputmode="decimal" min="0" max="100" step="0.01" placeholder="99.86"></span></label>
+        <label>Content <input type="text" id="cContent" placeholder="30.31 mg" maxlength="40"></label>
+      </div>
+      <label>Tests run <span class="hint">Separate with commas.</span><input type="text" id="cTests" placeholder="Identity / purity, Content" maxlength="200"></label>
+      <fieldset><legend>Certificate PDF</legend>
+        <div class="muted" id="cFileInfo"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <label class="btn sm" style="display:inline-flex;color:var(--text);font-size:13.5px">Upload PDF<input type="file" id="cFile" accept="application/pdf,.pdf" hidden></label>
+          <button class="btn sm ghost" type="button" id="cViewPdf">View</button>
+          <button class="btn sm ghost" type="button" id="cNoPdf">Remove PDF</button>
+        </div>
+      </fieldset>
+      <p class="muted" id="cErr" style="color:var(--bad)"></p>
+    </form>
+    <div class="foot">
+      <button class="btn danger" type="button" id="cDelete">Delete</button>
+      <button class="btn gold" type="button" id="cSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="busy" id="busy" hidden><span id="busyTxt">Saving…</span></div>
+<div class="toast" id="toast" hidden></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, connectAuthEmulator }
+  from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getFirestore, collection, doc, onSnapshot, getDoc, writeBatch }
+  from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+// Only this account can change the store (the Firestore rules enforce the same thing)
+const ADMIN = "spartanbiolabs.info@gmail.com";
+const app = initializeApp({
+  apiKey: "AIzaSyB0p79ljDiBWzE9Pv0xJxQYg4nYOMMLFig",
+  authDomain: "spartan-ops.firebaseapp.com",
+  projectId: "spartan-ops",
+  storageBucket: "spartan-ops.firebasestorage.app",
+  messagingSenderId: "778791592007",
+  appId: "1:778791592007:web:5b248a41d2e9ea544e9162"
+});
+const auth = getAuth(app);
+if (location.hostname === "localhost") connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+const db = getFirestore(app);
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const money = n => "$" + (+n || 0).toFixed(2).replace(/\.00$/, "");
+const SITE = "../";
+const DOC_MAX = 1000000;                 // Firestore's limit is 1 MiB per document; stay under it
+const PDF_PART = 700000;                 // characters of PDF data per stored piece
+const PDF_MAX = 8 * 1024 * 1024;
+
+let settings = null, products = [], coas = [], gotSettings = false, gotProducts = false, gotCoas = false;
+let unsubs = [], tab = "products";
+
+// ---------- small helpers ----------
+let toastT;
+function toast(msg, err){ const t = $("toast"); t.textContent = msg; t.classList.toggle("err", !!err); t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, err ? 6000 : 2600); }
+function busy(on, txt){ $("busy").hidden = !on; if (txt) $("busyTxt").textContent = txt; }
+function failMsg(e){
+  if (e && e.code === "permission-denied") return "Not saved: this account isn't allowed to change the store. Check the Firestore rules.";
+  if (e && /exceeds the maximum|too large|INVALID_ARGUMENT/i.test(String(e.message))) return "Not saved: that file is too big.";
+  return "Not saved. Check your connection and try again." + (e && e.message ? " (" + e.message + ")" : "");
+}
+async function commitAll(ops){            // ops: [["set", ref, data] | ["del", ref]]; split so no request is too big
+  let b = writeBatch(db), n = 0, bytes = 0;
+  for (const [op, ref, data] of ops) {
+    const sz = data ? JSON.stringify(data).length : 100;
+    if (n && (n >= 400 || bytes + sz > 4500000)) { await b.commit(); b = writeBatch(db); n = 0; bytes = 0; }
+    if (op === "set") b.set(ref, data); else b.delete(ref);
+    n++; bytes += sz;
+  }
+  if (n) await b.commit();
+}
+const slug = s => String(s || "").toLowerCase().replace(/\+/g, "plus").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+const lotId = lot => String(lot || "").trim().toUpperCase().replace(/[^A-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+const prodLabel = p => p ? (p.name + " " + (p.spec || "")).trim() : "";
+const catsList = () => (settings && settings.categories) || [];
+function openSheet(id){ $(id).hidden = false; document.body.classList.add("modal"); $(id).querySelector(".pane").scrollTop = 0; }
+function closeSheet(id){ $(id).hidden = true; if ([...document.querySelectorAll(".sheet")].every(s => s.hidden)) document.body.classList.remove("modal"); }
+document.querySelectorAll(".sheet").forEach(sh => {
+  sh.querySelector("[data-close]").onclick = () => closeSheet(sh.id);
+  sh.addEventListener("click", e => { if (e.target === sh) closeSheet(sh.id); });
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll(".sheet:not([hidden])").forEach(s => closeSheet(s.id)); });
+
+// ---------- sign in ----------
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: "select_account" });
+async function signIn(){
+  $("authErr").textContent = "";
+  try { await signInWithPopup(auth, provider); }
+  catch (e) {
+    if (e && (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment")) await signInWithRedirect(auth, provider);
+    else if (e && e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") $("authErr").textContent = "Sign-in didn't finish (" + (e.code || e.message) + "). Try again.";
+  }
+}
+$("signInBtn").onclick = signIn;
+$("switchBtn").onclick = async () => { await signOut(auth); signIn(); };
+$("signOutBtn").onclick = () => signOut(auth);
+getRedirectResult(auth).catch(e => { $("authErr").textContent = "Sign-in didn't finish (" + (e.code || e.message) + ")."; });
+
+onAuthStateChanged(auth, user => {
+  unsubs.forEach(u => u()); unsubs = [];
+  const ok = user && (user.email || "").toLowerCase() === ADMIN;
+  $("authView").hidden = !!ok; $("app").hidden = !ok;
+  if (user && !ok) {
+    $("authMsg").innerHTML = `<b>${esc(user.email)}</b> can't edit the store. Sign in with the Spartan Biolabs account.`;
+    $("signInBtn").hidden = true; $("switchBtn").hidden = false;
+  } else { $("authMsg").textContent = "Sign in with the Spartan Biolabs Google account to edit the store."; $("signInBtn").hidden = false; $("switchBtn").hidden = true; }
+  if (!ok) return;
+  $("who").textContent = user.email;
+  gotSettings = gotProducts = gotCoas = false; render();
+  const fail = e => toast(e && e.code === "permission-denied" ? "Can't read the store data: check the Firestore rules." : "Can't reach the cloud right now.", true);
+  unsubs.push(onSnapshot(doc(db, "store", "settings"), s => { settings = s.exists() ? s.data() : null; gotSettings = true; render(); }, fail));
+  unsubs.push(onSnapshot(collection(db, "storeProducts"), s => { products = s.docs.map(d => ({ ...d.data(), id: d.id })); gotProducts = true; render(); }, fail));
+  unsubs.push(onSnapshot(collection(db, "storeCoas"), s => { coas = s.docs.map(d => ({ ...d.data(), _id: d.id })); gotCoas = true; render(); }, fail));
+});
+
+// ---------- tabs ----------
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { tab = b.dataset.tab; try { history.replaceState(null, "", "#" + tab); } catch (e) {} render(); window.scrollTo(0, 0); });
+{ const h = location.hash.slice(1); if (["products", "coas", "settings"].includes(h)) tab = h; }
+
+function render(){
+  const ready = gotSettings && gotProducts && gotCoas;
+  const imported = !!(settings && settings.imported);
+  $("loading").hidden = ready;
+  $("setup").hidden = !ready || imported;
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  ["products", "coas", "settings"].forEach(t => $("tab-" + t).hidden = !ready || !imported || t !== tab);
+  if (!ready || !imported) return;
+  if (tab === "products") renderProducts();
+  if (tab === "coas") renderCoas();
+  if (tab === "settings" && !settingsDirty) fillSettings();
+}
+
+// ---------- one-time import of the built-in store ----------
+$("importBtn").onclick = async () => {
+  if (!confirm("Copy the current products, COAs and settings into the cloud?")) return;
+  busy(true, "Copying the store…");
+  try {
+    const html = await (await fetch(SITE + "index.html?v=" + Date.now(), { cache: "no-store" })).text();
+    const a = html.indexOf("let WHATSAPP"), b = html.indexOf("const IMG_DIR");
+    if (a < 0 || b < a) throw new Error("couldn't find the product list on the site");
+    const B = new Function(html.slice(a, b) + "\n;return { WHATSAPP, SHIPPING, PAY_DISCOUNT, CATEGORIES, PRODUCTS, DEFAULT_FORM, DEFAULT_TESTED };")();
+    let coaJson = { coas: [] };
+    try { coaJson = await (await fetch(SITE + "coas/coas.json?v=" + Date.now(), { cache: "no-store" })).json(); } catch (e) {}
+    const ops = [];
+    B.PRODUCTS.forEach((p, i) => {
+      const d = { name: p.name, spec: p.spec || "", price: +p.price || 0, cat: p.cat, desc: p.desc || "",
+                  facts: Object.entries(p.facts || {}).map(([k, v]) => ({ k, v: String(v) })),
+                  form: p.form || "", tested: p.tested || "", hidden: false, soldOut: false, order: (i + 1) * 10,
+                  photo: p.img === null ? "none" : "repo", imgV: 0, updated: Date.now() };
+      ops.push(["set", doc(db, "storeProducts", p.id), d]);
+    });
+    (coaJson.coas || []).filter(c => c && c.lot).forEach(c => {
+      ops.push(["set", doc(db, "storeCoas", lotId(c.lot)), { lot: c.lot, productId: c.productId || "", product: c.product || "", date: c.date || "",
+        purity: c.purity ? String(c.purity) : "", content: c.content || "", result: c.result || "pass", tests: c.tests || [], file: c.file || "", updated: Date.now() }]);
+    });
+    ops.push(["set", doc(db, "store", "settings"), { imported: true, whatsapp: B.WHATSAPP, shipping: B.SHIPPING, payDiscount: B.PAY_DISCOUNT,
+      categories: B.CATEGORIES, defaultForm: B.DEFAULT_FORM, defaultTested: B.DEFAULT_TESTED, updated: Date.now() }]);
+    await commitAll(ops);
+    toast(`Copied ${B.PRODUCTS.length} products and ${(coaJson.coas || []).length} COA${(coaJson.coas || []).length === 1 ? "" : "s"}. You're live.`);
+  } catch (e) { toast(failMsg(e), true); }
+  busy(false);
+};
+
+// ---------- photos ----------
+const thumbs = {};                      // product id + version -> data URL for uploaded photos
+function photoHtml(p, cls){
+  if (p.photo === "repo") return `<img src="${SITE}images/${esc(p.id)}.jpg" alt="" onerror="this.outerHTML='<img class=no src=../images/helmet-192.png alt=>'">`;
+  if (p.photo === "fs") {
+    const k = p.id + "@" + (p.imgV || 0);
+    if (thumbs[k]) return `<img src="${thumbs[k]}" alt="">`;
+    if (!(k in thumbs)) { thumbs[k] = null; getDoc(doc(db, "storeImages", p.id)).then(s => { thumbs[k] = s.exists() ? s.data().data : ""; render(); if (!$("pSheet").hidden) drawPhoto(); }).catch(() => {}); }
+    return `<img class="no" src="../images/helmet-192.png" alt="">`;
+  }
+  return `<img class="no" src="../images/helmet-192.png" alt="">`;
+}
+function loadImage(file){
+  return new Promise((ok, no) => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(url); ok(im); };
+    im.onerror = () => { URL.revokeObjectURL(url); no(new Error("That file isn't a photo this browser can read.")); };
+    im.src = url;
+  });
+}
+async function shrinkPhoto(file){         // longest side 1000px, JPEG, small enough for one cloud document
+  const im = await loadImage(file);
+  for (const [max, q] of [[1000, .84], [1000, .74], [850, .7], [700, .66], [560, .6]]) {
+    const r = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+    const c = document.createElement("canvas"); c.width = Math.round(im.naturalWidth * r); c.height = Math.round(im.naturalHeight * r);
+    const x = c.getContext("2d"); x.fillStyle = "#000"; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+    const data = c.toDataURL("image/jpeg", q);
+    if (data.length < 700000) return data;
+  }
+  throw new Error("That photo is too large even after shrinking.");
+}
+
+// ---------- products list ----------
+const sortedProducts = () => [...products].sort((a, b) => (+a.order || 0) - (+b.order || 0) || a.id.localeCompare(b.id));
+function groups(){
+  const all = sortedProducts(), cats = [...catsList()];
+  for (const p of all) if (!cats.includes(p.cat)) cats.push(p.cat);
+  return cats.map(c => [c, all.filter(p => p.cat === c)]);
+}
+function renderProducts(){
+  const live = products.filter(p => !p.hidden).length;
+  $("pCount").textContent = `· ${live} on the store${products.length > live ? `, ${products.length - live} hidden` : ""}`;
+  const g = groups();
+  $("pList").innerHTML = products.length ? g.map(([cat, list]) => !list.length ? "" : `<div class="cat-h">${esc(cat || "No category")}</div>` + list.map((p, i) => `
+    <div class="row ${p.hidden ? "off" : ""}">
+      <div class="th">${photoHtml(p)}</div>
+      <div class="info" data-edit="${esc(p.id)}">
+        <div class="nm">${esc(p.name)} <span class="muted">${esc(p.spec)}</span></div>
+        <div class="sub">${money(p.price)}${p.hidden ? '<span class="chip">Hidden</span>' : ""}${p.soldOut ? '<span class="chip warn">Sold out</span>' : ""}</div>
+      </div>
+      <div class="moves">
+        <button class="icon" type="button" data-move="${esc(p.id)}" data-d="-1" aria-label="Move up" ${i === 0 ? "disabled" : ""}>▲</button>
+        <button class="icon" type="button" data-move="${esc(p.id)}" data-d="1" aria-label="Move down" ${i === list.length - 1 ? "disabled" : ""}>▼</button>
+      </div>
+    </div>`).join("")).join("") : `<div class="empty">No products yet. Tap <b>+ Add product</b>.</div>`;
+}
+$("pList").addEventListener("click", async e => {
+  const ed = e.target.closest("[data-edit]"); if (ed) return editProduct(ed.dataset.edit);
+  const mv = e.target.closest("[data-move]"); if (!mv) return;
+  const p = products.find(x => x.id === mv.dataset.move); if (!p) return;
+  const list = groups().find(([c]) => c === p.cat)[1], i = list.indexOf(p), j = i + +mv.dataset.d;
+  if (j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  // renumber everything so the order is stable
+  const ordered = groups().flatMap(([c, l]) => c === p.cat ? list : l);
+  const ops = []; ordered.forEach((x, k) => { const o = (k + 1) * 10; if (x.order !== o) { x.order = o; ops.push(["set", doc(db, "storeProducts", x.id), strip(x)]); } });
+  renderProducts();
+  try { await commitAll(ops); } catch (err) { toast(failMsg(err), true); }
+});
+const strip = p => { const { id, ...d } = p; return d; };
+
+// ---------- product editor ----------
+let ed = null;                          // working copy of the product being edited
+function drawPhoto(){
+  const fake = { ...ed.p, id: ed.p.id || "_new" };
+  if (ed.newPhoto) $("pPhoto").innerHTML = `<img src="${ed.newPhoto}" alt="">`;
+  else $("pPhoto").innerHTML = photoHtml(fake);
+  $("pNoPhoto").hidden = !ed.newPhoto && ed.p.photo === "none";
+}
+function factRow(k, v){
+  const r = document.createElement("div"); r.className = "r";
+  r.innerHTML = `<input type="text" placeholder="Label" maxlength="40" value="${esc(k)}"><input type="text" placeholder="Value" maxlength="160" value="${esc(v)}"><button class="icon" type="button" aria-label="Remove row">✕</button>`;
+  r.querySelector("button").onclick = () => r.remove();
+  return r;
+}
+function idFor(){ return ed.isNew ? slug($("pName").value + " " + $("pSpec").value) : ed.p.id; }
+function showIdLine(){
+  const id = idFor();
+  $("pIdLine").textContent = id ? `Link: …/#p/${id}` + (ed.isNew && products.some(p => p.id === id) ? "  (taken: change the name or size)" : "") : "";
+}
+function editProduct(id){
+  const p = id ? products.find(x => x.id === id) : null;
+  ed = { isNew: !p, p: p ? JSON.parse(JSON.stringify(p)) : { photo: "none", imgV: 0, hidden: false, soldOut: false }, newPhoto: null };
+  $("pTitle").textContent = p ? "Edit product" : "New product";
+  $("pName").value = ed.p.name || ""; $("pSpec").value = ed.p.spec || ""; $("pPrice").value = p ? ed.p.price : "";
+  const cats = [...catsList()]; if (p && p.cat && !cats.includes(p.cat)) cats.push(p.cat);
+  $("pCat").innerHTML = cats.map(c => `<option>${esc(c)}</option>`).join("");
+  $("pCat").value = p ? p.cat : (cats[0] || "");
+  $("pDesc").value = ed.p.desc || "";
+  $("pFacts").innerHTML = "";
+  (ed.p.facts && ed.p.facts.length ? ed.p.facts : [{ k: "Compound", v: "" }, { k: "Amount", v: "" }]).forEach(f => $("pFacts").appendChild(factRow(f.k, f.v)));
+  $("pFormTxt").value = ed.p.form || ""; $("pTested").value = ed.p.tested || "";
+  $("pFormTxt").placeholder = settings.defaultForm || ""; $("pTested").placeholder = settings.defaultTested || "";
+  $("pFormHint").textContent = "Leave blank to use the default."; $("pTestedHint").textContent = "Leave blank to use the default.";
+  $("pShow").checked = !ed.p.hidden; $("pSold").checked = !!ed.p.soldOut;
+  $("pDelete").hidden = !p; $("pErr").textContent = ""; $("pFile").value = "";
+  drawPhoto(); showIdLine(); openSheet("pSheet");
+}
+$("addProduct").onclick = () => editProduct(null);
+$("pAddFact").onclick = () => { const r = factRow("", ""); $("pFacts").appendChild(r); r.querySelector("input").focus(); };
+["pName", "pSpec"].forEach(i => $(i).addEventListener("input", showIdLine));
+$("pFile").onchange = async () => {
+  const f = $("pFile").files[0]; if (!f) return;
+  try { busy(true, "Shrinking photo…"); ed.newPhoto = await shrinkPhoto(f); drawPhoto(); }
+  catch (e) { toast(e.message, true); }
+  busy(false); $("pFile").value = "";
+};
+$("pNoPhoto").onclick = () => { ed.newPhoto = null; ed.p.photo = "none"; drawPhoto(); };
+$("pSave").onclick = async () => {
+  const name = $("pName").value.trim(), spec = $("pSpec").value.trim(), price = Math.round(parseFloat($("pPrice").value) * 100) / 100;
+  const err = m => { $("pErr").textContent = m; };
+  if (!name) return err("Give the product a name.");
+  if (!Number.isFinite(price) || price < 0) return err("Enter a price.");
+  if (!$("pCat").value) return err("Add a category in Settings first.");
+  const id = idFor();
+  if (!id) return err("The name needs at least one letter or number.");
+  if (ed.isNew && products.some(p => p.id === id)) return err("A product with this name and size already exists. Change one of them.");
+  const facts = [...$("pFacts").querySelectorAll(".r")].map(r => { const [k, v] = r.querySelectorAll("input"); return { k: k.value.trim(), v: v.value.trim() }; }).filter(f => f.k);
+  const d = { ...strip(ed.p), name, spec, price, cat: $("pCat").value, desc: $("pDesc").value.trim(), facts,
+              form: $("pFormTxt").value.trim(), tested: $("pTested").value.trim(), hidden: !$("pShow").checked, soldOut: $("pSold").checked, updated: Date.now() };
+  if (ed.isNew) d.order = Math.max(0, ...products.map(p => +p.order || 0)) + 10;          // new products go to the end of their category
+  const ops = [];
+  if (ed.newPhoto) { d.photo = "fs"; d.imgV = (+ed.p.imgV || 0) + 1; ops.push(["set", doc(db, "storeImages", id), { data: ed.newPhoto, v: d.imgV }]); thumbs[id + "@" + d.imgV] = ed.newPhoto; }
+  else if (d.photo === "none" && !ed.isNew) ops.push(["del", doc(db, "storeImages", id)]);   // photo removed
+  ops.unshift(["set", doc(db, "storeProducts", id), d]);
+  busy(true, "Saving…");
+  try { await commitAll(ops); closeSheet("pSheet"); toast(ed.isNew ? `${name} added to the store.` : "Saved. The store shows it right away."); }
+  catch (e) { err(failMsg(e)); }
+  busy(false);
+};
+$("pDelete").onclick = async () => {
+  const p = ed.p;
+  const lots = coas.filter(c => c.productId === p.id).length;
+  if (!confirm(`Delete ${p.name} ${p.spec} for good?` + (lots ? `\n\nIts ${lots} COA${lots === 1 ? " stays" : "s stay"} in the COA Library.` : "") + "\n\nTip: turning off \"Show on the store\" hides it instead.")) return;
+  busy(true, "Deleting…");
+  try { await commitAll([["del", doc(db, "storeProducts", p.id)], ["del", doc(db, "storeImages", p.id)]]); closeSheet("pSheet"); toast("Deleted."); }
+  catch (e) { toast(failMsg(e), true); }
+  busy(false);
+};
+
+// ---------- COA list ----------
+const coaDate = iso => { if (!iso) return ""; const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); };
+const fileSize = n => n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+function fileText(c){
+  if (!c.file) return '<span class="chip bad">No PDF yet</span>';
+  if (typeof c.file === "object") return `<span class="chip good">PDF ${fileSize(c.file.size || 0)}</span>`;
+  return '<span class="chip good">PDF on site</span>';
+}
+function renderCoas(){
+  const list = [...coas].sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")) || a.lot.localeCompare(b.lot));
+  $("cCount").textContent = `· ${coas.length} lot${coas.length === 1 ? "" : "s"}`;
+  const st = r => r === "fail" ? '<span class="chip bad">Did not pass</span>' : r === "pending" ? '<span class="chip warn">Pending</span>' : '<span class="chip gold">Passed</span>';
+  $("cList").innerHTML = list.length ? list.map(c => `
+    <div class="row">
+      <div class="info" data-coa="${esc(c._id)}">
+        <div class="nm">${esc(c.lot)} ${st(c.result)}</div>
+        <div class="sub">${esc(c.product || "No product")}${c.date ? " · " + esc(coaDate(c.date)) : ""}${c.purity ? " · " + esc(c.purity) + "%" : ""}</div>
+        <div class="sub" style="margin-top:3px">${fileText(c)}</div>
+      </div>
+      <button class="btn sm ghost" type="button" data-coa="${esc(c._id)}">Edit</button>
+    </div>`).join("") : `<div class="empty">No COAs yet. Tap <b>+ Add COA</b>.</div>`;
+}
+$("cList").addEventListener("click", e => { const b = e.target.closest("[data-coa]"); if (b) editCoa(b.dataset.coa); });
+
+// ---------- COA editor ----------
+let ce = null;
+function drawCoaFile(){
+  const f = ce.newPdf ? { size: ce.newPdf.size, name: ce.newPdf.name } : ce.c.file;
+  $("cFileInfo").innerHTML = ce.newPdf ? `New PDF ready to save: <b>${esc(ce.newPdf.name)}</b> (${fileSize(ce.newPdf.size)})`
+    : !f ? "No PDF yet. The store will say the certificate is coming soon."
+    : typeof f === "object" ? `Uploaded PDF (${fileSize(f.size || 0)})` : `PDF stored on the site: ${esc(f)}`;
+  $("cViewPdf").hidden = !f; $("cNoPdf").hidden = !f;
+}
+function editCoa(id){
+  const c = id ? coas.find(x => x._id === id) : null;
+  ce = { isNew: !c, c: c ? JSON.parse(JSON.stringify(c)) : { result: "pass", tests: ["Identity / purity", "Content"], file: "" }, newPdf: null, dropFile: false };
+  $("cTitle").textContent = c ? "Edit COA" : "New COA";
+  $("cLot").value = ce.c.lot || ""; $("cLot").disabled = !!c;
+  $("cLotHint").textContent = c ? "To change a lot number, delete this COA and add it again." : "Exactly as printed on the vial label.";
+  const opts = sortedProducts();
+  $("cProd").innerHTML = `<option value="">(not linked to a product)</option>` + opts.map(p => `<option value="${esc(p.id)}">${esc(prodLabel(p))}${p.hidden ? " (hidden)" : ""}</option>`).join("")
+    + (c && c.productId && !products.some(p => p.id === c.productId) ? `<option value="${esc(c.productId)}">${esc(c.product || c.productId)} (deleted product)</option>` : "");
+  $("cProd").value = ce.c.productId || "";
+  $("cDate").value = ce.c.date || new Date().toISOString().slice(0, 10);
+  $("cResult").value = ce.c.result || "pass";
+  $("cPurity").value = ce.c.purity || ""; $("cContent").value = ce.c.content || "";
+  $("cTests").value = (ce.c.tests || []).join(", ");
+  $("cDelete").hidden = !c; $("cErr").textContent = ""; $("cFile").value = "";
+  drawCoaFile(); openSheet("cSheet");
+}
+$("addCoa").onclick = () => editCoa(null);
+$("cFile").onchange = () => {
+  const f = $("cFile").files[0]; $("cFile").value = ""; if (!f) return;
+  if (!/pdf$/i.test(f.type) && !/\.pdf$/i.test(f.name)) return toast("Pick a PDF file.", true);
+  if (f.size > PDF_MAX) return toast(`That PDF is ${fileSize(f.size)}. The limit is ${fileSize(PDF_MAX)}.`, true);
+  ce.newPdf = f; ce.dropFile = false; drawCoaFile();
+};
+$("cNoPdf").onclick = () => { ce.newPdf = null; ce.dropFile = true; ce.c.file = ""; drawCoaFile(); };
+$("cViewPdf").onclick = async () => {
+  const w = window.open("", "_blank");
+  try {
+    let url;
+    if (ce.newPdf) url = URL.createObjectURL(ce.newPdf);
+    else if (typeof ce.c.file === "object") url = await cloudPdfUrl(ce.c);
+    else url = SITE + "coas/" + encodeURIComponent(ce.c.file);
+    if (w) w.location = url; else location.href = url;
+  } catch (e) { if (w) w.close(); toast("Couldn't open the PDF.", true); }
+};
+async function cloudPdfUrl(c){
+  const parts = await Promise.all(Array.from({ length: c.file.parts }, (_, i) => getDoc(doc(db, "storeCoaFiles", (c.file.key || c._id) + "_" + i))));
+  const bin = atob(parts.map(s => s.data().data).join("")), u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return URL.createObjectURL(new Blob([u8], { type: "application/pdf" }));
+}
+const readB64 = file => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1] || ""); r.onerror = () => no(new Error("Couldn't read that file.")); r.readAsDataURL(file); });
+const oldParts = c => c && c.file && typeof c.file === "object" ? Array.from({ length: c.file.parts }, (_, i) => doc(db, "storeCoaFiles", (c.file.key || c._id) + "_" + i)) : [];
+$("cSave").onclick = async () => {
+  const err = m => { $("cErr").textContent = m; };
+  const lot = $("cLot").value.trim().toUpperCase().replace(/\s+/g, "");      // lot numbers are printed in capitals
+  const id = ce.isNew ? lotId(lot) : ce.c._id;
+  if (!lot || !id) return err("Enter the lot number.");
+  if (ce.isNew && coas.some(c => c._id === id)) return err("That lot is already in the library. Edit it instead.");
+  const pr = $("cPurity").value.trim();
+  if (pr && (!(+pr >= 0) || +pr > 100)) return err("Purity should be a number between 0 and 100.");
+  const prod = products.find(p => p.id === $("cProd").value);
+  const before = coas.find(c => c._id === id);
+  const d = { lot: ce.isNew ? lot : ce.c.lot, productId: $("cProd").value, product: prod ? prodLabel(prod) : ($("cProd").value ? ce.c.product || "" : ""),
+              date: $("cDate").value, result: $("cResult").value, purity: pr, content: $("cContent").value.trim(),
+              tests: $("cTests").value.split(",").map(s => s.trim()).filter(Boolean), file: ce.c.file || "", updated: Date.now() };
+  busy(true, ce.newPdf ? "Uploading PDF…" : "Saving…");
+  try {
+    const ops = [];
+    if (ce.newPdf) {
+      const b64 = await readB64(ce.newPdf);
+      const v = (before && typeof before.file === "object" ? +before.file.v || 0 : 0) + 1, key = id + "-v" + v;
+      const parts = Math.ceil(b64.length / PDF_PART);
+      for (let i = 0; i < parts; i++) ops.push(["set", doc(db, "storeCoaFiles", key + "_" + i), { data: b64.slice(i * PDF_PART, (i + 1) * PDF_PART), i, n: parts }]);
+      d.file = { key, parts, v, size: ce.newPdf.size, name: ce.newPdf.name };
+    }
+    ops.push(["set", doc(db, "storeCoas", id), d]);                         // the COA points at the new file only after every piece is saved
+    if (ce.newPdf || ce.dropFile) oldParts(before).forEach(r => ops.push(["del", r]));
+    await commitAll(ops);
+    closeSheet("cSheet"); toast(ce.isNew ? `Lot ${d.lot} added to the COA Library.` : "Saved.");
+  } catch (e) { err(failMsg(e)); }
+  busy(false);
+};
+$("cDelete").onclick = async () => {
+  if (!confirm(`Delete lot ${ce.c.lot} from the COA Library?\n\nVial QR codes for this lot will show "certificate not found".`)) return;
+  busy(true, "Deleting…");
+  try { await commitAll([["del", doc(db, "storeCoas", ce.c._id)], ...oldParts(coas.find(c => c._id === ce.c._id)).map(r => ["del", r])]); closeSheet("cSheet"); toast("Deleted."); }
+  catch (e) { toast(failMsg(e), true); }
+  busy(false);
+};
+
+// ---------- settings ----------
+let settingsDirty = false, catWork = [];
+$("setForm").addEventListener("input", () => settingsDirty = true);
+function fillSettings(){
+  const s = settings;
+  $("sWa").value = s.whatsapp || ""; $("sShip").value = s.shipping ?? "";
+  const pd = s.payDiscount || {};
+  $("sZelle").value = +((+pd.Zelle || 0) * 100).toFixed(2); $("sCrypto").value = +((+pd.Crypto || 0) * 100).toFixed(2); $("sCard").value = +((+pd.Card || 0) * 100).toFixed(2);
+  $("sForm").value = s.defaultForm || ""; $("sTested").value = s.defaultTested || "";
+  catWork = catsList().map(c => ({ from: c, name: c }));
+  drawCats();
+}
+function drawCats(){
+  $("catRows").innerHTML = catWork.map((c, i) => {
+    const n = c.from ? products.filter(p => p.cat === c.from).length : 0;
+    return `<div class="r"><input type="text" value="${esc(c.name)}" data-ci="${i}" maxlength="40" aria-label="Category name">
+      <button class="icon" type="button" data-cu="${i}" ${i === 0 ? "disabled" : ""} aria-label="Move up">▲</button>
+      <button class="icon" type="button" data-cd="${i}" ${i === catWork.length - 1 ? "disabled" : ""} aria-label="Move down">▼</button>
+      <button class="icon" type="button" data-cx="${i}" ${n ? `disabled title="Move its products first"` : ""} aria-label="Remove">✕</button></div>
+      <div class="cnt">${n} product${n === 1 ? "" : "s"}${n ? "" : " · empty categories don't show on the store"}</div>`;
+  }).join("");
+}
+$("catRows").addEventListener("input", e => { const i = e.target.dataset.ci; if (i !== undefined) catWork[i].name = e.target.value; });
+$("catRows").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const i = +(b.dataset.cu ?? b.dataset.cd ?? b.dataset.cx);
+  if (b.dataset.cx !== undefined) catWork.splice(i, 1);
+  else { const j = b.dataset.cu !== undefined ? i - 1 : i + 1; [catWork[i], catWork[j]] = [catWork[j], catWork[i]]; }
+  settingsDirty = true; drawCats();
+});
+$("addCat").onclick = () => { catWork.push({ from: null, name: "" }); settingsDirty = true; drawCats(); const ins = $("catRows").querySelectorAll("input"); ins[ins.length - 1].focus(); };
+$("setForm").onsubmit = async e => {
+  e.preventDefault();
+  const wa = $("sWa").value.replace(/\D/g, "");
+  if (wa.length < 10) return toast("Enter the full WhatsApp number with country code.", true);
+  const ship = Math.round(parseFloat($("sShip").value) * 100) / 100;
+  if (!Number.isFinite(ship) || ship < 0) return toast("Enter the shipping charge (0 for free).", true);
+  const pct = id => { const v = parseFloat($(id).value || "0"); return Number.isFinite(v) && v >= 0 && v <= 90 ? Math.round(v * 100) / 10000 : NaN; };
+  const pd = { Zelle: pct("sZelle"), Crypto: pct("sCrypto"), Card: pct("sCard") };
+  if (Object.values(pd).some(Number.isNaN)) return toast("Discounts should be between 0 and 90%.", true);
+  const cats = catWork.map(c => ({ ...c, name: c.name.trim() })).filter(c => c.name);
+  if (!cats.length) return toast("Keep at least one category.", true);
+  if (new Set(cats.map(c => c.name.toLowerCase())).size !== cats.length) return toast("Two categories have the same name.", true);
+  const ops = [["set", doc(db, "store", "settings"), { ...settings, imported: true, whatsapp: wa, shipping: ship, payDiscount: pd, categories: cats.map(c => c.name),
+    defaultForm: $("sForm").value.trim(), defaultTested: $("sTested").value.trim(), updated: Date.now() }]];
+  for (const c of cats) if (c.from && c.from !== c.name)                                 // renamed: move its products along
+    products.filter(p => p.cat === c.from).forEach(p => ops.push(["set", doc(db, "storeProducts", p.id), { ...strip(p), cat: c.name, updated: Date.now() }]));
+  busy(true, "Saving…");
+  try { await commitAll(ops); settingsDirty = false; fillSettings(); toast("Settings saved."); }
+  catch (err) { toast(failMsg(err), true); }
+  busy(false);
+};
+</script>
+</body>
+</html>
