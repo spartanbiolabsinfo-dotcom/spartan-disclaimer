@@ -452,7 +452,8 @@
   .gal-slide .ph,.pd .gal .ph{max-width:none;margin:0;border:0;border-radius:0}
   .gal-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:1.5px solid var(--gold);background:rgba(8,8,9,.75);color:var(--gold-hi);font:700 24px/1 Inter,sans-serif;cursor:pointer;display:grid;place-items:center;padding:0 0 3px}
   .gal-nav.prev{left:8px} .gal-nav.next{right:8px}
-  .gal-cap{text-align:center;font-size:13px;color:var(--gold-hi);letter-spacing:.06em;text-transform:uppercase;margin:8px 0 6px;min-height:18px}
+  .gal-cap{text-align:center;font-size:13px;color:var(--gold-hi);letter-spacing:.06em;text-transform:uppercase;margin:8px 0 6px}
+  .gal-cap:empty{margin:4px 0}
   .gal-thumbs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
   .gal-th{width:84px;padding:0;border:1.5px solid var(--line);border-radius:8px;background:rgba(8,8,9,.8);overflow:hidden;cursor:pointer;color:var(--muted)}
   .gal-th.on{border-color:var(--gold);color:var(--gold-hi)}
@@ -885,7 +886,7 @@ function gallery(p){
       <button type="button" class="gal-nav next" data-gstep="1" aria-label="Next photo">›</button>
     </div>
     <div class="gal-cap" id="galCap">${esc(list[0].label || "")}</div>
-    <div class="gal-thumbs">${list.map((e, i) => `<button type="button" class="gal-th ${i ? "" : "on"}" data-gto="${i}" aria-label="Show ${esc(e.label || "photo " + (i + 1))}">${photo(p, "", false, i)}<span>${esc(e.label || "Photo " + (i + 1))}</span></button>`).join("")}</div>
+    <div class="gal-thumbs">${list.map((e, i) => `<button type="button" class="gal-th ${i ? "" : "on"}" data-gto="${i}" aria-label="Show ${esc(e.label || "photo " + (i + 1))}">${photo(p, "", false, i)}${e.label ? `<span>${esc(e.label)}</span>` : ""}</button>`).join("")}</div>
   </div>`;
 }
 function galIndex(){ const t = $("galTrack"); return t ? Math.round(t.scrollLeft / Math.max(1, t.clientWidth)) : 0; }

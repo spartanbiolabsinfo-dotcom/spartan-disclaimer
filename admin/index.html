@@ -110,18 +110,13 @@
   fieldset{border:0;display:grid;gap:8px}
   legend{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:6px}
 
-  /* photo gallery editor */
-  .galed{display:grid;gap:10px}
-  .gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-  .gal-t{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:8px;display:grid;gap:6px}
-  .gal-img{position:relative;aspect-ratio:1/1;border-radius:8px;overflow:hidden;background:#f4f6f9;display:grid;place-items:center}
-  .gal-img img{width:100%;height:100%;object-fit:cover}
-  .gal-img img.no{width:40%;height:auto;opacity:.45}
-  .gal-main{position:absolute;left:6px;top:6px;background:var(--acc,#1f3a5f);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.04em;border-radius:999px;padding:2px 8px}
-  .gal-t input{min-height:38px !important;font-size:14px !important;padding:6px 9px !important}
-  .gal-acts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-  .gal-acts .icon{width:auto;height:34px;font-size:13px}
-  .gal-empty{border:1px dashed var(--line);border-radius:12px;padding:16px;text-align:center;color:var(--muted);font-size:13.5px}
+  /* extra photos: small strip under the main photo */
+  .ph-strip{display:flex;flex-wrap:wrap;gap:8px;margin-top:-4px}
+  .ph-strip:empty{display:none}
+  .ph-mini{position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#f4f6f9;display:grid;place-items:center}
+  .ph-mini img{width:100%;height:100%;object-fit:cover} .ph-mini img.no{width:50%;height:auto}
+  .ph-mini.main{outline:2px solid var(--acc,#1f3a5f);outline-offset:1px}
+  .ph-mini button{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:0;background:rgba(16,24,40,.75);color:#fff;font-size:11px;line-height:20px;padding:0;cursor:pointer}
   /* photo picker */
   .photo{display:flex;gap:14px;align-items:center}
   .photo .pv{width:110px;height:110px;border-radius:12px;border:1px solid var(--line);background:#000;display:grid;place-items:center;overflow:hidden;flex:none}
@@ -274,11 +269,15 @@
   <div class="pane">
     <div class="top"><h3 id="pTitle">Edit product</h3><button class="icon" type="button" data-close aria-label="Close">✕</button></div>
     <form class="body f" id="pForm" autocomplete="off" novalidate>
-      <fieldset class="galed"><legend>Photos <span class="hint">Up to 6. The first one is the main photo on the store. Use ◀ ▶ to change the order.</span></legend>
-        <div class="gal-grid" id="pGal"></div>
-        <label class="btn sm" id="pAddPh" style="display:inline-flex;color:var(--text);font-size:13.5px;justify-self:start">+ Add photos<input type="file" id="pFile" accept="image/*" multiple hidden></label>
-        <datalist id="photoLabels"><option value="Product photo"><option value="Current batch vial"><option value="Current batch COA"></datalist>
-      </fieldset>
+      <div class="photo">
+        <div class="pv" id="pPhoto"></div>
+        <div class="acts">
+          <label class="btn sm" id="pAddPh" style="display:inline-flex;color:var(--text);font-size:13.5px">Upload photos<input type="file" id="pFile" accept="image/*" multiple hidden></label>
+          <button class="btn sm ghost" type="button" id="pNoPhoto">Remove photos</button>
+          <span class="muted" style="font-size:12px">You can pick several at once (up to 6). The first one is the main photo.</span>
+        </div>
+      </div>
+      <div class="ph-strip" id="pGal"></div>
       <label>Product name <input type="text" id="pName" placeholder="e.g. GLP-3 (RT)" maxlength="80"></label>
       <div class="two">
         <label>Size / strength <input type="text" id="pSpec" placeholder="e.g. 30mg" maxlength="40"></label>
@@ -510,8 +509,8 @@ const MAX_PHOTOS = 6;
 const NOPH = `<img class="no" src="../images/helmet-192.png" alt="">`;
 function photosOf(p){
   if (Array.isArray(p.photos)) return p.photos;
-  if (p.photo === "repo") return [{ repo: "images/" + p.id + ".jpg", label: "Product photo" }];
-  if (p.photo === "fs") return [{ k: p.id, v: p.imgV || 0, label: "Product photo" }];
+  if (p.photo === "repo") return [{ repo: "images/" + p.id + ".jpg" }];
+  if (p.photo === "fs") return [{ k: p.id, v: p.imgV || 0 }];
   return [];
 }
 const thumbs = {};                      // storeImages id + version -> data URL
@@ -589,24 +588,13 @@ const strip = p => { const { id, ...d } = p; return d; };
 let ed = null;                          // working copy of the product being edited
 function drawGallery(){
   const g = ed.gal;
-  $("pGal").innerHTML = g.length ? g.map((e, i) => `
-    <div class="gal-t">
-      <div class="gal-img">${entryHtml(e)}${i === 0 ? '<span class="gal-main">Main</span>' : ""}</div>
-      <input type="text" list="photoLabels" data-gl="${i}" value="${esc(e.label || "")}" placeholder="Label (optional)" maxlength="40" aria-label="Label for photo ${i + 1}">
-      <div class="gal-acts">
-        <button class="icon" type="button" data-gm="${i}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="Move left">◀</button>
-        <button class="icon" type="button" data-gm="${i}" data-d="1" ${i === g.length - 1 ? "disabled" : ""} aria-label="Move right">▶</button>
-        <button class="icon" type="button" data-gx="${i}" aria-label="Remove photo ${i + 1}">✕</button>
-      </div>
-    </div>`).join("") : `<div class="gal-empty">No photos yet. The store shows the Spartan helmet until you add one.</div>`;
+  $("pPhoto").innerHTML = entryHtml(g[0]);
+  $("pGal").innerHTML = g.length > 1 ? g.map((e, i) => `<div class="ph-mini ${i ? "" : "main"}">${entryHtml(e)}<button type="button" data-gx="${i}" aria-label="Remove photo ${i + 1}">✕</button></div>`).join("") : "";
+  $("pNoPhoto").hidden = !g.length;
   $("pAddPh").hidden = g.length >= MAX_PHOTOS;
 }
-$("pGal").addEventListener("input", e => { const i = e.target.dataset.gl; if (i !== undefined) ed.gal[+i].label = e.target.value; });
-$("pGal").addEventListener("click", e => {
-  const m = e.target.closest("[data-gm]"), x = e.target.closest("[data-gx]");
-  if (m) { const i = +m.dataset.gm, j = i + +m.dataset.d; [ed.gal[i], ed.gal[j]] = [ed.gal[j], ed.gal[i]]; drawGallery(); }
-  if (x) { ed.gal.splice(+x.dataset.gx, 1); drawGallery(); }
-});
+$("pGal").addEventListener("click", e => { const x = e.target.closest("[data-gx]"); if (x) { ed.gal.splice(+x.dataset.gx, 1); drawGallery(); } });
+$("pNoPhoto").onclick = () => { ed.gal = []; drawGallery(); };
 function factRow(k, v){
   const r = document.createElement("div"); r.className = "r";
   r.innerHTML = `<input type="text" placeholder="Label" maxlength="40" value="${esc(k)}"><input type="text" placeholder="Value" maxlength="160" value="${esc(v)}"><button class="icon" type="button" aria-label="Remove row">✕</button>`;
@@ -640,7 +628,6 @@ function editProduct(id){
 $("addProduct").onclick = () => editProduct(null);
 $("pAddFact").onclick = () => { const r = factRow("", ""); $("pFacts").appendChild(r); r.querySelector("input").focus(); };
 ["pName", "pSpec"].forEach(i => $(i).addEventListener("input", showIdLine));
-const SUGGEST = ["Product photo", "Current batch vial", "Current batch COA"];
 $("pFile").onchange = async () => {
   const files = [...$("pFile").files]; $("pFile").value = ""; if (!files.length) return;
   const room = MAX_PHOTOS - ed.gal.length;
@@ -649,8 +636,7 @@ $("pFile").onchange = async () => {
   for (const f of files.slice(0, Math.max(0, room))) {
     try {
       const data = await shrinkPhoto(f);
-      const label = SUGGEST.find(l => !ed.gal.some(e => e.label === l)) || "";
-      ed.gal.push({ data, label });
+      ed.gal.push({ data, label: "" });
     } catch (e) { toast(e.message, true); }
   }
   busy(false); drawGallery();
