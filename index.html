@@ -375,6 +375,71 @@
     .gbtn{padding:12px;font-size:13px}
   }
   @media (max-width:360px){ .grid{grid-template-columns:1fr} }
+
+  /* ===== Home page ===== */
+  nav.tabs a{min-width:0;flex:0 1 auto;font-size:18px;padding:10px 12px 9px}
+  nav.tabs .tdiv{margin:0 8px}
+  @media (max-width:520px){ nav.tabs a{font-size:15px;min-width:0;padding:9px 6px 8px;letter-spacing:.01em} nav.tabs .tdiv{margin:0 3px;height:20px} }
+  @media (max-width:350px){ nav.tabs a{font-size:13.5px;padding:9px 4px 8px} }
+  .home-intro{text-align:center;margin:22px 0 8px}
+  .home-intro .lead{font:600 19px/1.35 Cinzel,Georgia,serif;color:#f3ecdc;letter-spacing:.02em;text-shadow:0 2px 8px #000;margin-bottom:16px}
+  .cta.home-shop{margin:0 auto;max-width:340px;font-size:17px;padding:16px 22px}
+  .feat-grid{display:grid;gap:14px}
+  @media (min-width:760px){ .feat-grid{grid-template-columns:1fr 1fr} .feat-grid.one{grid-template-columns:1fr} }
+  .feat{display:grid;grid-template-columns:42% 1fr;background:rgba(12,12,13,.82);border:1.5px solid rgba(212,175,55,.45);border-radius:12px;overflow:hidden;box-shadow:0 0 18px rgba(212,175,55,.12)}
+  .feat-grid.one .feat{grid-template-columns:minmax(0,320px) 1fr}
+  .feat-ph{display:block;background:#0f0f10;line-height:0;position:relative;min-height:220px}
+  .feat-ph .ph{position:absolute;inset:0;aspect-ratio:auto;border-radius:0;margin:0}
+  .feat-ph .ph img{width:100%;height:100%;object-fit:cover}
+  .feat-body{padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+  .feat-cat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi)}
+  .feat-name{font:700 18px/1.2 Inter,sans-serif;color:#f3ecdc;text-decoration:none}
+  .feat-name span{font-weight:500;color:var(--muted);font-size:15px}
+  .feat-desc{font-size:13px;color:#cfc8b8;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .feat-price{display:flex;align-items:center;gap:8px;font:700 20px Inter,sans-serif;color:var(--gold-hi);margin-top:auto}
+  .feat-price .badge,.feat-price .soldout{font-size:11px;font-weight:600}
+  .feat-price .badge{color:#111;background:var(--gold);border-radius:999px;padding:2px 8px}
+  .feat-price .soldout{color:#ddd;border:1px solid #666;border-radius:999px;padding:2px 8px}
+  .feat-price .soldout.soon{color:var(--gold-hi);border-color:rgba(212,175,55,.6)}
+  .feat-acts{display:flex;gap:8px;flex-wrap:wrap}
+  .feat-acts .cta{flex:1 1 110px;min-width:0;max-width:none;padding:11px 10px;font-size:14px}
+  button.cta{cursor:pointer;font-family:Inter,system-ui,sans-serif}
+  @media (max-width:430px){ .feat,.feat-grid.one .feat{grid-template-columns:1fr} .feat-ph{min-height:0} .feat-ph .ph{position:static;aspect-ratio:4/3} }
+  .coa-hero{margin:30px 0 8px;padding:26px 18px 22px;text-align:center;border-radius:14px;border:2px solid var(--gold);
+    background:radial-gradient(120% 90% at 50% 0%,rgba(212,175,55,.22),rgba(12,12,13,.9) 60%);box-shadow:0 0 30px rgba(212,175,55,.25)}
+  .coa-hero-ic{width:58px;height:58px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#f0d487,#c39a38);color:#15110a;box-shadow:0 0 18px rgba(212,175,55,.45)}
+  .coa-hero-ic svg{width:30px;height:30px}
+  .coa-hero h2{display:block;background:none;border:none;padding:0;box-shadow:none;font:700 30px Cinzel,Georgia,serif;letter-spacing:.06em;color:#f8f1df;margin:0 0 8px;text-shadow:0 2px 10px #000}
+  .coa-hero p{color:#e2dccd;font-size:14.5px;max-width:520px;margin:0 auto 16px}
+  .coa-hero-form{display:grid;grid-template-columns:1fr auto;gap:8px;max-width:520px;margin:0 auto}
+  .coa-hero-form .coa-search{margin:0}
+  .coa-hero-form input{padding:0 14px 0 44px !important;border-radius:12px;border:1.5px solid var(--gold);background:rgba(10,10,11,.92);color:#fff;width:100%;min-height:52px;font-size:16px;letter-spacing:.04em}
+  .coa-hero-form .cta{max-width:none;min-width:0;padding:0 20px;min-height:52px}
+  @media (max-width:430px){ .coa-hero-form{grid-template-columns:1fr} .coa-hero h2{font-size:26px} }
+  .coa-hero-all{display:inline-block;margin-top:14px;color:var(--gold-hi);font-weight:600;font-size:14px}
+  .why{display:grid;gap:10px;margin:22px 0 4px}
+  @media (min-width:640px){ .why{grid-template-columns:repeat(3,1fr)} }
+  .why > div{display:grid;align-content:start;grid-template-columns:auto 1fr;column-gap:12px;row-gap:2px;align-items:start;padding:14px;border-radius:12px;background:rgba(12,12,13,.82);border:1px solid rgba(212,175,55,.3)}
+  .why svg{grid-row:span 2;width:28px;height:28px;color:var(--gold-hi);margin-top:2px}
+  .why b{color:#f3ecdc;font-size:15px}
+  .why span{color:#cfc8b8;font-size:13px}
+  .home-contact{text-align:center}
+  .home-contact .note{margin-bottom:12px}
+  .cta.home-wa{margin:0 auto;max-width:340px}
+
+  /* ===== Desktop: use the width, warmer sides ===== */
+  @media (min-width:980px){
+    /* the poster fills the whole screen (no narrow strip with dark bars), darkened so cards stay readable */
+    .bgart::before{display:none}
+    .bgart::after{background:radial-gradient(75% 85% at 50% 35%,rgba(11,11,12,.35),rgba(11,11,12,.82)),url("images/bg-temple.jpg") center 30% / cover no-repeat}
+    .wrap{max-width:1100px;padding-left:28px;padding-right:28px}
+    nav.tabs{margin-left:-28px;margin-right:-28px}
+    .grid{grid-template-columns:repeat(auto-fit,minmax(230px,300px));justify-content:center;gap:16px}
+    #panel-product,#panel-order,#panel-coa{max-width:760px;margin-left:auto;margin-right:auto}
+    #panel-catalog > .note{text-align:center}
+    .coa-hero{max-width:900px;margin-left:auto;margin-right:auto;padding:34px 28px 28px}
+    .feat-grid,.why,.home-contact{max-width:1000px;margin-left:auto;margin-right:auto}
+  }
 </style>
 </head>
 <body class="locked">
@@ -412,33 +477,66 @@
   <header class="site over">
     <h1 class="brand"><img src="images/logo.png" alt="Spartan Biolabs" width="640" height="647"></h1>
     <div class="brand-tag">Precision. Verification. Research.</div>
-    <div class="hero-cta">
-      <a href="#coa" class="cta gold" id="coaHeadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 16.5h5"/></svg><span>COA Library</span></a>
-    </div>
-    <div class="social-line"><a href="https://www.instagram.com/Spartan.bio.labs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg><span>Instagram</span></a><a href="https://www.tiktok.com/@spartanblabs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on TikTok"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.3 2.3 1.7 3.9 4 4.1v3.1c-1.5.1-2.9-.4-4-1.2v6.3c0 3.4-2.6 5.7-5.8 5.7-3.1 0-5.6-2.5-5.6-5.6 0-3.5 3.1-6 6.6-5.4v3.3c-1.6-.4-3.3.7-3.3 2.2 0 1.3 1 2.3 2.3 2.3 1.4 0 2.4-1 2.4-2.6V3h3.4z"/></svg><span>TikTok</span></a><a href="https://linktr.ee/spartanbiolabs.info" target="_blank" rel="noopener" aria-label="All Spartan Biolabs links on Linktree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 13.5V21"/><path d="M12 3v7"/><path d="M5.5 5.5 12 10l6.5-4.5"/><path d="M4 11h16"/><path d="M5.5 16.5 12 12l6.5 4.5"/></svg><span>Linktree</span></a></div>
   </header>
 
   <nav class="tabs">
-    <a href="#catalog" data-tab="catalog" class="active">Catalog</a>
+    <a href="#home" data-tab="home" class="active">Home</a>
+    <span class="tdiv" aria-hidden="true"></span>
+    <a href="#catalog" data-tab="catalog">Shop</a>
+    <span class="tdiv" aria-hidden="true"></span>
+    <a href="#coa" data-tab="coa">COA Library</a>
     <span class="tdiv" aria-hidden="true"></span>
     <a href="#order" data-tab="order" id="orderTab">Order</a>
   </nav>
 
-  <!-- ===== CATALOG ===== -->
-  <section class="panel active" id="panel-catalog">
+  <!-- ===== HOME ===== -->
+  <section class="panel active" id="panel-home">
+    <div class="home-intro">
+      <p class="lead">Research peptides, third-party tested lot by lot.</p>
+      <a href="#catalog" class="cta gold home-shop"><span>Shop the catalog</span><span aria-hidden="true">→</span></a>
+    </div>
+
+    <div id="homeFeatured"></div>
+
+    <section class="coa-hero" aria-labelledby="coaHeroT">
+      <div class="coa-hero-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 16.5h5"/></svg></div>
+      <h2 id="coaHeroT">COA Library</h2>
+      <p>Every peptide lot is third-party tested before it ships. Enter the lot number printed on your vial label to see its certificate of analysis.</p>
+      <form class="coa-hero-form" id="homeCoa" autocomplete="off">
+        <div class="coa-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input id="homeLot" type="search" spellcheck="false" autocapitalize="characters" placeholder="Lot number, e.g. RT30-08-26" aria-label="Lot number"></div>
+        <button type="submit" class="cta gold">Find COA</button>
+      </form>
+      <a href="#coa" class="coa-hero-all">Browse all certificates<span id="homeCoaCount"></span> →</a>
+    </section>
+
+    <div class="why">
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6.5L5 18a2 2 0 0 0 1.7 3h10.6A2 2 0 0 0 19 18l-5-8.5V3"/><path d="M7.5 15h9"/></svg><b>Third-party tested</b><span>Every peptide lot is tested by an independent lab before it ships.</span></div>
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="m9 14 2 2 4-4"/></svg><b>COA in every box</b><span>The certificate for your lot is included with each order.</span></div>
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg><b>Flat-rate UPS shipping</b><span><span class="ship-amt">$25</span> per order, tracking sent by WhatsApp.</span></div>
+    </div>
+
+    <section class="home-contact">
+      <h2 class="sect">Questions?</h2>
+      <p class="note">Message us on WhatsApp for orders, lot numbers or anything else.</p>
+      <a class="cta wa-link home-wa" href="https://wa.me/12089571737" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.7 7.4L3.5 20.5l1.4-4.1A8.5 8.5 0 1 1 20.5 11.8z"/><path d="M9 8.6c.2-.4.5-.4.8-.4h.4c.2 0 .4 0 .5.4l.6 1.4c.1.2 0 .4-.1.6l-.5.6c-.1.1-.1.3 0 .5.6 1 1.4 1.8 2.4 2.3.2.1.4.1.5 0l.6-.7c.2-.2.4-.2.6-.1l1.4.7c.2.1.3.3.3.5v.4c0 .5-.3 1-.8 1.2-.6.2-1.4.3-2.6-.2-1.6-.7-3-2.1-3.8-3.6-.5-1-.6-1.8-.4-2.6z" fill="currentColor" stroke="none"/></svg><span>WhatsApp <span class="wa-num">+1 (208) 957-1737</span></span></a>
+    </section>
+  </section>
+
+  <!-- ===== CATALOG (Shop) ===== -->
+  <section class="panel" id="panel-catalog">
     <p class="note" style="margin-top:14px">Every peptide lot is third-party tested. COA included with each order. Tap any product for details.</p>
     <div id="catalog"></div>
   </section>
 
   <!-- ===== PRODUCT PAGE ===== -->
   <section class="panel" id="panel-product">
-    <a href="#catalog" class="back">← Back to catalog</a>
+    <a href="#catalog" class="back">← Back to shop</a>
     <div id="productView"></div>
   </section>
 
   <!-- ===== COA LOOKUP ===== -->
   <section class="panel" id="panel-coa">
-    <a href="#catalog" class="back">← Back to catalog</a>
+    <a href="#home" class="back">← Home</a>
     <h2 class="step"><span class="n">✓</span>COA Library</h2>
     <p class="note">Every peptide lot is third-party tested before it ships. Enter the lot number printed on your vial label to see its certificate of analysis.</p>
     <div class="coa-search">
@@ -704,6 +802,47 @@ function renderCatalog(){
   }).join("");
 }
 
+// ----- Home page -----
+function renderHome(){
+  const feat = PRODUCTS.filter(p => p.featured).slice(0, 2);
+  $("homeFeatured").innerHTML = !feat.length ? "" : `<h2 class="sect">Featured</h2><div class="feat-grid ${feat.length === 1 ? "one" : ""}">` + feat.map(p => `
+    <article class="feat">
+      <a class="feat-ph" href="#p/${p.id}">${photo(p, "", true)}</a>
+      <div class="feat-body">
+        <div class="feat-cat">${esc(p.cat)}</div>
+        <a class="feat-name" href="#p/${p.id}">${esc(p.name)} <span>${esc(p.spec)}</span></a>
+        <p class="feat-desc">${esc(p.desc)}</p>
+        <div class="feat-price">${money(p.price)}${p.soon ? '<span class="soldout soon">Coming soon</span>' : p.soldOut ? '<span class="soldout">Sold out</span>' : qty[p.id] ? `<span class="badge">${qty[p.id]} in order</span>` : ""}</div>
+        <div class="feat-acts">
+          <a class="cta" href="#p/${p.id}">Details</a>
+          ${p.soldOut || p.soon ? "" : `<button type="button" class="cta gold" data-feat-add="${esc(p.id)}">Add to order</button>`}
+        </div>
+      </div>
+    </article>`).join("") + `</div>`;
+  document.querySelectorAll(".ship-amt").forEach(e => e.textContent = money(SHIPPING));
+  loadCoas().then(renderHomeCoa);
+}
+function renderHomeCoa(){
+  const n = (coaList || []).length;
+  $("homeCoaCount").textContent = n ? ` (${n} verified lot${n === 1 ? "" : "s"})` : "";
+}
+$("homeFeatured").addEventListener("click", e => {
+  const b = e.target.closest("[data-feat-add]"); if (!b) return;
+  const id = b.dataset.featAdd; if (!byId[id]) return;
+  qty[id] = Math.min(99, (qty[id] || 0) + 1); refreshAll();
+  const nb = document.querySelector(`[data-feat-add="${CSS.escape(id)}"]`);
+  if (nb) { nb.textContent = "Added ✓"; setTimeout(() => { if (nb.isConnected) nb.textContent = "Add to order"; }, 1200); }
+});
+$("homeCoa").addEventListener("submit", async e => {
+  e.preventDefault();
+  const q = $("homeLot").value.trim();
+  if (!q) { location.hash = "#coa"; return; }
+  await loadCoas();
+  const hit = (coaList || []).find(c => coaNorm(c.lot) === coaNorm(q));
+  if (hit) { location.hash = "#coa/" + encodeURIComponent(hit.lot); return; }
+  $("coaQ").value = q; location.hash = "#coa";
+});
+
 // ----- Product page -----
 function renderProduct(id){
   const p = byId[id];
@@ -797,11 +936,11 @@ function refreshAll(){
   const c = calc();
   $("orderTab").textContent = c.count ? `Order (${c.count})` : "Order";
   $("cartBtn").textContent = `Review Order · ${c.count} item${c.count === 1 ? "" : "s"} · ${money(c.subtotal)}`;
-  renderCatalog(); renderOrderList(); renderSummary(); updateBars();
+  renderCatalog(); renderHome(); renderOrderList(); renderSummary(); updateBars();
 }
 
-// ----- Routing: #catalog, #coa, #coa/<lot>, #order, #p/<id> -----
-let view = "catalog", routedOnce = false;
+// ----- Routing: #home (default), #catalog (Shop), #coa, #coa/<lot>, #order, #p/<id> -----
+let view = "home", routedOnce = false;
 function route(){
   const h = location.hash.replace(/^#/, "");
   const prevView = view;
@@ -811,12 +950,13 @@ function route(){
   else if (h === "coa" || h.startsWith("coa/")) {
     view = "coa";
     loadCoas().then(renderCoaResults); renderCoaResults();
-    if (h.startsWith("coa/")) { const lot = decodeURIComponent(h.slice(4)); if (!routedOnce) { coaFromScan = true; try { history.replaceState(null, "", "#catalog"); history.pushState(null, "", "#coa/" + h.slice(4)); } catch (e) {} } openCoa(lot); }
+    if (h.startsWith("coa/")) { const lot = decodeURIComponent(h.slice(4)); if (!routedOnce) { coaFromScan = true; try { history.replaceState(null, "", "#home"); history.pushState(null, "", "#coa/" + h.slice(4)); } catch (e) {} } openCoa(lot); }
   }
-  else view = "catalog";
+  else if (h === "catalog" || h === "shop") view = "catalog";
+  else { view = "home"; loadCoas().then(renderHomeCoa); }
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + view));
-  document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === (view === "order" ? "order" : view === "coa" ? "" : "catalog")));
-  $("coaHeadBtn").classList.toggle("on", view === "coa");
+  const tabFor = { home: "home", catalog: "catalog", product: "catalog", coa: "coa", order: "order" }[view];
+  document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === tabFor));
   updateBars();
   if (!(view === "coa" && prevView === "coa")) window.scrollTo(0, 0);
   routedOnce = true;
@@ -1312,7 +1452,7 @@ function normProduct(d){
   const facts = {}; (Array.isArray(d.facts) ? d.facts : []).forEach(x => { if (x && x.k) facts[x.k] = x.v || ""; });
   const p = { id: d.id, cat: d.cat || "", name: d.name || "", spec: d.spec || "", price: +d.price || 0, desc: d.desc || "", facts,
               photo: d.photo || "repo", imgV: d.imgV || 0,
-              soldOut: d.status ? d.status === "soldout" : !!d.soldOut, soon: d.status === "soon" };
+              soldOut: d.status ? d.status === "soldout" : !!d.soldOut, soon: d.status === "soon", featured: !!d.featured };
   if (d.form) p.form = d.form; if (d.tested) p.tested = d.tested;
   return p;
 }

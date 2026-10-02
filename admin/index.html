@@ -7,14 +7,15 @@
 <title>Spartan Admin</title>
 <link rel="icon" type="image/png" sizes="192x192" href="../images/helmet-192.png">
 <link rel="apple-touch-icon" href="../images/helmet-512.png">
-<meta name="theme-color" content="#0b0b0c">
+<meta name="theme-color" content="#f4f6f9">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0b0b0c; --panel:#151517; --panel2:#1c1c1f; --line:#2c2c31; --text:#ece8df; --muted:#9a968d;
-    --gold:#D4AF37; --gold-hi:#e3c574; --good:#7fbf7f; --warn:#e0a458; --bad:#e07a6a;
+    /* Light "lab white" workspace: navy for actions, Spartan gold kept for the brand */
+    --bg:#f4f6f9; --panel:#ffffff; --panel2:#ffffff; --line:#dde3eb; --text:#18202e; --muted:#5f6b7d;
+    --gold:#b8912f; --gold-hi:#1f3a5f; --acc:#1f3a5f; --acc2:#2c5282; --good:#1e7a46; --warn:#a35c0b; --bad:#b42318;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{background:var(--bg)}
@@ -138,6 +139,28 @@
   .toast.err{border-color:rgba(224,122,106,.7)}
   .busy{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.55);display:grid;place-items:center;color:var(--gold-hi);font-weight:600}
   .busy span{background:#151517;border:1px solid var(--line);padding:14px 20px;border-radius:12px}
+
+  /* ===== Light workspace theme ===== */
+  header{background:rgba(255,255,255,.96);box-shadow:0 1px 0 var(--line)}
+  .brand{color:var(--acc)} .brand small{color:var(--muted)}
+  .cat-h{color:var(--muted)}
+  .btn.gold,.tabs button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+  .btn.gold:hover{background:var(--acc2);border-color:var(--acc2)}
+  .tabs button{background:#fff}
+  .btn.ghost{background:transparent} .btn.danger{border-color:rgba(180,35,24,.35)}
+  input[type=text],input[type=number],input[type=tel],input[type=date],select,textarea{background:#fff;color:var(--text)}
+  input:focus,select:focus,textarea:focus{outline:2px solid rgba(31,58,95,.25);border-color:var(--acc)}
+  .row,.tog{box-shadow:0 1px 2px rgba(16,24,40,.05)}
+  .row .th,.photo .pv{background:#f4f6f9}
+  .chip.gold{border-color:rgba(184,145,47,.55);color:#7c5f12;background:#fbf5e6}
+  .chip.good{background:#e5f3ea;border-color:transparent} .chip.warn{background:#fdf0dc;border-color:transparent} .chip.bad{background:#fde8e6;border-color:transparent}
+  .banner{border-color:rgba(184,145,47,.45);background:#fbf5e6} .banner b{color:#7c5f12}
+  .tog input{accent-color:var(--acc)}
+  .sheet{background:rgba(16,24,40,.45)} .sheet .pane{background:var(--bg)}
+  .sheet .top,.sheet .foot{background:rgba(255,255,255,.97)}
+  .toast{background:#18202e;color:#fff;border-color:#18202e} .toast.err{background:#7a1a12;border-color:#7a1a12}
+  .busy{background:rgba(16,24,40,.35);color:var(--acc)} .busy span{background:#fff}
+  .center h1{color:var(--acc)}
 </style>
 </head>
 <body>
@@ -263,6 +286,7 @@
       <label>Verification <span class="hint" id="pTestedHint"></span><input type="text" id="pTested" maxlength="120"></label>
       <div class="toggles">
         <label class="tog"><input type="checkbox" id="pShow"><span>Show on the store<small>Turn off to hide it without deleting it.</small></span></label>
+        <label class="tog"><input type="checkbox" id="pFeat"><span>Feature on the home page<small>Up to 2 products show as Featured on the store's home page.</small></span></label>
         <label>Availability <select id="pStatus"><option value="available">Available</option><option value="soldout">Sold out</option><option value="soon">Coming soon</option></select>
           <span class="hint">Sold out and Coming soon stay listed on the store but can't be added to an order.</span></label>
       </div>
@@ -519,7 +543,7 @@ function renderProducts(){
       <div class="th">${photoHtml(p)}</div>
       <div class="info" data-edit="${esc(p.id)}">
         <div class="nm">${esc(p.name)} <span class="muted">${esc(p.spec)}</span></div>
-        <div class="sub">${money(p.price)}${p.hidden ? '<span class="chip">Hidden</span>' : ""}${statusOf(p) === "soldout" ? '<span class="chip warn">Sold out</span>' : statusOf(p) === "soon" ? '<span class="chip gold">Coming soon</span>' : ""}</div>
+        <div class="sub">${money(p.price)}${p.featured ? '<span class="chip gold">Featured</span>' : ""}${p.hidden ? '<span class="chip">Hidden</span>' : ""}${statusOf(p) === "soldout" ? '<span class="chip warn">Sold out</span>' : statusOf(p) === "soon" ? '<span class="chip gold">Coming soon</span>' : ""}</div>
       </div>
       <div class="moves">
         <button class="icon" type="button" data-move="${esc(p.id)}" data-d="-1" aria-label="Move up" ${i === 0 ? "disabled" : ""}>▲</button>
@@ -576,7 +600,7 @@ function editProduct(id){
   $("pFormTxt").value = ed.p.form || ""; $("pTested").value = ed.p.tested || "";
   $("pFormTxt").placeholder = settings.defaultForm || ""; $("pTested").placeholder = settings.defaultTested || "";
   $("pFormHint").textContent = "Leave blank to use the default."; $("pTestedHint").textContent = "Leave blank to use the default.";
-  $("pShow").checked = !ed.p.hidden; $("pStatus").value = statusOf(ed.p);
+  $("pShow").checked = !ed.p.hidden; $("pStatus").value = statusOf(ed.p); $("pFeat").checked = !!ed.p.featured;
   $("pDelete").hidden = !p; $("pErr").textContent = ""; $("pFile").value = "";
   drawPhoto(); showIdLine(); openSheet("pSheet");
 }
@@ -598,10 +622,12 @@ $("pSave").onclick = async () => {
   if (!$("pCat").value) return err("Add a category in Settings first.");
   const id = idFor();
   if (!id) return err("The name needs at least one letter or number.");
+  const others = products.filter(p => p.featured && p.id !== id);
+  if ($("pFeat").checked && others.length >= 2) return err(`Only 2 products can be featured. Turn off ${others.map(p => p.name + " " + p.spec).join(" or ")} first.`);
   if (ed.isNew && products.some(p => p.id === id)) return err("A product with this name and size already exists. Change one of them.");
   const facts = [...$("pFacts").querySelectorAll(".r")].map(r => { const [k, v] = r.querySelectorAll("input"); return { k: k.value.trim(), v: v.value.trim() }; }).filter(f => f.k);
   const d = { ...strip(ed.p), name, spec, price, cat: $("pCat").value, desc: $("pDesc").value.trim(), facts,
-              form: $("pFormTxt").value.trim(), tested: $("pTested").value.trim(), hidden: !$("pShow").checked, status: $("pStatus").value, soldOut: $("pStatus").value === "soldout", updated: Date.now() };
+              form: $("pFormTxt").value.trim(), tested: $("pTested").value.trim(), hidden: !$("pShow").checked, featured: $("pFeat").checked, status: $("pStatus").value, soldOut: $("pStatus").value === "soldout", updated: Date.now() };
   if (ed.isNew) d.order = Math.max(0, ...products.map(p => +p.order || 0)) + 10;          // new products go to the end of their category
   const ops = [];
   if (ed.newPhoto) { d.photo = "fs"; d.imgV = (+ed.p.imgV || 0) + 1; ops.push(["set", doc(db, "storeImages", id), { data: ed.newPhoto, v: d.imgV }]); thumbs[id + "@" + d.imgV] = ed.newPhoto; }
