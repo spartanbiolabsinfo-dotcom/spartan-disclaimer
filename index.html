@@ -96,6 +96,7 @@
   .card .cp{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
   .card .price{color:var(--gold-hi);font-weight:600}
   .card .soldout{font-size:11px;color:#ddd;border:1px solid #666;border-radius:999px;padding:2px 8px;background:rgba(0,0,0,.5)}
+  .card .soldout.soon{color:var(--gold-hi);border-color:rgba(212,175,55,.6)}
   .addbtn:disabled{opacity:.55;cursor:not-allowed}
   .card .badge{font-size:11px;color:#111;background:var(--gold);border-radius:999px;padding:2px 8px}
   .card .more{font-size:12px;color:var(--gold-hi)}
@@ -643,7 +644,7 @@ let byId = {}, qty = {}, restoredQ = {};
 function indexCatalog(){
   byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
   const next = {};
-  for (const p of PRODUCTS) next[p.id] = p.soldOut ? 0 : (p.id in qty ? qty[p.id] : Math.max(0, Math.min(99, restoredQ[p.id] | 0)));
+  for (const p of PRODUCTS) next[p.id] = p.soldOut || p.soon ? 0 : (p.id in qty ? qty[p.id] : Math.max(0, Math.min(99, restoredQ[p.id] | 0)));
   qty = next;
 }
 // Cart survives a refresh: saved on this device for 7 days, cleared once the order is sent.
@@ -698,7 +699,7 @@ function renderCatalog(){
         <div class="cn">${esc(p.name)}</div>
         <div class="cs">${esc(p.spec)}</div>
         <div class="cd">${esc(p.desc)}</div>
-        <div class="cp"><span class="price">${money(p.price)}</span>${p.soldOut ? `<span class="soldout">Sold out</span>` : qty[p.id] ? `<span class="badge">${qty[p.id]} in order</span>` : `<span class="more">View →</span>`}</div>
+        <div class="cp"><span class="price">${money(p.price)}</span>${p.soon ? `<span class="soldout soon">Coming soon</span>` : p.soldOut ? `<span class="soldout">Sold out</span>` : qty[p.id] ? `<span class="badge">${qty[p.id]} in order</span>` : `<span class="more">View →</span>`}</div>
       </a>`).join("") + `</div>`;
   }).join("");
 }
@@ -717,7 +718,7 @@ function renderProduct(id){
       <div class="bigprice">${money(p.price)}</div>
       <p class="desc">${esc(p.desc)}</p>
       <div class="facts">${Object.entries(facts).map(([k,v]) => `<div><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join("")}</div>
-      ${p.soldOut ? `<div class="addrow"><button class="addbtn" disabled>Sold out</button></div>` : `<div class="addrow">
+      ${p.soldOut || p.soon ? `<div class="addrow"><button class="addbtn" disabled>${p.soon ? "Coming soon" : "Sold out"}</button></div>` : `<div class="addrow">
         <div class="qty">
           <button data-step="-1" aria-label="Remove one">−</button>
           <span id="pdQty">${qty[p.id]}</span>
@@ -729,7 +730,7 @@ function renderProduct(id){
       <div class="ruo-note">Research use only · Not for human or veterinary use</div>
     </div>`;
   fillProductLots(p);
-  if (p.soldOut) return;
+  if (p.soldOut || p.soon) return;
   let local = Math.max(qty[p.id], 1);
   $("pdQty").textContent = local;
   $("productView").querySelectorAll("[data-step]").forEach(b => b.onclick = () => {
@@ -1310,7 +1311,8 @@ window.storeCloudReady = () => cloudQ.splice(0).forEach(f => f(window.StoreCloud
 function normProduct(d){
   const facts = {}; (Array.isArray(d.facts) ? d.facts : []).forEach(x => { if (x && x.k) facts[x.k] = x.v || ""; });
   const p = { id: d.id, cat: d.cat || "", name: d.name || "", spec: d.spec || "", price: +d.price || 0, desc: d.desc || "", facts,
-              photo: d.photo || "repo", imgV: d.imgV || 0, soldOut: !!d.soldOut };
+              photo: d.photo || "repo", imgV: d.imgV || 0,
+              soldOut: d.status ? d.status === "soldout" : !!d.soldOut, soon: d.status === "soon" };
   if (d.form) p.form = d.form; if (d.tested) p.tested = d.tested;
   return p;
 }

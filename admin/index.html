@@ -30,11 +30,13 @@
   .hd{display:flex;align-items:center;gap:10px;padding:10px 0}
   .hd img{width:34px;height:34px}
   .brand{font-family:Cinzel,serif;font-weight:700;color:var(--gold);letter-spacing:.14em;font-size:16px;line-height:1.1}
-  .brand{flex:1;min-width:0}
+  .brand{flex:1;min-width:0;overflow:hidden;white-space:nowrap}
+  .tabs .sm{display:none}
+  @media (max-width:420px){ .hd .brand{visibility:hidden} .tabs .lg{display:none} .tabs .sm{display:inline} }
   .brand small{display:block;font-family:Inter,sans-serif;letter-spacing:.02em;color:var(--muted);font-weight:500;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .hd .sp{flex:1}
   .tabs{display:flex;gap:6px;padding:0 0 10px}
-  .tabs button{flex:1;min-height:42px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:14px}
+  .tabs button{flex:1;min-width:0;padding:0 4px;min-height:42px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:14px}
   .tabs button.on{border-color:var(--gold);color:#111;background:linear-gradient(180deg,#e9cd76,#c9a23a)}
 
   /* buttons */
@@ -158,13 +160,15 @@
       <div class="hd">
         <img src="../images/helmet-192.png" alt="">
         <div class="brand">ADMIN<small id="who"></small></div>
+        <a class="btn sm ghost nw" href="ops/">Ops</a>
         <a class="btn sm ghost nw" href="../#catalog" target="_blank" rel="noopener">Store ↗</a>
         <button class="btn sm ghost nw" id="signOutBtn" type="button">Sign out</button>
       </div>
       <nav class="tabs" role="tablist">
         <button type="button" data-tab="products" class="on">Products</button>
-        <button type="button" data-tab="coas">COA Library</button>
+        <button type="button" data-tab="coas"><span class="lg">COA Library</span><span class="sm">COAs</span></button>
         <button type="button" data-tab="settings">Settings</button>
+        <button type="button" data-tab="team">Team</button>
       </nav>
     </div>
   </header>
@@ -186,6 +190,20 @@
       <div class="bar"><h2>COA Library <span class="muted" id="cCount"></span></h2><button class="btn gold" id="addCoa" type="button">+ Add COA</button></div>
       <p class="muted" style="margin:-6px 0 14px">Each lot shows up in the store's COA Library and on its product's page. Vial QR codes link to <b>…/#coa/LOT-NUMBER</b>.</p>
       <div id="cList"></div>
+    </section>
+
+    <section id="tab-team" hidden>
+      <div class="bar"><h2>Team <span class="muted" id="tCount"></span></h2></div>
+      <p class="muted" style="margin:-6px 0 14px"><b>Admin:</b> everything here plus all of Ops, and can add or remove people.<br><b>Sales rep:</b> Ops only: makes invoices, confirms payment, packs and ships orders, adds tracking. Can't see Supply or Inventory, change payment details, delete orders, or edit the store.</p>
+      <form class="f" id="tForm" autocomplete="off" style="margin-bottom:18px">
+        <div class="two" style="grid-template-columns:1.6fr 1fr">
+          <label>Gmail address <input type="text" id="tEmail" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="name@gmail.com"></label>
+          <label>Tier <select id="tRole"><option value="rep">Sales rep</option><option value="admin">Admin</option></select></label>
+        </div>
+        <button class="btn gold" type="submit">Add person</button>
+      </form>
+      <div id="tList"></div>
+      <p class="muted" style="margin-top:12px">They sign in with that Google account at this same Admin link. Sales reps land straight in Ops.</p>
     </section>
 
     <section id="tab-settings" hidden>
@@ -245,7 +263,8 @@
       <label>Verification <span class="hint" id="pTestedHint"></span><input type="text" id="pTested" maxlength="120"></label>
       <div class="toggles">
         <label class="tog"><input type="checkbox" id="pShow"><span>Show on the store<small>Turn off to hide it without deleting it.</small></span></label>
-        <label class="tog"><input type="checkbox" id="pSold"><span>Sold out<small>Still listed, but can't be added to an order.</small></span></label>
+        <label>Availability <select id="pStatus"><option value="available">Available</option><option value="soldout">Sold out</option><option value="soon">Coming soon</option></select>
+          <span class="hint">Sold out and Coming soon stay listed on the store but can't be added to an order.</span></label>
       </div>
       <p class="muted" id="pErr" style="color:var(--bad)"></p>
     </form>
@@ -300,7 +319,7 @@ import { getFirestore, collection, doc, onSnapshot, getDoc, writeBatch }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 // Only this account can change the store (the Firestore rules enforce the same thing)
-const ADMIN = "spartanbiolabs.info@gmail.com";
+const OWNER = "spartanbiolabs.info@gmail.com";             // can never be removed or locked out
 const app = initializeApp({
   apiKey: "AIzaSyB0p79ljDiBWzE9Pv0xJxQYg4nYOMMLFig",
   authDomain: "spartan-ops.firebaseapp.com",
@@ -322,7 +341,7 @@ const PDF_PART = 700000;                 // characters of PDF data per stored pi
 const PDF_MAX = 8 * 1024 * 1024;
 
 let settings = null, products = [], coas = [], gotSettings = false, gotProducts = false, gotCoas = false;
-let unsubs = [], tab = "products";
+let unsubs = [], tab = "products", team = [], gotTeam = false;
 
 // ---------- small helpers ----------
 let toastT;
@@ -371,26 +390,41 @@ $("switchBtn").onclick = async () => { await signOut(auth); signIn(); };
 $("signOutBtn").onclick = () => signOut(auth);
 getRedirectResult(auth).catch(e => { $("authErr").textContent = "Sign-in didn't finish (" + (e.code || e.message) + ")."; });
 
-onAuthStateChanged(auth, user => {
+let me = "";
+async function roleOf(email){
+  if (email === OWNER) return "admin";
+  const s = await getDoc(doc(db, "team", email));
+  const r = s.exists() ? s.data().role : null;
+  return r === "admin" || r === "rep" ? r : null;
+}
+onAuthStateChanged(auth, async user => {
   unsubs.forEach(u => u()); unsubs = [];
-  const ok = user && (user.email || "").toLowerCase() === ADMIN;
-  $("authView").hidden = !!ok; $("app").hidden = !ok;
+  me = user ? (user.email || "").toLowerCase() : "";
+  let role = null, err = false;
+  if (user) { try { role = await roleOf(me); } catch (e) { err = true; } }
+  if (role === "rep") { location.replace("ops/"); return; }          // sales reps work in Ops only
+  const ok = role === "admin";
+  $("authView").hidden = ok; $("app").hidden = !ok;
   if (user && !ok) {
-    $("authMsg").innerHTML = `<b>${esc(user.email)}</b> can't edit the store. Sign in with the Spartan Biolabs account.`;
+    $("authMsg").innerHTML = err ? "Can't reach the cloud to check your access. Check your connection and reload."
+      : `<b>${esc(user.email)}</b> isn't on the team. Ask an admin to add it under Team, or sign in with a different account.`;
     $("signInBtn").hidden = true; $("switchBtn").hidden = false;
-  } else { $("authMsg").textContent = "Sign in with the Spartan Biolabs Google account to edit the store."; $("signInBtn").hidden = false; $("switchBtn").hidden = true; }
+  } else { $("authMsg").textContent = "Sign in with your Google account."; $("signInBtn").hidden = false; $("switchBtn").hidden = true; }
   if (!ok) return;
   $("who").textContent = user.email;
+  gotTeam = false;
+  unsubs.push(onSnapshot(collection(db, "team"), s => { team = s.docs.map(d => ({ ...d.data(), email: d.id })); gotTeam = true; seedTeam(); render(); },
+    e => toast(e && e.code === "permission-denied" ? "Can't read the team list: check the Firestore rules." : "Can't reach the cloud right now.", true)));
   gotSettings = gotProducts = gotCoas = false; render();
   const fail = e => toast(e && e.code === "permission-denied" ? "Can't read the store data: check the Firestore rules." : "Can't reach the cloud right now.", true);
-  unsubs.push(onSnapshot(doc(db, "store", "settings"), s => { settings = s.exists() ? s.data() : null; gotSettings = true; render(); }, fail));
+  unsubs.push(onSnapshot(doc(db, "store", "settings"), s => { settings = s.exists() ? s.data() : null; gotSettings = true; seedTeam(); render(); }, fail));
   unsubs.push(onSnapshot(collection(db, "storeProducts"), s => { products = s.docs.map(d => ({ ...d.data(), id: d.id })); gotProducts = true; render(); }, fail));
   unsubs.push(onSnapshot(collection(db, "storeCoas"), s => { coas = s.docs.map(d => ({ ...d.data(), _id: d.id })); gotCoas = true; render(); }, fail));
 });
 
 // ---------- tabs ----------
 document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { tab = b.dataset.tab; try { history.replaceState(null, "", "#" + tab); } catch (e) {} render(); window.scrollTo(0, 0); });
-{ const h = location.hash.slice(1); if (["products", "coas", "settings"].includes(h)) tab = h; }
+{ const h = location.hash.slice(1); if (["products", "coas", "settings", "team"].includes(h)) tab = h; }
 
 function render(){
   const ready = gotSettings && gotProducts && gotCoas;
@@ -398,8 +432,9 @@ function render(){
   $("loading").hidden = ready;
   $("setup").hidden = !ready || imported;
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
-  ["products", "coas", "settings"].forEach(t => $("tab-" + t).hidden = !ready || !imported || t !== tab);
+  ["products", "coas", "settings", "team"].forEach(t => $("tab-" + t).hidden = !ready || !imported || t !== tab);
   if (!ready || !imported) return;
+  if (tab === "team") renderTeam();
   if (tab === "products") renderProducts();
   if (tab === "coas") renderCoas();
   if (tab === "settings" && !settingsDirty) fillSettings();
@@ -484,7 +519,7 @@ function renderProducts(){
       <div class="th">${photoHtml(p)}</div>
       <div class="info" data-edit="${esc(p.id)}">
         <div class="nm">${esc(p.name)} <span class="muted">${esc(p.spec)}</span></div>
-        <div class="sub">${money(p.price)}${p.hidden ? '<span class="chip">Hidden</span>' : ""}${p.soldOut ? '<span class="chip warn">Sold out</span>' : ""}</div>
+        <div class="sub">${money(p.price)}${p.hidden ? '<span class="chip">Hidden</span>' : ""}${statusOf(p) === "soldout" ? '<span class="chip warn">Sold out</span>' : statusOf(p) === "soon" ? '<span class="chip gold">Coming soon</span>' : ""}</div>
       </div>
       <div class="moves">
         <button class="icon" type="button" data-move="${esc(p.id)}" data-d="-1" aria-label="Move up" ${i === 0 ? "disabled" : ""}>▲</button>
@@ -505,6 +540,7 @@ $("pList").addEventListener("click", async e => {
   renderProducts();
   try { await commitAll(ops); } catch (err) { toast(failMsg(err), true); }
 });
+const statusOf = p => p.status || (p.soldOut ? "soldout" : "available");
 const strip = p => { const { id, ...d } = p; return d; };
 
 // ---------- product editor ----------
@@ -540,7 +576,7 @@ function editProduct(id){
   $("pFormTxt").value = ed.p.form || ""; $("pTested").value = ed.p.tested || "";
   $("pFormTxt").placeholder = settings.defaultForm || ""; $("pTested").placeholder = settings.defaultTested || "";
   $("pFormHint").textContent = "Leave blank to use the default."; $("pTestedHint").textContent = "Leave blank to use the default.";
-  $("pShow").checked = !ed.p.hidden; $("pSold").checked = !!ed.p.soldOut;
+  $("pShow").checked = !ed.p.hidden; $("pStatus").value = statusOf(ed.p);
   $("pDelete").hidden = !p; $("pErr").textContent = ""; $("pFile").value = "";
   drawPhoto(); showIdLine(); openSheet("pSheet");
 }
@@ -565,7 +601,7 @@ $("pSave").onclick = async () => {
   if (ed.isNew && products.some(p => p.id === id)) return err("A product with this name and size already exists. Change one of them.");
   const facts = [...$("pFacts").querySelectorAll(".r")].map(r => { const [k, v] = r.querySelectorAll("input"); return { k: k.value.trim(), v: v.value.trim() }; }).filter(f => f.k);
   const d = { ...strip(ed.p), name, spec, price, cat: $("pCat").value, desc: $("pDesc").value.trim(), facts,
-              form: $("pFormTxt").value.trim(), tested: $("pTested").value.trim(), hidden: !$("pShow").checked, soldOut: $("pSold").checked, updated: Date.now() };
+              form: $("pFormTxt").value.trim(), tested: $("pTested").value.trim(), hidden: !$("pShow").checked, status: $("pStatus").value, soldOut: $("pStatus").value === "soldout", updated: Date.now() };
   if (ed.isNew) d.order = Math.max(0, ...products.map(p => +p.order || 0)) + 10;          // new products go to the end of their category
   const ops = [];
   if (ed.newPhoto) { d.photo = "fs"; d.imgV = (+ed.p.imgV || 0) + 1; ops.push(["set", doc(db, "storeImages", id), { data: ed.newPhoto, v: d.imgV }]); thumbs[id + "@" + d.imgV] = ed.newPhoto; }
@@ -699,6 +735,55 @@ $("cDelete").onclick = async () => {
   catch (e) { toast(failMsg(e), true); }
   busy(false);
 };
+
+// ---------- team ----------
+const ROLE_NAME = { admin: "Admin", rep: "Sales rep" };
+// First time the owner opens the new Team tab: your partner keeps the access they already had in Ops (admin).
+async function seedTeam(){
+  if (me !== OWNER || !gotSettings || !settings || settings.teamSeeded || !gotTeam) return;
+  settings.teamSeeded = true;
+  const ops = [["set", doc(db, "store", "settings"), { ...settings, teamSeeded: true }]];
+  if (!team.some(t => t.email === "bakrabd2@gmail.com")) ops.push(["set", doc(db, "team", "bakrabd2@gmail.com"), { role: "admin", added: Date.now(), addedBy: OWNER }]);
+  try { await commitAll(ops); } catch (e) { settings.teamSeeded = false; }
+}
+function renderTeam(){
+  const rows = [{ email: OWNER, role: "owner" }, ...team.filter(t => t.email !== OWNER).sort((a, b) => (a.role === b.role ? a.email.localeCompare(b.email) : a.role === "admin" ? -1 : 1))];
+  $("tCount").textContent = `· ${rows.length} ${rows.length === 1 ? "person" : "people"}`;
+  $("tList").innerHTML = rows.map(t => `
+    <div class="row">
+      <div class="info" style="cursor:default">
+        <div class="nm">${esc(t.email)}${t.email === me ? ' <span class="chip">You</span>' : ""}</div>
+        <div class="sub">${t.role === "owner" ? "Owner · always an admin" : t.addedBy ? "Added by " + esc(t.addedBy) : ""}</div>
+      </div>
+      ${t.role === "owner" ? '<span class="chip gold">Owner</span>' : `
+      <select data-trole="${esc(t.email)}" aria-label="Tier for ${esc(t.email)}" style="width:auto;min-height:38px;font-size:14px" ${t.email === me ? "disabled" : ""}>
+        <option value="admin" ${t.role === "admin" ? "selected" : ""}>Admin</option><option value="rep" ${t.role === "rep" ? "selected" : ""}>Sales rep</option></select>
+      <button class="icon" type="button" data-tdel="${esc(t.email)}" aria-label="Remove ${esc(t.email)}" ${t.email === me ? "disabled" : ""}>✕</button>`}
+    </div>`).join("");
+}
+$("tForm").onsubmit = async e => {
+  e.preventDefault();
+  const email = $("tEmail").value.trim().toLowerCase(), role = $("tRole").value;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast("Enter the person's full Gmail address.", true);
+  if (email === OWNER || team.some(t => t.email === email)) return toast("That account is already on the team.", true);
+  busy(true, "Adding…");
+  try { await commitAll([["set", doc(db, "team", email), { role, added: Date.now(), addedBy: me }]]); $("tEmail").value = ""; toast(`${email} added as ${ROLE_NAME[role]}.`); }
+  catch (err) { toast(failMsg(err), true); }
+  busy(false);
+};
+$("tList").addEventListener("change", async e => {
+  const sel = e.target.closest("[data-trole]"); if (!sel) return;
+  const t = team.find(x => x.email === sel.dataset.trole); if (!t) return;
+  const { email, ...rest } = t;
+  try { await commitAll([["set", doc(db, "team", email), { ...rest, role: sel.value, changed: Date.now(), changedBy: me }]]); toast(`${t.email} is now ${ROLE_NAME[sel.value]}.`); }
+  catch (err) { toast(failMsg(err), true); renderTeam(); }
+});
+$("tList").addEventListener("click", async e => {
+  const b = e.target.closest("[data-tdel]"); if (!b) return;
+  if (!confirm(`Remove ${b.dataset.tdel}? They lose access right away.`)) return;
+  try { await commitAll([["del", doc(db, "team", b.dataset.tdel)]]); toast("Removed."); }
+  catch (err) { toast(failMsg(err), true); }
+});
 
 // ---------- settings ----------
 let settingsDirty = false, catWork = [];
