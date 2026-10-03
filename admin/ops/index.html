@@ -237,6 +237,7 @@
   .adminlink{border-color:var(--line);background:#fff;color:#1f3a5f}
   button.danger{border-color:rgba(180,35,24,.35)}
   .badge{background:var(--bad)}
+  .pill.web{background:#e8eef7;color:#1f3a5f}
 </style>
 
 </head><body class="auth-lock">
@@ -1000,7 +1001,7 @@ function renderOrders(){
     return `<article class="ord st-${o.status}" data-id="${esc(o.id)}">
       <div class="ord-top">
         <div><div class="ord-id mono">${esc(o.id)}</div><div class="ord-name">${esc(o.name || "")}</div></div>
-        <div class="ord-right"><span class="pill st-${o.status}">${stLabel(o.status)}</span><b class="mono">${orderTotals(o)}</b></div>
+        <div class="ord-right"><span class="pill st-${o.status}">${stLabel(o.status)}</span>${o.source === "web" ? '<span class="pill web" title="Placed on the website">Website</span>' : ""}<b class="mono">${orderTotals(o)}</b></div>
       </div>
       <div class="ord-lines">${lines}</div>
       <div class="ord-meta">${esc(niceDate(o.date))} · ${esc(o.pay || "")} · ${vialCount(o)} item${vialCount(o) === 1 ? "" : "s"}${o.tracking ? ` · UPS <span class="mono">${esc(o.tracking)}</span>` : ""}</div>
@@ -1308,6 +1309,10 @@ window.OpsSync = (() => {
       K[k].set(data); redraw();
       if (k === "inventory" && !data.length) push(k, true);   // create the 16 product rows at zero
       status(); return;
+    }
+    if (k === "orders" && last.orders) {                // announce orders that just came in from the website
+      const fresh = data.filter(([id, v]) => !last.orders.has(id) && v && v.source === "web");
+      if (fresh.length) toast(fresh.length === 1 ? `New website order ${fresh[0][1].id} from ${fresh[0][1].name || "a customer"}` : `${fresh.length} new website orders`);
     }
     last[k] = new Map(data.map(([id, v]) => [id, stable(v)]));
     K[k].set(incoming); redraw(); status();

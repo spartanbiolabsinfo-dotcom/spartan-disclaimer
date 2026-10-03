@@ -1107,8 +1107,28 @@ $("send").onclick = () => {
   openViewer(snapshot(), "review");
 };
 // Step 2: PLACE ORDER inside the review sends it on WhatsApp
+// Every placed order also lands in Spartan Ops (Orders tab) so it can be processed there.
+// Only what Ops keeps is sent: name, shipping address, notes, items, payment choice and totals (no email or phone).
+const OPS_SENT = "spartan_ops_sent";
+function sendToOps(){
+  const c = calc(), id = orderId();
+  let sent = []; try { sent = JSON.parse(localStorage.getItem(OPS_SENT) || "[]"); } catch (e) {}
+  if (sent.includes(id) || !c.items.length) return;
+  const now = new Date(), p = n => String(n).padStart(2, "0");
+  const rec = {
+    id, source: "web", status: "awaiting",
+    date: `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`,
+    name: $("name").value.trim().slice(0, 100), addr: $("addr").value.trim().slice(0, 400), notes: $("notes").value.trim().slice(0, 1000),
+    pay: c.pay, items: c.items.map(x => ({ pid: x.id, qty: x.q })).slice(0, 40),
+    disc: { pay: c.payPct > 0, vol5: false, vol10: false, gift: false },
+    shipping: SHIPPING, subtotal: Math.round(c.subtotal * 100) / 100, total: Math.round(c.total * 100) / 100,
+    paidDate: "", tracking: "", deducted: false, created: now.toISOString(), updated: now.toISOString()
+  };
+  const ok = () => { try { localStorage.setItem(OPS_SENT, JSON.stringify([id, ...sent].slice(0, 50))); } catch (e) {} };
+  whenCloud(api => api.submitOrder(rec).then(ok, err => { if (err && err.code === "permission-denied") ok(); }));   // already received = fine
+}
 function placeOrder(){
-  openWhatsApp(); saveCart(true); rememberOrder(viewing || snapshot());
+  openWhatsApp(); sendToOps(); saveCart(true); rememberOrder(viewing || snapshot());
   $("sentId").textContent = orderId(); $("sent").hidden = false;
   $("sent").scrollIntoView({ block:"center", behavior:"smooth" });
 }
@@ -1598,7 +1618,7 @@ refreshAll(); route();
 <script type="module">
 // Reads the live catalog, COAs and store settings from Firebase. Visitors can only read; edits happen on admin/.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js";
+import { getFirestore, doc, getDoc, getDocs, setDoc, collection } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js";
 const app = initializeApp({
   apiKey: "AIzaSyB0p79ljDiBWzE9Pv0xJxQYg4nYOMMLFig",
   authDomain: "spartan-ops.firebaseapp.com",
@@ -1610,6 +1630,7 @@ const app = initializeApp({
 const db = getFirestore(app);
 const pdfs = {};
 window.StoreCloud = {
+  submitOrder(rec){ return setDoc(doc(db, "orders", rec.id), rec); },
   async image(id){ const s = await getDoc(doc(db, "storeImages", id)); return s.exists() ? s.data().data || null : null; },
   coaFile(c){
     const k = c._id + "@" + (c.file.v || 0);
