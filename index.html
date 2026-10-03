@@ -405,7 +405,7 @@
   .feat-acts .cta{flex:1 1 110px;min-width:0;max-width:none;padding:11px 10px;font-size:14px}
   button.cta{cursor:pointer;font-family:Inter,system-ui,sans-serif}
   @media (max-width:430px){ .feat,.feat-grid.one .feat{grid-template-columns:1fr} .feat-ph{min-height:0} .feat-ph .ph{position:static;aspect-ratio:4/3} }
-  .coa-hero{margin:30px 0 8px;padding:26px 18px 22px;text-align:center;border-radius:14px;border:2px solid var(--gold);
+  .coa-hero{margin:22px 0 8px;padding:26px 18px 22px;text-align:center;border-radius:14px;border:2px solid var(--gold);
     background:radial-gradient(120% 90% at 50% 0%,rgba(212,175,55,.22),rgba(12,12,13,.9) 60%);box-shadow:0 0 30px rgba(212,175,55,.25)}
   .coa-hero-ic{width:58px;height:58px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#f0d487,#c39a38);color:#15110a;box-shadow:0 0 18px rgba(212,175,55,.45)}
   .coa-hero-ic svg{width:30px;height:30px}
@@ -426,6 +426,7 @@
   .home-contact{text-align:center}
   .home-contact .note{margin-bottom:12px}
   .cta.home-wa{margin:0 auto;max-width:340px}
+  .home-shop-wrap{margin:22px 0 4px}
 
   /* ===== Desktop: use the width, warmer sides ===== */
   @media (min-width:980px){
@@ -515,13 +516,6 @@
 
   <!-- ===== HOME ===== -->
   <section class="panel active" id="panel-home">
-    <div class="home-intro">
-      <p class="lead">Research peptides, third-party tested lot by lot.</p>
-      <a href="#catalog" class="cta gold home-shop"><span>Shop the catalog</span><span aria-hidden="true">→</span></a>
-    </div>
-
-    <div id="homeFeatured"></div>
-
     <section class="coa-hero" aria-labelledby="coaHeroT">
       <div class="coa-hero-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 16.5h5"/></svg></div>
       <h2 id="coaHeroT">COA Library</h2>
@@ -532,6 +526,10 @@
       </form>
       <a href="#coa" class="coa-hero-all">Browse all certificates<span id="homeCoaCount"></span> →</a>
     </section>
+
+    <div id="homeFeatured"></div>
+    <div class="home-intro home-shop-wrap"><a href="#catalog" class="cta gold home-shop"><span>Shop the catalog</span><span aria-hidden="true">→</span></a></div>
+
 
     <div class="why">
       <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6.5L5 18a2 2 0 0 0 1.7 3h10.6A2 2 0 0 0 19 18l-5-8.5V3"/><path d="M7.5 15h9"/></svg><b>Third-party tested</b><span>Every peptide lot is tested by an independent lab before it ships.</span></div>
