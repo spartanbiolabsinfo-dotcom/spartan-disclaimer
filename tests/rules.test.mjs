@@ -29,7 +29,7 @@ await ok(assertFails(getDoc(doc(anon, `stats/${M}~v`))), "visitors can't read co
 await ok(assertFails(getDocs(collection(rando, "stats"))), "random signed-in account can't read counts");
 await ok(assertFails(getDocs(collection(rep, "stats"))), "sales rep can't read counts (Admin only)");
 await ok(assertSucceeds(getDocs(collection(owner, "stats"))), "the owner reads the counts");
-const v = await env.withSecurityRulesDisabled(async c => (await getDoc(doc(c.firestore(), `stats/${M}~v`))).data());
+let v = null; await env.withSecurityRulesDisabled(async c => { v = (await getDoc(doc(c.firestore(), `stats/${M}~v`))).data(); });
 await ok(v[F] === 2 ? Promise.resolve() : Promise.reject(new Error(JSON.stringify(v))), "today's visitor count is 2");
 // the rest still behaves
 await ok(assertSucceeds(getDocs(collection(anon, "storeProducts"))), "store products still public");
