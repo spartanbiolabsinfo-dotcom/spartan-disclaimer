@@ -1,0 +1,11 @@
+{
+  "name": "spartan-rules-tests",
+  "private": true,
+  "type": "module",
+  "description": "Security-rule tests for Spartan, run against the local Firestore emulator.",
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.4",
+    "firebase": "^10.12.2",
+    "firebase-tools": "^13.35.1"
+  }
+}

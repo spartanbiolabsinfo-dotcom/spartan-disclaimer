@@ -1,0 +1,38 @@
+import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
+import { doc, setDoc, getDoc, getDocs, collection, increment, updateDoc, deleteDoc } from "firebase/firestore";
+import { readFileSync } from "fs";
+const env = await initializeTestEnvironment({ projectId: "spartan-ops", firestore: { rules: readFileSync("../firestore.rules", "utf8"), host: "127.0.0.1", port: 8080 } });
+let fails = 0; const ok = async (p, m) => { try { await p; console.log("PASS " + m); } catch (e) { fails++; console.log("FAIL " + m + " — " + e.message); } };
+const pad = n => String(n).padStart(2, "0");
+const t = new Date(Date.now() - 6 * 3600e3), M = t.getUTCFullYear() + "-" + pad(t.getUTCMonth() + 1), F = "d" + pad(t.getUTCDate());
+const otherF = "d" + pad(t.getUTCDate() === 1 ? 2 : t.getUTCDate() - 1);
+const anon = env.unauthenticatedContext().firestore();
+const owner = env.authenticatedContext("o", { email: "spartanbiolabs.info@gmail.com", email_verified: true }).firestore();
+const rando = env.authenticatedContext("r", { email: "rando@gmail.com", email_verified: true }).firestore();
+await env.withSecurityRulesDisabled(async c => { await setDoc(doc(c.firestore(), "team/rep@gmail.com"), { role: "rep" }); await setDoc(doc(c.firestore(), "stats/2020-01~v"), { d01: 4 }); });
+const rep = env.authenticatedContext("p", { email: "rep@gmail.com", email_verified: true }).firestore();
+
+await ok(assertSucceeds(setDoc(doc(anon, `stats/${M}~v`), { [F]: increment(1) }, { merge: true })), "a visitor starts today's count (creates the counter)");
+await ok(assertSucceeds(setDoc(doc(anon, `stats/${M}~v`), { [F]: increment(1) }, { merge: true })), "…and adds 1 to it");
+await ok(assertSucceeds(setDoc(doc(anon, `stats/${M}~p-reta30`), { [F]: increment(1) }, { merge: true })), "product view counter");
+await ok(assertSucceeds(setDoc(doc(anon, `stats/${M}~a-cjc-ipa`), { [F]: increment(1) }, { merge: true })), "add-to-order counter with a dash in the id");
+await ok(assertFails(setDoc(doc(anon, `stats/${M}~v`), { [F]: increment(5) }, { merge: true })), "can't add more than 1");
+await ok(assertFails(setDoc(doc(anon, `stats/${M}~v`), { [F]: 0 }, { merge: true })), "can't set a number (reset)");
+await ok(assertFails(setDoc(doc(anon, `stats/${M}~v`), { [otherF]: increment(1) }, { merge: true })), "can't add to another day");
+await ok(assertFails(setDoc(doc(anon, `stats/2020-01~v`), { [F]: increment(1) }, { merge: true })), "can't touch another month");
+await ok(assertFails(setDoc(doc(anon, `stats/${M}~hack`), { [F]: increment(1) }, { merge: true })), "only known kinds of counters");
+await ok(assertFails(setDoc(doc(anon, `stats/${M}~c-new`), { [F]: 1, x: "junk" })), "no extra fields");
+await ok(assertFails(setDoc(doc(anon, `stats/${M}~c-new2`), { [F]: 7 })), "a new counter starts at 1");
+await ok(assertFails(setDoc(doc(anon, `stats/${M}~v`), { [F]: increment(1), x: 1 }, { merge: true })), "no extra fields on update");
+await ok(assertFails(deleteDoc(doc(anon, `stats/${M}~v`))), "visitors can't delete counters");
+await ok(assertFails(getDoc(doc(anon, `stats/${M}~v`))), "visitors can't read counts");
+await ok(assertFails(getDocs(collection(rando, "stats"))), "random signed-in account can't read counts");
+await ok(assertFails(getDocs(collection(rep, "stats"))), "sales rep can't read counts (Admin only)");
+await ok(assertSucceeds(getDocs(collection(owner, "stats"))), "the owner reads the counts");
+const v = await env.withSecurityRulesDisabled(async c => (await getDoc(doc(c.firestore(), `stats/${M}~v`))).data());
+await ok(v[F] === 2 ? Promise.resolve() : Promise.reject(new Error(JSON.stringify(v))), "today's visitor count is 2");
+// the rest still behaves
+await ok(assertSucceeds(getDocs(collection(anon, "storeProducts"))), "store products still public");
+await ok(assertFails(setDoc(doc(anon, "storeProducts/x"), { name: "x" })), "visitors still can't edit products");
+await ok(assertFails(getDocs(collection(anon, "orders"))), "visitors still can't read orders");
+await env.cleanup(); console.log(fails ? fails + " FAILED" : "all passed"); process.exit(fails ? 1 : 0);
