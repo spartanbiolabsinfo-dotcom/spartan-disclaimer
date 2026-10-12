@@ -9,7 +9,7 @@ const otherF = "d" + pad(t.getUTCDate() === 1 ? 2 : t.getUTCDate() - 1);
 const anon = env.unauthenticatedContext().firestore();
 const owner = env.authenticatedContext("o", { email: "spartanbiolabs.info@gmail.com", email_verified: true }).firestore();
 const rando = env.authenticatedContext("r", { email: "rando@gmail.com", email_verified: true }).firestore();
-await env.withSecurityRulesDisabled(async c => { await setDoc(doc(c.firestore(), "team/rep@gmail.com"), { role: "rep" }); await setDoc(doc(c.firestore(), "stats/2020-01~v"), { d01: 4 }); });
+await env.withSecurityRulesDisabled(async c => { const f = c.firestore(); await setDoc(doc(f, "team/rep@gmail.com"), { role: "rep" }); await setDoc(doc(f, "stats/2020-01~v"), { d01: 4 }); });
 const rep = env.authenticatedContext("p", { email: "rep@gmail.com", email_verified: true }).firestore();
 
 await ok(assertSucceeds(setDoc(doc(anon, `stats/${M}~v`), { [F]: increment(1) }, { merge: true })), "a visitor starts today's count (creates the counter)");
