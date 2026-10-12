@@ -813,8 +813,8 @@ const GATE_KEY = "spartan_ruo_ok";
 function openSite(){ $("gate").classList.add("hidden"); document.body.classList.remove("locked"); }
 try { if (sessionStorage.getItem(GATE_KEY) === "1") openSite(); } catch (e) {}
 $("agreeCheckbox").onchange = () => { $("agreeButton").disabled = !$("agreeCheckbox").checked; };
-$("agreeButton").onclick = () => { try { sessionStorage.setItem(GATE_KEY, "1"); } catch (e) {} openSite(); };
-$("declineBtn").onclick = () => { if (history.length > 1) history.back(); else window.location.href = "https://www.google.com"; };
+$("agreeButton").onclick = () => { try { sessionStorage.setItem(GATE_KEY, "1"); } catch (e) {} Stats.hit("c-gate"); openSite(); };
+$("declineBtn").onclick = () => { Stats.hit("c-decline"); setTimeout(() => { if (history.length > 1) history.back(); else window.location.href = "https://www.google.com"; }, 350); };
 
 // ----- Catalog -----
 function renderCatalog(){
@@ -945,6 +945,7 @@ function renderProduct(id){
     local = Math.max(0, local + +b.dataset.step); $("pdQty").textContent = local;
   });
   $("pdAdd").onclick = () => {
+    if (local > (qty[p.id] || 0)) { Stats.hit("c-add"); Stats.hit("a-" + p.id); }
     qty[p.id] = local; refreshAll();
     $("pdAdd").textContent = local ? "Added ✓" : "Removed";
     setTimeout(() => { if ($("pdAdd")) $("pdAdd").textContent = qty[p.id] ? "Update Order" : "Add to Order"; }, 1200);
@@ -1024,6 +1025,8 @@ function route(){
   else if (h === "catalog" || h === "shop") view = "catalog";
   else { view = "home"; loadCoas().then(renderHomeCoa); }
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + view));
+  Stats.page(view === "catalog" ? "shop" : view);
+  if (view === "product") Stats.product(h.slice(2));
   const tabFor = { home: "home", catalog: "catalog", product: "catalog", coa: "coa", order: "order" }[view];
   document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === tabFor));
   updateBars();
@@ -1103,7 +1106,7 @@ renderMyOrders();
 $("send").onclick = () => {
   const e = validate(); $("err").textContent = e;
   if (e) { $("err").scrollIntoView({ block:"center", behavior:"smooth" }); return; }
-  stampNow(); saveCustomer();
+  stampNow(); saveCustomer(); Stats.hit("c-review");
   openViewer(snapshot(), "review");
 };
 // Step 2: PLACE ORDER inside the review sends it on WhatsApp
@@ -1114,6 +1117,7 @@ function sendToOps(){
   const c = calc(), id = orderId();
   let sent = []; try { sent = JSON.parse(localStorage.getItem(OPS_SENT) || "[]"); } catch (e) {}
   if (sent.includes(id) || !c.items.length) return;
+  Stats.hit("c-sent");
   const now = new Date(), p = n => String(n).padStart(2, "0");
   const rec = {
     id, source: "web", status: "awaiting",
@@ -1466,6 +1470,7 @@ async function openCoa(lot){
     $("cvPages").innerHTML = `<p class="cv-msg">We couldn't find a certificate for lot ${esc(lot)}. Check the lot number on your label, or message us on WhatsApp.</p>`;
     $("cvDl").hidden = true; $("cvShop").hidden = true; return;
   }
+  Stats.hit("c-coa");
   $("cvLot").textContent = c.lot;
   $("cvSub").textContent = [c.product, c.date && "Tested " + coaDate(c.date), c.purity && c.purity + "% purity"].filter(Boolean).join(" · ");
   $("cvDl").hidden = true;
@@ -1537,6 +1542,74 @@ const cloudWait = new Promise(r => cloudDone = r); setTimeout(() => cloudDone(),
 const cloudQ = [];
 function whenCloud(f){ if (window.StoreCloud) f(window.StoreCloud); else cloudQ.push(f); }
 window.storeCloudReady = () => cloudQ.splice(0).forEach(f => f(window.StoreCloud));
+
+// ----- Visit counts for Admin > Analytics -----
+// Anonymous daily tallies only (how many visitors, which pages, products and buttons): no cookies, names,
+// IP addresses or anything that identifies a person. Phones signed in to Admin/Ops aren't counted.
+// Days run on US Mountain time (UTC-6), the same day the Firestore rules use.
+window.Stats = (() => {
+  let off = false;
+  try { off = localStorage.getItem("sb_staff") === "1"; } catch (e) {}
+  if (/bot|crawl|spider|slurp|preview|lighthouse|headlesschrome/i.test(navigator.userAgent) && !window.__statsTest) off = true;
+  const pad = n => String(n).padStart(2, "0");
+  const day = () => { const t = new Date(Date.now() - 6 * 3600e3); return { month: t.getUTCFullYear() + "-" + pad(t.getUTCMonth() + 1), field: "d" + pad(t.getUTCDate()) }; };
+  const ok = k => /^(v|pv-[a-z]{2,12}|p-[a-z0-9-]{1,40}|a-[a-z0-9-]{1,40}|c-[a-z0-9-]{1,30}|s-[a-z]{2,12}|dv-[a-z]{2,10})$/.test(k);
+  function hit(key){
+    if (off || !ok(key)) return;
+    const d = day();
+    whenCloud(c => c.bump && c.bump(d.month, d.field, key).catch(() => {}));
+  }
+  const once = (scope, key) => {                       // once per visit (this tab), e.g. a product looked at twice
+    try { const k = "sb_seen_" + scope; const seen = JSON.parse(sessionStorage.getItem(k) || "[]"); if (seen.includes(key)) return false;
+      seen.push(key); sessionStorage.setItem(k, JSON.stringify(seen.slice(-200))); } catch (e) {}
+    return true;
+  };
+  // where a visitor came from: the vial QR (lands on a COA), the app they tapped the link in, or the page that sent them
+  function source(){
+    const ua = navigator.userAgent, h = location.hash, src = (new URLSearchParams(location.search).get("src") || "").toLowerCase();
+    if (/^(ig|tt|lt|wa|qr|fb)$/.test(src)) return src;
+    if (h.startsWith("#coa/")) return "qr";
+    if (/Instagram/i.test(ua)) return "ig";
+    if (/musical_ly|Bytedance|TikTok/i.test(ua)) return "tt";
+    if (/FBAN|FBAV|FB_IAB/i.test(ua)) return "fb";
+    let host = ""; try { host = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, "") : ""; } catch (e) {}
+    if (!host) return "direct";
+    if (host === location.hostname) return "";
+    if (/instagram\./.test(host)) return "ig";
+    if (/tiktok\./.test(host)) return "tt";
+    if (/linktr\.ee/.test(host)) return "lt";
+    if (/whatsapp|wa\.me/.test(host)) return "wa";
+    if (/facebook\.|fb\.com/.test(host)) return "fb";
+    if (/google\.|bing\.|duckduckgo\.|yahoo\.|search\./.test(host)) return "search";
+    return "other";
+  }
+  // a visitor: counted once a day per browser, with where they came from and phone or computer
+  function visit(){
+    if (off) return;
+    const d = day(), stamp = d.month + d.field;
+    let seen = ""; try { seen = localStorage.getItem("sb_visit_day") || ""; } catch (e) {}
+    if (location.hash.startsWith("#coa/")) hit("c-qr");
+    if (seen === stamp) return;
+    try { localStorage.setItem("sb_visit_day", stamp); } catch (e) {}
+    hit("v");
+    const s = source(); if (s) hit("s-" + s);
+    hit(matchMedia("(pointer:coarse)").matches || innerWidth < 760 ? "dv-phone" : "dv-computer");
+  }
+  // buttons and links anywhere on the page
+  document.addEventListener("click", e => {
+    const a = e.target.closest("a[href]"); if (!a) return;
+    const u = a.getAttribute("href") || "";
+    if (/wa\.me|whatsapp/i.test(u)) hit("c-wa");
+    else if (/instagram\.com/i.test(u)) hit("c-ig");
+    else if (/tiktok\.com/i.test(u)) hit("c-tt");
+    else if (/linktr\.ee/i.test(u)) hit("c-lt");
+  }, true);
+  return {
+    hit, visit,
+    page(v){ hit("pv-" + v); },
+    product(id){ if (id && once("p", id)) hit("p-" + id); }
+  };
+})();
 function normProduct(d){
   const facts = {}; (Array.isArray(d.facts) ? d.facts : []).forEach(x => { if (x && x.k) facts[x.k] = x.v || ""; });
   const p = { id: d.id, cat: d.cat || "", name: d.name || "", spec: d.spec || "", price: +d.price || 0, desc: d.desc || "", facts,
@@ -1613,12 +1686,12 @@ if (savedPay) { const r = document.querySelector(`input[name=pay][value="${saved
 document.querySelectorAll('input[name=pay]').forEach(r => r.onchange = () => { renderSummary(); saveCart(); });
 loadCustomer();
 
-refreshAll(); route();
+refreshAll(); route(); Stats.visit();
 </script>
 <script type="module">
 // Reads the live catalog, COAs and store settings from Firebase. Visitors can only read; edits happen on admin/.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getFirestore, doc, getDoc, getDocs, setDoc, collection } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js";
+import { getFirestore, doc, getDoc, getDocs, setDoc, collection, increment } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js";
 const app = initializeApp({
   apiKey: "AIzaSyB0p79ljDiBWzE9Pv0xJxQYg4nYOMMLFig",
   authDomain: "spartan-ops.firebaseapp.com",
@@ -1631,6 +1704,8 @@ const db = getFirestore(app);
 const pdfs = {};
 window.StoreCloud = {
   submitOrder(rec){ return setDoc(doc(db, "orders", rec.id), rec); },
+  // one more for today on an anonymous counter (stats/<month>~<key>, a field per day); the rules allow exactly +1
+  bump(month, field, key){ return setDoc(doc(db, "stats", month + "~" + key), { [field]: increment(1) }, { merge: true }); },
   async image(id){ const s = await getDoc(doc(db, "storeImages", id)); return s.exists() ? s.data().data || null : null; },
   coaFile(c){
     const k = c._id + "@" + (c.file.v || 0);

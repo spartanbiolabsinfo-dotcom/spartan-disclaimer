@@ -80,6 +80,43 @@
   .row .sub{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .row .moves{display:flex;flex-direction:column;gap:4px}
   .row .moves .icon{width:34px;height:28px;font-size:12px}
+  /* analytics */
+  .ana-range{display:flex;gap:6px;margin:-4px 0 14px}
+  .ana-range button{flex:1;min-height:38px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:13.5px}
+  .ana-range button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .tile .k{font-size:12.5px;color:var(--muted);font-weight:600}
+  .tile .n{font-size:26px;font-weight:700;letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums}
+  .tile .s{font-size:12.5px;color:var(--muted)}
+  .acard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+  .acard h3{font-size:15px;margin-bottom:10px}
+  .acard h3 .muted{font-weight:500;font-size:12.5px;margin-left:6px}
+  .dchart{position:relative;user-select:none;-webkit-user-select:none;touch-action:pan-y}
+  .dchart .plot{position:relative;height:150px;display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid #c5ccd6;padding-right:26px}
+  .dchart .plot.dense{gap:1px}
+  .dchart .grid{position:absolute;left:0;right:0;border-top:1px dashed #e3e7ee;pointer-events:none}
+  .dchart .grid span{position:absolute;right:0;top:-16px;font-size:11px;color:var(--muted);background:var(--panel);padding-left:4px}
+  .dchart .col{position:relative;flex:1;min-width:0;height:100%;display:flex;align-items:flex-end}
+  .dchart .col i{display:block;width:100%;background:var(--acc);border-radius:4px 4px 0 0;min-height:0}
+  .dchart .col.hot i{background:var(--acc2)}
+  .dchart .col.hot{background:rgba(31,58,95,.06)}
+  .dchart .xl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:4px;padding-right:26px}
+  .dchart .tip{position:absolute;top:-6px;transform:translate(-50%,-100%);background:#18202e;color:#fff;font-size:12.5px;padding:6px 9px;border-radius:8px;white-space:nowrap;pointer-events:none;z-index:2}
+  .hb{display:grid;grid-template-columns:max-content minmax(40px,1fr) auto;align-items:center;gap:8px 10px;font-size:14px}
+  .hb .lab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hb .trk{height:10px;border-radius:0 4px 4px 0;background:#eef1f5;overflow:hidden}
+  .hb .trk i{display:block;height:100%;background:var(--acc);border-radius:0 4px 4px 0}
+  .hb .val{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;white-space:nowrap}
+  .hb .val small{color:var(--muted);font-weight:500;margin-left:4px}
+  .ptab{width:100%;border-collapse:collapse;font-size:14px}
+  .ptab th{font-size:12px;color:var(--muted);font-weight:600;text-align:right;padding:0 0 6px 8px}
+  .ptab th:first-child{text-align:left;padding-left:0}
+  .ptab td{padding:7px 0 7px 8px;border-top:1px solid #eef1f5;text-align:right;font-variant-numeric:tabular-nums}
+  .ptab td:first-child{text-align:left;padding-left:0;max-width:0;width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .split{display:flex;height:12px;border-radius:4px;overflow:hidden;gap:2px;margin:6px 0}
+  .split i{display:block;background:var(--acc)} .split i+i{background:#9aa9bd}
+  .anote{font-size:12.5px;color:var(--muted);margin:4px 0 16px}
   .chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.03em;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:1px;border:1px solid var(--line);color:var(--muted)}
   .chip.gold{border-color:rgba(212,175,55,.6);color:var(--gold-hi)}
   .chip.good{border-color:rgba(127,191,127,.55);color:var(--good)}
@@ -199,6 +236,7 @@
         <button type="button" data-tab="coas"><span class="lg">COA Library</span><span class="sm">COAs</span></button>
         <button type="button" data-tab="settings">Settings</button>
         <button type="button" data-tab="team">Team</button>
+        <button type="button" data-tab="stats"><span class="lg">Analytics</span><span class="sm">Stats</span></button>
       </nav>
     </div>
   </header>
@@ -234,6 +272,14 @@
       </form>
       <div id="tList"></div>
       <p class="muted" style="margin-top:12px">They sign in with that Google account at this same Admin link. Sales reps land straight in Ops.</p>
+    </section>
+
+    <section id="tab-stats" hidden>
+      <div class="bar"><h2>Analytics <span class="muted" id="anaWhen"></span></h2><button class="btn sm" id="anaRefresh" type="button">Refresh</button></div>
+      <div class="ana-range" role="group" aria-label="Time range">
+        <button type="button" data-range="1">Today</button><button type="button" data-range="7">7 days</button><button type="button" data-range="30">30 days</button><button type="button" data-range="90">90 days</button>
+      </div>
+      <div id="anaBox"><div class="empty">Loading…</div></div>
     </section>
 
     <section id="tab-settings" hidden>
@@ -347,7 +393,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, connectAuthEmulator }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFirestore, collection, doc, onSnapshot, getDoc, writeBatch }
+import { getFirestore, collection, doc, onSnapshot, getDoc, getDocs, query, where, documentId, writeBatch }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 // Only this account can change the store (the Firestore rules enforce the same thing)
@@ -443,6 +489,7 @@ onAuthStateChanged(auth, async user => {
     $("signInBtn").hidden = true; $("switchBtn").hidden = false;
   } else { $("authMsg").textContent = "Sign in with your Google account."; $("signInBtn").hidden = false; $("switchBtn").hidden = true; }
   if (!ok) return;
+  try { localStorage.setItem("sb_staff", "1"); } catch (e) {}        // the store doesn't count this phone's visits
   $("who").textContent = user.email;
   gotTeam = false;
   unsubs.push(onSnapshot(collection(db, "team"), s => { team = s.docs.map(d => ({ ...d.data(), email: d.id })); gotTeam = true; seedTeam(); render(); },
@@ -456,7 +503,7 @@ onAuthStateChanged(auth, async user => {
 
 // ---------- tabs ----------
 document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { tab = b.dataset.tab; try { history.replaceState(null, "", "#" + tab); } catch (e) {} render(); window.scrollTo(0, 0); });
-{ const h = location.hash.slice(1); if (["products", "coas", "settings", "team"].includes(h)) tab = h; }
+{ const h = location.hash.slice(1); if (["products", "coas", "settings", "team", "stats"].includes(h)) tab = h; }
 
 function render(){
   const ready = gotSettings && gotProducts && gotCoas;
@@ -464,13 +511,131 @@ function render(){
   $("loading").hidden = ready;
   $("setup").hidden = !ready || imported;
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
-  ["products", "coas", "settings", "team"].forEach(t => $("tab-" + t).hidden = !ready || !imported || t !== tab);
+  ["products", "coas", "settings", "team", "stats"].forEach(t => $("tab-" + t).hidden = !ready || !imported || t !== tab);
   if (!ready || !imported) return;
+  if (tab === "stats") loadAnalytics(false);
   if (tab === "team") renderTeam();
   if (tab === "products") renderProducts();
   if (tab === "coas") renderCoas();
   if (tab === "settings" && !settingsDirty) fillSettings();
 }
+
+// ---------- Analytics: anonymous daily counts the store keeps (stats/<YYYY-MM>~<key>, one number per day) ----------
+// Days are US Mountain time (UTC-6), same as the store and the Firestore rules. 90 days are read once, then filtered here.
+let anaRange = 30, ana = null, anaBusy = false, anaAt = 0, anaHot = -1;
+const p2 = n => String(n).padStart(2, "0");
+function anaDays(n){
+  const out = [], base = Date.now() - 6 * 3600e3;
+  for (let i = n - 1; i >= 0; i--) { const t = new Date(base - i * 864e5); out.push(`${t.getUTCFullYear()}-${p2(t.getUTCMonth() + 1)}-${p2(t.getUTCDate())}`); }
+  return out;
+}
+async function loadAnalytics(force){
+  if (anaBusy) return;
+  if (!force && ana && !ana.error && Date.now() - anaAt < 120000) { renderAnalytics(); return; }
+  anaBusy = true; renderAnalytics();
+  try {
+    const days = anaDays(90), first = days[0].slice(0, 7), last = days[days.length - 1].slice(0, 7);
+    const [st, os] = await Promise.all([
+      getDocs(query(collection(db, "stats"), where(documentId(), ">=", first + "~"), where(documentId(), "<=", last + "~\uf8ff"))),
+      getDocs(query(collection(db, "orders"), where("source", "==", "web"))).catch(() => null)
+    ]);
+    const counts = {};
+    st.docs.forEach(d => {
+      const i = d.id.indexOf("~"), m = d.id.slice(0, i), k = d.id.slice(i + 1), o = counts[k] || (counts[k] = {});
+      Object.entries(d.data()).forEach(([f, n]) => { if (/^d\d\d$/.test(f)) o[m + "-" + f.slice(1)] = (o[m + "-" + f.slice(1)] || 0) + (+n || 0); });
+    });
+    ana = { counts, orders: os ? os.docs.map(d => d.data()) : null }; anaAt = Date.now();
+  } catch (e) {
+    console.warn(e); ana = { error: e && e.code === "permission-denied" ? "rules" : "net" };
+  }
+  anaBusy = false; renderAnalytics();
+}
+const nf = n => Math.round(n).toLocaleString("en-US");
+const pct = (a, b) => b ? Math.round(a / b * 100) + "%" : "–";
+const money0 = n => "$" + Math.round(n).toLocaleString("en-US");
+const SRC = { qr: "Vial QR code", ig: "Instagram", tt: "TikTok", lt: "Linktree", wa: "WhatsApp", fb: "Facebook", search: "Google / search", direct: "Typed in / bookmark", other: "Other websites" };
+const CLICKS = [["c-wa", "WhatsApp taps"], ["c-coa", "COAs opened"], ["c-qr", "Vial QR scans"], ["c-ig", "Instagram link"], ["c-tt", "TikTok link"], ["c-lt", "Linktree link"], ["c-gate", "Passed age check"], ["c-decline", "Left at age check"]];
+const PAGES = [["pv-home", "Home"], ["pv-shop", "Shop"], ["pv-product", "Product pages"], ["pv-coa", "COA Library"], ["pv-order", "Order page"]];
+function hbars(rows, total){
+  const max = Math.max(1, ...rows.map(r => r[1]));
+  return `<div class="hb">${rows.map(([lab, n, extra]) => `<span class="lab" title="${esc(lab)}">${esc(lab)}</span><span class="trk"><i style="width:${n ? Math.max(1.5, n / max * 100) : 0}%"></i></span><span class="val">${nf(n)}${extra !== undefined ? `<small>${extra}</small>` : total ? `<small>${pct(n, total)}</small>` : ""}</span>`).join("")}</div>`;
+}
+function renderAnalytics(){
+  document.querySelectorAll(".ana-range button").forEach(b => b.classList.toggle("on", +b.dataset.range === anaRange));
+  $("anaRefresh").disabled = anaBusy; $("anaRefresh").textContent = anaBusy ? "Loading…" : "Refresh";
+  $("anaWhen").textContent = ana && !ana.error ? "Updated " + new Date(anaAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
+  if (!ana) { $("anaBox").innerHTML = `<div class="empty">Loading…</div>`; return; }
+  if (ana.error) { $("anaBox").innerHTML = `<div class="empty">${ana.error === "rules" ? "Can't read the visit counts yet: publish the updated Firestore rules, then tap Refresh." : "Can't reach the cloud right now. Tap Refresh to try again."}</div>`; return; }
+  const days = anaDays(anaRange), C = ana.counts;
+  const sum = k => days.reduce((t, d) => t + ((C[k] || {})[d] || 0), 0);
+  const sumPre = pre => Object.keys(C).filter(k => k.startsWith(pre)).reduce((t, k) => t + sum(k), 0);
+  const visitors = sum("v"), views = sumPre("pv-"), pviews = sumPre("p-"), adds = sum("c-add"), reviews = sum("c-review"), sent = sum("c-sent");
+  const inRange = d => d >= days[0] && d <= days[days.length - 1];
+  const ords = (ana.orders || []).filter(o => inRange(String(o.date || "")) && !/cancel/i.test(o.status || ""));
+  const ordTotal = ords.reduce((t, o) => t + (+o.total || 0), 0);
+  const any = Object.keys(C).some(k => sum(k));
+  const label = anaRange === 1 ? "today" : `the last ${anaRange} days`;
+  if (!any && !ords.length) {
+    $("anaBox").innerHTML = `<div class="empty">No visits counted ${label} yet. Counting starts once the updated store is live and the new Firestore rules are published.</div>`; return;
+  }
+  // visitors per day
+  const series = days.map(d => (C.v || {})[d] || 0), pvs = days.map(d => Object.keys(C).filter(k => k.startsWith("pv-")).reduce((t, k) => t + ((C[k] || {})[d] || 0), 0));
+  const top = Math.max(1, ...series), step = top <= 4 ? 1 : top <= 10 ? 2 : top <= 25 ? 5 : top <= 50 ? 10 : Math.pow(10, Math.floor(Math.log10(top))) * (top / Math.pow(10, Math.floor(Math.log10(top))) > 5 ? 2 : 1);
+  const ymax = Math.ceil(top / step) * step, grids = []; for (let g = step; g <= ymax; g += step) grids.push(g);
+  const nice = d => new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const chart = anaRange === 1 ? "" : `<div class="acard"><h3>Visitors per day</h3>
+    <div class="dchart" id="dchart" aria-label="Visitors per day, ${esc(nice(days[0]))} to ${esc(nice(days[days.length - 1]))}: ${series.map((n, i) => nice(days[i]) + " " + n).join(", ")}">
+      <div class="plot${anaRange > 30 ? " dense" : ""}">${grids.map(g => `<div class="grid" style="bottom:${g / ymax * 100}%"><span>${g}</span></div>`).join("")}
+        ${series.map((n, i) => `<div class="col${i === anaHot ? " hot" : ""}" data-i="${i}"><i style="height:${n / ymax * 100}%"></i></div>`).join("")}</div>
+      <div class="xl"><span>${nice(days[0])}</span><span>${nice(days[Math.floor(days.length / 2)])}</span><span>${nice(days[days.length - 1])}</span></div>
+    </div></div>`;
+  // products
+  const pname = id => { const p = products.find(x => x.id === id); return p ? (p.name + (p.spec ? " " + p.spec : "")) : id; };
+  const pids = [...new Set(Object.keys(C).filter(k => /^[pa]-/.test(k)).map(k => k.slice(2)))].map(id => [id, sum("p-" + id), sum("a-" + id)]).filter(r => r[1] || r[2]).sort((a, b) => b[1] - a[1] || b[2] - a[2]);
+  const srcRows = Object.keys(SRC).map(k => [SRC[k], sum("s-" + k)]).filter(r => r[1]).sort((a, b) => b[1] - a[1]);
+  const srcTotal = srcRows.reduce((t, r) => t + r[1], 0);
+  const phone = sum("dv-phone"), comp = sum("dv-computer");
+  $("anaBox").innerHTML = `
+    <div class="tiles">
+      <div class="tile"><div class="k">Visitors</div><div class="n">${nf(visitors)}</div><div class="s">${label}</div></div>
+      <div class="tile"><div class="k">Page views</div><div class="n">${nf(views)}</div><div class="s">${visitors ? (views / visitors).toFixed(1) + " per visitor" : "&nbsp;"}</div></div>
+      <div class="tile"><div class="k">Orders sent</div><div class="n">${nf(sent)}</div><div class="s">${pct(sent, visitors)} of visitors</div></div>
+      <div class="tile"><div class="k">Website orders in Ops</div><div class="n">${ana.orders ? money0(ordTotal) : "–"}</div><div class="s">${ana.orders ? ords.length + " order" + (ords.length === 1 ? "" : "s") : "Can't read orders"}</div></div>
+    </div>
+    ${chart}
+    <div class="acard"><h3>From visit to order</h3>
+      ${hbars([["Visitors", visitors, ""], ["Product views", pviews, ""], ["Added to order", adds, pct(adds, visitors)], ["Reviewed order", reviews, pct(reviews, visitors)], ["Sent order", sent, pct(sent, visitors)]])}
+      <p class="anote" style="margin:8px 0 0">Percentages are out of visitors.</p></div>
+    <div class="acard"><h3>Products <span class="muted">views · added to order · add rate</span></h3>
+      ${pids.length ? `<table class="ptab"><thead><tr><th>Product</th><th>Views</th><th>Added</th><th>Rate</th></tr></thead><tbody>
+        ${pids.map(([id, v, a]) => `<tr><td title="${esc(pname(id))}">${esc(pname(id))}</td><td>${nf(v)}</td><td>${nf(a)}</td><td>${pct(a, v)}</td></tr>`).join("")}</tbody></table>`
+        : `<p class="muted">No product views ${label}.</p>`}</div>
+    <div class="acard"><h3>Where visitors come from</h3>${srcRows.length ? hbars(srcRows, srcTotal) : `<p class="muted">Nothing yet.</p>`}</div>
+    <div class="acard"><h3>Clicks</h3>${hbars(CLICKS.map(([k, l]) => [l, sum(k)]))}</div>
+    <div class="acard"><h3>Pages</h3>${hbars(PAGES.map(([k, l]) => [l, sum(k)]), views)}</div>
+    ${phone + comp ? `<div class="acard"><h3>Phone or computer</h3>
+      <div class="split" aria-hidden="true"><i style="flex:${phone}"></i><i style="flex:${comp}"></i></div>
+      <div class="muted" style="font-size:14px;color:var(--text)"><b>Phone</b> ${nf(phone)} (${pct(phone, phone + comp)}) · <b>Computer</b> ${nf(comp)} (${pct(comp, phone + comp)})</div></div>` : ""}
+    <p class="anote">Counts are anonymous: no cookies, names or IP addresses. A visitor is one browser on one day. Days run on Mountain time. Phones and computers signed in to Admin or Ops aren't counted.</p>`;
+  const dc = $("dchart"); if (dc) {
+    const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; dc.appendChild(tip);
+    const cols = [...dc.querySelectorAll(".col")];
+    const at = x => { const r = dc.querySelector(".plot").getBoundingClientRect(); return Math.max(0, Math.min(cols.length - 1, Math.floor((x - r.left) / r.width * cols.length))); };
+    const show = x => {
+      const i = at(x); cols.forEach((c, j) => c.classList.toggle("hot", j === i)); anaHot = i;
+      const c = cols[i].getBoundingClientRect(), r = dc.getBoundingClientRect();
+      tip.innerHTML = `<b>${esc(nice(days[i]))}</b> · ${nf(series[i])} visitor${series[i] === 1 ? "" : "s"} · ${nf(pvs[i])} page view${pvs[i] === 1 ? "" : "s"}`;
+      tip.hidden = false; const w = tip.offsetWidth, cx = c.left + c.width / 2 - r.left;
+      tip.style.left = Math.max(w / 2, Math.min(r.width - w / 2, cx)) + "px";
+    };
+    const hide = () => { tip.hidden = true; cols.forEach(c => c.classList.remove("hot")); anaHot = -1; };
+    dc.addEventListener("pointermove", e => show(e.clientX));
+    dc.addEventListener("pointerdown", e => show(e.clientX));
+    dc.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") hide(); });
+  }
+}
+document.querySelectorAll(".ana-range button").forEach(b => b.onclick = () => { anaRange = +b.dataset.range; anaHot = -1; renderAnalytics(); });
+$("anaRefresh").onclick = () => loadAnalytics(true);
 
 // ---------- one-time import of the built-in store ----------
 $("importBtn").onclick = async () => {

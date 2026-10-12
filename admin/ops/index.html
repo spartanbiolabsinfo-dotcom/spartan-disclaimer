@@ -1502,6 +1502,7 @@ onAuthStateChanged(auth, async user => {
     if (!role) { document.getElementById("authWait").textContent = "Can't reach the cloud to check your access. Check your connection and reload."; return; }
   }
   if (!role) { S.denied(user.email); return; }
+  try { localStorage.setItem("sb_staff", "1"); } catch (e) {}        // the store doesn't count this phone's visits
   S.signedIn(user.displayName ? user.displayName.split(" ")[0] : (user.email || "you"), user.email || "", role); startSync(role);
 });
 
