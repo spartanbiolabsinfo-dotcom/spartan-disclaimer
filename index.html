@@ -1129,7 +1129,13 @@ function sendToOps(){
     paidDate: "", tracking: "", deducted: false, created: now.toISOString(), updated: now.toISOString()
   };
   const ok = () => { try { localStorage.setItem(OPS_SENT, JSON.stringify([id, ...sent].slice(0, 50))); } catch (e) {} };
-  whenCloud(api => api.submitOrder(rec).then(ok, err => { if (err && err.code === "permission-denied") ok(); }));   // already received = fine
+  whenCloud(api => api.submitOrder(rec).then(() => { ok(); pingAlerts(id); }, err => { if (err && err.code === "permission-denied") ok(); }));   // already received = fine
+}
+// tell the team's phones (the alerts script checks the order is real before it sends anything)
+let ALERTS_URL = "";
+function pingAlerts(id){
+  if (!/^https:\/\/script\.google\.com\//.test(ALERTS_URL)) return;
+  try { fetch(ALERTS_URL, { method: "POST", mode: "no-cors", keepalive: true, headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ order: id }) }).catch(() => {}); } catch (e) {}
 }
 function placeOrder(){
   openWhatsApp(); sendToOps(); saveCart(true); rememberOrder(viewing || snapshot());
@@ -1623,6 +1629,7 @@ function applyStore(data){
   const st = data && data.settings;
   if (!st || !st.imported) return false;
   if (st.whatsapp) WHATSAPP = String(st.whatsapp).replace(/\D/g, "");
+  ALERTS_URL = String(st.alertsUrl || "");
   if (st.shipping !== undefined && Number.isFinite(+st.shipping)) SHIPPING = +st.shipping;
   if (st.payDiscount) PAY_DISCOUNT = { Zelle: +st.payDiscount.Zelle || 0, Crypto: +st.payDiscount.Crypto || 0, Card: +st.payDiscount.Card || 0 };
   if (Array.isArray(st.categories) && st.categories.length) CATEGORIES = st.categories.slice();

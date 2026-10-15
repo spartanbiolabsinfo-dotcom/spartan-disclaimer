@@ -1,6 +1,6 @@
 // Spartan Ops service worker: keeps the app's own files on the phone so it opens fast, even with a weak signal.
 // Orders, inventory and the store data are NOT stored here; they come from Firebase (which keeps its own offline copy).
-const VERSION = "spartan-ops-1";
+const VERSION = "spartan-ops-2";
 const SHELL = ["./", "./ops/", "./manifest.webmanifest", "./icons/ops-192.png", "./icons/ops-512.png", "./icons/ops-apple-180.png", "./icons/ops-64.png", "../images/helmet-192.png"];
 const FIREBASE = "https://www.gstatic.com/firebasejs/";                 // versioned URLs, never change
 
@@ -44,4 +44,27 @@ self.addEventListener("fetch", e => {
     return;
   }
   if (SHELL.some(s => new URL(s, self.registration.scope).pathname === path)) e.respondWith(networkFirst(req, req, 2500));
+});
+
+// ----- Phone alerts (sent by the alerts script through Firebase Cloud Messaging) -----
+self.addEventListener("push", e => {
+  let d = {};
+  try { const j = e.data ? e.data.json() : {}; d = j.data || j.notification || j; } catch (err) { d = { body: e.data ? e.data.text() : "" }; }
+  const title = d.title || "Spartan Ops";
+  e.waitUntil(self.registration.showNotification(title, {
+    body: d.body || "", tag: d.tag || undefined, renotify: !!d.tag,
+    icon: new URL("./icons/ops-192.png", self.registration.scope).href,
+    badge: new URL("./icons/ops-64.png", self.registration.scope).href,
+    data: { url: new URL(d.url || "./ops/#orders", self.registration.scope).href }
+  }));
+});
+// tap: bring the open app to the front on that page, or open it
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || new URL("./ops/#orders", self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
+    const open = list.find(c => c.url.startsWith(new URL("./", self.registration.scope).href));
+    if (open) return open.navigate(url).then(c => (c || open).focus()).catch(() => open.focus());
+    return self.clients.openWindow(url);
+  }));
 });

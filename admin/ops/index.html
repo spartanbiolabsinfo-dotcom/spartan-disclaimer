@@ -218,6 +218,12 @@
   .iosguide.ipad{align-items:flex-start;padding-top:70px} .iosguide.ipad .arrow{left:auto;right:74px;bottom:auto;top:8px;transform:rotate(180deg);animation:none}
   @keyframes bob{50%{transform:translate(-50%,8px)}}
   .opstabs svg{display:none}
+  .alertcard{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px}
+  .alertcard .ic{font-size:20px;line-height:1}
+  .alertcard .tx{flex:1;min-width:180px;line-height:1.35}
+  .alertcard .tx small{display:block;color:var(--muted);font-size:12.5px}
+  .alertcard button{flex:none;padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:#fff;font:600 13.5px var(--body);color:var(--text)}
+  .alertcard button.on{border-color:#1f3a5f;background:#1f3a5f;color:#fff}
   .bar .flash:empty{display:none}
   @media (max-width:760px){
     header.top{padding-top:max(14px,env(safe-area-inset-top,0px))}
@@ -420,6 +426,7 @@
   </section>
 
   <section class="tabp" id="tab-orders" hidden>
+    <div class="alertcard" id="alertCard" hidden><span class="ic" aria-hidden="true">🔔</span><span class="tx" id="alertTxt"></span><span id="alertBtns" style="display:flex;gap:6px"></span></div>
     <div class="stats" id="ordStats"></div>
     <input id="ordSearch" type="search" placeholder="Search name, order #, phone or tracking" aria-label="Search orders" autocomplete="off">
     <div class="chips" id="ordFilters" aria-label="Filter by status"></div>
@@ -981,6 +988,68 @@ $("installX").onclick = () => { try { localStorage.setItem("sp_install_later", S
 installUI();
 if ("serviceWorker" in navigator && location.hostname !== "localhost") addEventListener("load", () => { navigator.serviceWorker.register("../sw.js", { scope: "../" }).catch(() => {}); });
 
+// ----- Phone alerts: a notification on this phone when a website order comes in -----
+// The phone registers with Firebase Cloud Messaging; the alerts script (Admin → Settings → Phone alerts) does the sending.
+const Alerts = (() => {
+  const KEY = "sp_push_token";
+  let busy = false, me = "";
+  const has = () => "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
+  const token = () => { try { return localStorage.getItem(KEY) || ""; } catch (e) { return ""; } };
+  function draw(){
+    const card = $("alertCard"); if (!me) { card.hidden = true; return; }
+    card.hidden = false;
+    let txt = "", btns = "";
+    if (!has()) {
+      txt = isIOSDevice && !isStandalone() ? "<b>Order alerts</b><small>Install Spartan Ops on your home screen first (Install at the top), then turn alerts on from inside the app.</small>"
+        : "<b>Order alerts</b><small>This browser can't show alerts. Use Chrome, or the installed Spartan Ops app.</small>";
+    } else if (Notification.permission === "denied") {
+      txt = "<b>Alerts are blocked on this phone</b><small>Turn them on in your phone's Settings → Notifications → Spartan Ops (or the browser's site settings), then come back.</small>";
+    } else if (token() && Notification.permission === "granted") {
+      txt = "<b>Order alerts are on</b><small>This phone buzzes when a website order comes in.</small>";
+      btns = `<button type="button" data-al="test">Send a test</button><button type="button" data-al="off">Turn off</button>`;
+    } else {
+      txt = "<b>Get order alerts on this phone</b><small>A notification the moment a website order comes in.</small>";
+      btns = `<button type="button" class="on" data-al="on">Turn on</button>`;
+    }
+    $("alertTxt").innerHTML = txt; $("alertBtns").innerHTML = btns;
+    $("alertBtns").querySelectorAll("button").forEach(b => b.disabled = busy);
+  }
+  $("alertBtns").addEventListener("click", async e => {
+    const b = e.target.closest("[data-al]"); if (!b || busy || !window.Cloud) return;
+    busy = true; draw();
+    try {
+      if (b.dataset.al === "on") {
+        const perm = await Notification.requestPermission();
+        if (perm !== "granted") { toast(perm === "denied" ? "Alerts are blocked. Allow them in your phone's settings." : "Alerts not turned on."); }
+        else { const t = await Cloud.pushOn(me); try { localStorage.setItem(KEY, t); } catch (er) {} toast("Order alerts are on for this phone"); }
+      }
+      if (b.dataset.al === "off") { await Cloud.pushOff(token()); try { localStorage.removeItem(KEY); } catch (er) {} toast("Order alerts turned off"); }
+      if (b.dataset.al === "test") {
+        const url = await Cloud.alertsUrl();
+        if (!url) toast("Alerts aren't set up yet: an admin adds the alerts link in Admin → Settings → Phone alerts.");
+        else {
+          const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ test: token() }) });
+          let j = {}; try { j = await r.json(); } catch (er) {}
+          toast(j.ok ? "Test sent. It should show up in a few seconds." : (j.error || "The alerts script didn't answer. Check it's deployed with access: Anyone."));
+        }
+      }
+    } catch (err) { console.warn(err); toast(err && err.message ? err.message : "Couldn't change alerts. Check your connection."); }
+    busy = false; draw();
+  });
+  return {
+    // signed in: show the card and keep this phone's registration fresh (tokens can change)
+    async start(email){
+      me = email; draw();
+      if (has() && Notification.permission === "granted" && token() && window.Cloud) {
+        try { const t = await Cloud.pushRefresh(me, token()); if (t && t !== token()) { try { localStorage.setItem(KEY, t); } catch (e) {} } } catch (e) { console.warn("alerts refresh", e); }
+      }
+    },
+    stop(){ me = ""; draw(); }
+  };
+})();
+// the number on the app icon: website orders waiting on someone
+function iconBadge(n){ try { if (navigator.setAppBadge) n ? navigator.setAppBadge(n) : navigator.clearAppBadge(); } catch (e) {} }
+
 // ----- Current invoice <-> order record -----
 function currentRecord(){
   const d = docData();
@@ -1073,6 +1142,7 @@ function renderOrderCount(){
   const open = orders.filter(o => OPEN.includes(o.status)).length;
   $("ordCount").textContent = open ? String(open) : "";
   $("ordCount").hidden = !open;
+  iconBadge(open);
 }
 function orderTotals(o){ return money2(o.total || 0); }
 function vialCount(o){ return (o.items || []).reduce((s, it) => s + it.qty, 0); }
@@ -1456,6 +1526,7 @@ window.OpsSync = (() => {
   const gate = $("authGate");
   let userEmail = "";
   function signedIn(name, email, role){
+    setTimeout(() => Alerts.start(email), 0);
     on = true; errored = ""; userEmail = email; gotData = false;
     document.body.dataset.role = role;
     const rep = role === "rep";
@@ -1469,6 +1540,7 @@ window.OpsSync = (() => {
     status(); redraw();
   }
   function signedOut(){
+    Alerts.stop();
     on = false;
     gate.hidden = false; document.body.classList.add("auth-lock");
     $("authForm").hidden = false; $("authWait").hidden = true;
@@ -1508,8 +1580,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/fireba
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, connectAuthEmulator }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, memoryLocalCache,
-         collection, doc, onSnapshot, writeBatch, setDoc, terminate, clearIndexedDbPersistence, getDoc, getDocFromServer }
+         collection, doc, onSnapshot, writeBatch, setDoc, deleteDoc, terminate, clearIndexedDbPersistence, getDoc, getDocFromServer }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+const MSG = "https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB0p79ljDiBWzE9Pv0xJxQYg4nYOMMLFig",
@@ -1568,6 +1641,35 @@ window.Cloud = {
     }
   },
   writeSettings(data){ return setDoc(doc(getDb(), "meta", "settings"), data); },
+  // ---- phone alerts: this phone's Firebase Cloud Messaging address, kept in pushTokens/<token>
+  async pushToken(){
+    const m = await import(MSG);
+    if (!(await m.isSupported())) throw new Error("This browser can't get alerts. Use Chrome, or the installed Spartan Ops app.");
+    const reg = await navigator.serviceWorker.register("../sw.js", { scope: "../" });
+    await navigator.serviceWorker.ready;
+    return m.getToken(m.getMessaging(app), { serviceWorkerRegistration: reg });
+  },
+  async pushOn(email){
+    const token = await this.pushToken();
+    if (!token) throw new Error("Couldn't turn alerts on. Try again.");
+    const now = new Date().toISOString(), ua = navigator.userAgent;
+    const device = /iPhone/.test(ua) ? "iPhone" : /iPad/.test(ua) ? "iPad" : /Android/.test(ua) ? "Android" : /Mac/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : "Computer";
+    await setDoc(doc(getDb(), "pushTokens", token), { email: (auth.currentUser && auth.currentUser.email) || email, token, device, created: now, updated: now });
+    return token;
+  },
+  async pushRefresh(email, old){
+    const token = await this.pushToken();
+    if (token && token !== old) {
+      await this.pushOn(email);
+      try { await deleteDoc(doc(getDb(), "pushTokens", old)); } catch (e) {}
+    }
+    return token;
+  },
+  async pushOff(token){
+    try { const m = await import(MSG); await m.deleteToken(m.getMessaging(app)); } catch (e) {}
+    if (token) { try { await deleteDoc(doc(getDb(), "pushTokens", token)); } catch (e) {} }
+  },
+  async alertsUrl(){ const s = await getDoc(doc(getDb(), "store", "settings")); return s.exists() ? String(s.data().alertsUrl || "") : ""; },
   // Who may actually read or write is decided by the Firestore rules (an email allow-list), not here.
   async signIn(){
     const provider = new GoogleAuthProvider();

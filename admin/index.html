@@ -85,6 +85,9 @@
   .row .sub{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .row .moves{display:flex;flex-direction:column;gap:4px}
   .row .moves .icon{width:34px;height:28px;font-size:12px}
+  /* phone alerts setup */
+  .alsteps{margin:0 0 12px 18px;display:grid;gap:7px;font-size:14px;line-height:1.45}
+  .albtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
   /* analytics */
   .ana-range{display:flex;gap:6px;margin:-4px 0 14px}
   .ana-range button{flex:1;min-height:38px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:13.5px}
@@ -311,6 +314,24 @@
         </fieldset>
         <button class="btn gold" type="submit" id="saveSettings">Save settings</button>
       </form>
+
+      <div class="acard" id="alertsCard" style="margin-top:22px">
+        <h3>Phone alerts <span class="chip" id="alStatus"></span></h3>
+        <p class="muted" style="margin-bottom:10px">A notification on the team's phones the moment a website order comes in. Each person turns alerts on in <b>Ops → Orders</b>. A small Google script on this account sends them. Set it up once:</p>
+        <ol class="alsteps">
+          <li>Signed in as <b>spartanbiolabs.info@gmail.com</b>, open <a href="https://script.google.com/home/projects/create" target="_blank" rel="noopener">script.google.com → New project</a> and name it <b>Spartan Ops Alerts</b>.</li>
+          <li>Tap <b>Copy the script</b> below and paste it over everything in <b>Code.gs</b>. Save.</li>
+          <li>⚙ <b>Project Settings</b> → tick <b>Show "appsscript.json" manifest file in editor</b>. Back in the editor, open <b>appsscript.json</b>, paste <b>Copy the settings file</b> over everything. Save.</li>
+          <li>Pick <b>setup</b> in the function menu at the top → <b>Run</b> → allow access. If Google says it hasn't verified the app: <b>Advanced → Go to Spartan Ops Alerts</b>. It's your own script.</li>
+          <li><b>Deploy → New deployment</b> → ⚙ <b>Web app</b> → Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b>. Copy the <b>Web app URL</b>, paste it below and tap <b>Save link</b>.</li>
+        </ol>
+        <div class="albtns"><button class="btn sm" type="button" id="alCopy">Copy the script</button><button class="btn sm" type="button" id="alCopyMan">Copy the settings file</button><a class="btn sm ghost" href="alerts/SpartanAlerts.gs" target="_blank" rel="noopener">View script</a></div>
+        <form class="f" id="alForm" autocomplete="off" style="margin-top:12px">
+          <label>Alerts link (Web app URL)<input type="url" id="sAlerts" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
+          <div class="albtns"><button class="btn gold" type="submit">Save link</button><button class="btn sm" type="button" id="alCheck">Check</button></div>
+        </form>
+        <p class="muted" id="alMsg" role="status" style="margin-top:8px"></p>
+      </div>
     </section>
   </main>
 </div>
@@ -525,6 +546,7 @@ function render(){
   if (tab === "products") renderProducts();
   if (tab === "coas") renderCoas();
   if (tab === "settings" && !settingsDirty) fillSettings();
+  if (tab === "settings") fillAlerts();
 }
 
 // ---------- Analytics: anonymous daily counts the store keeps (stats/<YYYY-MM>~<key>, one number per day) ----------
@@ -643,6 +665,40 @@ function renderAnalytics(){
 }
 document.querySelectorAll(".ana-range button").forEach(b => b.onclick = () => { anaRange = +b.dataset.range; anaHot = -1; renderAnalytics(); });
 $("anaRefresh").onclick = () => loadAnalytics(true);
+
+// ---------- Phone alerts: the link to the alerts script (admin/alerts/SpartanAlerts.gs), kept in store/settings ----------
+const okAlertsUrl = u => /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u) || /^https:\/\/script\.google\.com\/a\/macros\/[^/]+\/s\/[\w-]+\/exec$/.test(u);
+function fillAlerts(){
+  const u = (settings && settings.alertsUrl) || "";
+  if (document.activeElement !== $("sAlerts")) $("sAlerts").value = u;
+  $("alStatus").textContent = u ? "Link saved" : "Not set up";
+  $("alStatus").className = "chip " + (u ? "good" : "warn");
+}
+async function copyFile(path, label){
+  try {
+    const t = await (await fetch(path, { cache: "no-store" })).text();
+    await navigator.clipboard.writeText(t); toast(label + " copied. Paste it in the script editor.");
+  } catch (e) { window.open(path, "_blank"); toast("Couldn't copy here. It opened in a new tab: select all and copy."); }
+}
+$("alCopy").onclick = () => copyFile("alerts/SpartanAlerts.gs", "Script");
+$("alCopyMan").onclick = () => copyFile("alerts/appsscript.json", "Settings file");
+$("alForm").onsubmit = async e => {
+  e.preventDefault();
+  const u = $("sAlerts").value.trim();
+  if (u && !okAlertsUrl(u)) { $("alMsg").textContent = "That doesn't look like a Web app URL. It starts with https://script.google.com/macros/s/ and ends with /exec."; return; }
+  try { await commitAll([["set", doc(db, "store", "settings"), { ...settings, alertsUrl: u }]]); $("alMsg").textContent = u ? "Saved. Tap Check to make sure the script answers." : "Link removed: alerts are off."; }
+  catch (err) { $("alMsg").textContent = failMsg(err); }
+};
+$("alCheck").onclick = async () => {
+  const u = $("sAlerts").value.trim() || (settings && settings.alertsUrl) || "";
+  if (!okAlertsUrl(u)) { $("alMsg").textContent = "Paste the Web app URL first."; return; }
+  $("alMsg").textContent = "Checking…";
+  try {
+    const r = await fetch(u, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ ping: true }) });
+    const j = await r.json();
+    $("alMsg").textContent = j.ok ? `The script answered (version ${j.version}). Now turn alerts on in Ops → Orders and tap Send a test.` : (j.error || "The script said no.");
+  } catch (err) { $("alMsg").textContent = "The script didn't answer. Check it's deployed as a Web app with access: Anyone."; }
+};
 
 // ---------- one-time import of the built-in store ----------
 $("importBtn").onclick = async () => {
