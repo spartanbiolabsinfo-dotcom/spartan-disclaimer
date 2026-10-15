@@ -6,7 +6,12 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Spartan Admin</title>
 <link rel="icon" type="image/png" sizes="192x192" href="../images/helmet-192.png">
-<link rel="apple-touch-icon" href="../images/helmet-512.png">
+<link rel="apple-touch-icon" href="icons/ops-apple-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Spartan Ops">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f4f6f9">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -502,8 +507,10 @@ onAuthStateChanged(auth, async user => {
 });
 
 // ---------- tabs ----------
-document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { tab = b.dataset.tab; try { history.replaceState(null, "", "#" + tab); } catch (e) {} render(); window.scrollTo(0, 0); });
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { tab = b.dataset.tab; try { history.replaceState(null, "", "#" + tab); localStorage.setItem("sp_last", "admin:" + tab); } catch (e) {} render(); window.scrollTo(0, 0); });
 { const h = location.hash.slice(1); if (["products", "coas", "settings", "team", "stats"].includes(h)) tab = h; }
+try { localStorage.setItem("sp_last", "admin:" + tab); } catch (e) {}
+if ("serviceWorker" in navigator && location.hostname !== "localhost") addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
 
 function render(){
   const ready = gotSettings && gotProducts && gotCoas;
