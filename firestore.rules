@@ -43,6 +43,15 @@ service cloud.firestore {
     match /meta/{id}      { allow read: if isStaff(); allow write: if isAdmin(); }
     match /supply/{id}    { allow read, write: if isAdmin(); }
 
+    // ----- Phone alerts: each team member registers their own phones (pushTokens/<token>) -----
+    // The alerts script (on the owner's account) reads these to send; nobody else can see another person's phones.
+    match /pushTokens/{t} {
+      allow read: if isAdmin() || (isStaff() && resource.data.email == me());
+      allow create, update: if isStaff() && request.resource.data.email == me() && request.resource.data.token == t
+        && request.resource.data.keys().hasOnly(['email', 'token', 'device', 'created', 'updated']);
+      allow delete: if isAdmin() || (isStaff() && resource.data.email == me());
+    }
+
     // ----- Visit counts for Admin > Analytics -----
     // stats/<YYYY-MM>~<key> holds one number per day (d01..d31). Anyone may add exactly 1 to TODAY's number
     // (days on US Mountain time, UTC-6) and nothing else; only admins can read or clear them.

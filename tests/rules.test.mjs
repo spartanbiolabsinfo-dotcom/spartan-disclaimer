@@ -31,6 +31,24 @@ await ok(assertFails(getDocs(collection(rep, "stats"))), "sales rep can't read c
 await ok(assertSucceeds(getDocs(collection(owner, "stats"))), "the owner reads the counts");
 let v = null; await env.withSecurityRulesDisabled(async c => { v = (await getDoc(doc(c.firestore(), `stats/${M}~v`))).data(); });
 await ok(v[F] === 2 ? Promise.resolve() : Promise.reject(new Error(JSON.stringify(v))), "today's visitor count is 2");
+// phone alerts: each person registers only their own phones
+const T = "fcmTok:abc-123_x";
+const rep2 = env.authenticatedContext("p2", { email: "rep@gmail.com", email_verified: true }).firestore();
+await ok(assertSucceeds(setDoc(doc(owner, "pushTokens/" + T), { email: "spartanbiolabs.info@gmail.com", token: T, device: "iPhone", created: "x", updated: "x" })), "owner registers a phone");
+await ok(assertSucceeds(setDoc(doc(rep, "pushTokens/repTok"), { email: "rep@gmail.com", token: "repTok", device: "Android", created: "x", updated: "x" })), "a sales rep registers their phone");
+await ok(assertFails(setDoc(doc(rep, "pushTokens/x1"), { email: "spartanbiolabs.info@gmail.com", token: "x1" })), "can't register a phone under someone else");
+await ok(assertFails(setDoc(doc(rep, "pushTokens/x2"), { email: "rep@gmail.com", token: "other" })), "token must match the id");
+await ok(assertFails(setDoc(doc(rep, "pushTokens/x3"), { email: "rep@gmail.com", token: "x3", admin: true })), "no extra fields");
+await ok(assertFails(setDoc(doc(rando, "pushTokens/x4"), { email: "rando@gmail.com", token: "x4" })), "people not on the team can't register");
+await ok(assertFails(setDoc(doc(anon, "pushTokens/x5"), { email: "a@b.c", token: "x5" })), "visitors can't register");
+await ok(assertFails(getDoc(doc(rep, "pushTokens/" + T))), "a rep can't see the owner's phone");
+await ok(assertSucceeds(getDoc(doc(rep, "pushTokens/repTok"))), "…but can see their own");
+await ok(assertFails(getDocs(collection(rep, "pushTokens"))), "a rep can't list everyone's phones");
+await ok(assertSucceeds(getDocs(collection(owner, "pushTokens"))), "an admin can");
+await ok(assertFails(deleteDoc(doc(rep, "pushTokens/" + T))), "a rep can't remove someone else's phone");
+await ok(assertSucceeds(deleteDoc(doc(rep, "pushTokens/repTok"))), "a rep removes their own");
+await ok(assertFails(getDoc(doc(anon, "pushLog/SB-261015-AAAA"))), "the alerts log is private");
+await ok(assertFails(setDoc(doc(owner, "pushLog/SB-261015-AAAA"), { order: "x" })), "…and only the script writes it");
 // the rest still behaves
 await ok(assertSucceeds(getDocs(collection(anon, "storeProducts"))), "store products still public");
 await ok(assertFails(setDoc(doc(anon, "storeProducts/x"), { name: "x" })), "visitors still can't edit products");
