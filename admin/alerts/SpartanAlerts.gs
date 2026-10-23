@@ -1,26 +1,16 @@
-/**
- * Spartan Ops phone alerts (version 1)
- *
- * Sends a notification to every team phone that turned alerts on in Spartan Ops when a website order comes in.
- * It runs on the owner's Google account (spartanbiolabs.info@gmail.com), so it can read the orders and send
- * through Firebase Cloud Messaging for the spartan-ops project. Nothing is stored here.
- *
- * Set up (once):
- *   1. script.google.com → New project → name it "Spartan Ops Alerts". Paste this whole file over Code.gs.
- *   2. Project Settings (gear) → tick "Show appsscript.json manifest file in editor". Open appsscript.json and
- *      replace it with the manifest shown in Admin → Settings → Phone alerts.
- *   3. Pick "setup" in the function menu at the top → Run → allow access. (This also adds a 5-minute safety check.)
- *   4. Deploy → New deployment → type: Web app → Execute as: Me → Who has access: Anyone → Deploy.
- *      Copy the Web app URL into Admin → Settings → Phone alerts and Save.
- * After changing this file later: Deploy → Manage deployments → ✏ → Version: New version → Deploy.
- *
- * Why it's safe to leave open to "Anyone": the only thing a caller can do is say "order SB-… just came in".
- * The script then checks that order really exists in Firestore, came from the website in the last few hours and
- * hasn't been announced yet. A test can only go to a phone that is already registered for alerts.
- */
+// Spartan Ops phone alerts (version 2)
+// Sends a notification to every team phone that turned alerts on in Spartan Ops when a website order comes in.
+// It runs on the owner's Google account (spartanbiolabs.info@gmail.com), so it can read the orders and send them
+// through Firebase Cloud Messaging for the spartan-ops project. Nothing is stored here.
+// Setup steps: Admin > Settings > Phone alerts. After changing this file later: Deploy > Manage deployments >
+// pencil > Version: New version > Deploy.
+// Safe to leave open to "Anyone": a caller can only say "order SB-... just came in". The script checks that order
+// really exists, came from the website in the last few hours and hasn't been announced yet. A test can only go
+// to a phone that is already registered for alerts.
+// (Only // comments in this file, so it pastes cleanly into the editor on a phone too.)
 const PROJECT = "spartan-ops";
 const OWNER = "spartanbiolabs.info@gmail.com";
-const VERSION = 1;
+const VERSION = 2;
 const FS = "https://firestore.googleapis.com/v1/projects/" + PROJECT + "/databases/(default)/documents";
 const MAX_AGE_H = 6;                                   // only announce orders newer than this
 

@@ -319,11 +319,11 @@
         <h3>Phone alerts <span class="chip" id="alStatus"></span></h3>
         <p class="muted" style="margin-bottom:10px">A notification on the team's phones the moment a website order comes in. Each person turns alerts on in <b>Ops → Orders</b>. A small Google script on this account sends them. Set it up once:</p>
         <ol class="alsteps">
-          <li>Signed in as <b>spartanbiolabs.info@gmail.com</b>, open <a href="https://script.google.com/home/projects/create" target="_blank" rel="noopener">script.google.com → New project</a> and name it <b>Spartan Ops Alerts</b>.</li>
-          <li>Tap <b>Copy the script</b> below and paste it over everything in <b>Code.gs</b>. Save.</li>
-          <li>⚙ <b>Project Settings</b> → tick <b>Show "appsscript.json" manifest file in editor</b>. Back in the editor, open <b>appsscript.json</b>, paste <b>Copy the settings file</b> over everything. Save.</li>
-          <li>Pick <b>setup</b> in the function menu at the top → <b>Run</b> → allow access. If Google says it hasn't verified the app: <b>Advanced → Go to Spartan Ops Alerts</b>. It's your own script.</li>
-          <li><b>Deploy → New deployment</b> → ⚙ <b>Web app</b> → Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b>. Copy the <b>Web app URL</b>, paste it below and tap <b>Save link</b>.</li>
+          <li><b>Easiest on a computer.</b> Signed in as <b>spartanbiolabs.info@gmail.com</b>, open <a href="https://script.google.com/home/projects/create" target="_blank" rel="noopener">script.google.com → New project</a>. Tap the name <b>Untitled project</b> at the top and rename it <b>Spartan Ops Alerts</b>.</li>
+          <li>In <b>Code.gs</b>, select everything and delete it. Tap <b>Copy the script</b> below, paste it in, then tap 💾 <b>Save</b> and wait until "Unsaved changes" at the top goes away.</li>
+          <li>⚙ <b>Project Settings</b> (left side) → tick <b>Show "appsscript.json" manifest file in editor</b>. Go back to the editor (<b>&lt; &gt;</b> on the left), open <b>appsscript.json</b>, select everything and delete it, then paste <b>Copy the settings file</b> (it's one long line) and 💾 <b>Save</b>.</li>
+          <li>In the toolbar right above the code, next to <b>▷ Run</b>, there's a dropdown showing <b>myFunction</b> or <b>doGet</b>. Pick <b>setup</b> in it, then tap <b>▷ Run</b>. Google asks for permission: <b>Review permissions</b> → your account → <b>Advanced</b> → <b>Go to Spartan Ops Alerts (unsafe)</b> → <b>Allow</b>. It's your own script. Done when the log at the bottom says <b>Ready</b>.</li>
+          <li><b>Deploy → New deployment</b> → ⚙ next to "Select type" → <b>Web app</b>. Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b>. Copy the <b>Web app URL</b>, paste it below, tap <b>Save link</b>, then <b>Check</b>.</li>
         </ol>
         <div class="albtns"><button class="btn sm" type="button" id="alCopy">Copy the script</button><button class="btn sm" type="button" id="alCopyMan">Copy the settings file</button><a class="btn sm ghost" href="alerts/SpartanAlerts.gs" target="_blank" rel="noopener">View script</a></div>
         <form class="f" id="alForm" autocomplete="off" style="margin-top:12px">
