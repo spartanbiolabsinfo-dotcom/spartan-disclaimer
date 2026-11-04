@@ -67,11 +67,21 @@
   .flash.ok{color:var(--paid)} .flash.warn{color:var(--due)} .flash.bad{color:var(--bad)}
 
   .items{display:grid;gap:8px}
-  .item{display:grid;grid-template-columns:minmax(0,1fr) 64px 84px 36px;gap:8px;align-items:end}
-  .item .lbl{display:none}
-  .items .head{display:grid;grid-template-columns:minmax(0,1fr) 64px 84px 36px;gap:8px;font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  .item,.items .head{display:grid;grid-template-columns:minmax(0,1fr) 60px 100px 92px 36px;gap:8px;align-items:end}
+  .item .f{display:grid;gap:4px;margin:0}
+  .item .lbl{display:none;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  .items .head{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  .item input.custom{border-color:var(--gold);color:var(--gold-hi)}
   .item button.x{padding:10px 0;border-color:var(--line);color:var(--muted);height:44px}
-  .item .warn{grid-column:1/-1;color:var(--due);font-size:12px;margin-top:-4px}
+  .item .warn,.item .pnote{grid-column:1/-1;font-size:12px;margin-top:-4px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+  .item .warn{color:var(--due)} .item .pnote{color:var(--muted)}
+  .item .linkbtn{background:none;border:none;padding:4px 0;color:var(--gold-hi);font:600 12px var(--body);text-decoration:underline;cursor:pointer}
+  @media (max-width:560px){
+    .items .head{display:none}
+    .item{grid-template-columns:64px minmax(0,1fr) minmax(0,1fr) 36px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+    .item select{grid-column:1/-1}
+    .item .lbl{display:block}
+  }
 
   .discs{display:grid;gap:12px;background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px}
   .toggle{display:flex;align-items:flex-start;gap:10px;color:var(--text);font-size:14px;font-weight:500}
@@ -362,7 +372,7 @@
 
       <section class="step" aria-labelledby="s3">
         <h2 id="s3"><span class="n">3</span>Items</h2>
-        <p class="hint">Prices come from your price list, not the message, so an edited message can't change them.</p>
+        <p class="hint">Prices start from your price list, not the message, so an edited message can't change them. To charge a different price on this order, type it in the Each box.</p>
         <div class="items" id="items"></div>
         <div class="btns"><button type="button" id="addItem">+ Add item</button></div>
       </section>
@@ -586,32 +596,71 @@ function productOptions(sel){
   const list = CATALOG.some(p => p.id === sel) || !byId[sel] ? CATALOG : [...CATALOG, byId[sel]];   // an old order's deleted product still shows
   return list.map(p => `<option value="${p.id}" ${p.id === sel ? "selected" : ""}>${esc(label(p))}${p.hidden ? " (hidden)" : ""} · ${money(p.price)}</option>`).join("");
 }
+// a line's price each: the price list, unless it was changed for this order (it.price)
+const unitPrice = it => it.price != null ? it.price : (byId[it.pid] ? byId[it.pid].price : 0);
+const priceBox = n => { const v = Math.round(n * 100) / 100; return Number.isInteger(v) ? String(v) : v.toFixed(2); };
+function rowExtras(i){
+    const it = items[i], p = byId[it.pid];
+    const amt = p ? unitPrice(it) * it.qty : 0;
+    const custom = p && it.price != null;
+    const mismatch = p && it.msgPrice != null && Math.abs(it.msgPrice - amt) > 0.009
+      ? `<div class="warn">The message said ${money(it.msgPrice)} for this line. Using ${money(amt)}.<button type="button" class="linkbtn" data-usemsg="${i}">Use ${money(it.msgPrice)}</button></div>` : "";
+    const note = custom ? `<div class="pnote">Changed for this order. Price list: ${money(p.price)} each.<button type="button" class="linkbtn" data-reset="${i}">Use price list</button></div>` : "";
+    return mismatch + note;
+}
+// qty / price edits update their own row in place, so tapping from one box to the next keeps working
+function refreshRow(i){
+  const it = items[i]; if (!it) return;
+  const a = $("it-a-" + i), e = $("it-e-" + i), x = $("it-x-" + i);
+  if (a) a.value = money(unitPrice(it) * it.qty);
+  if (e) { e.classList.toggle("custom", it.price != null); if (document.activeElement !== e) e.value = priceBox(unitPrice(it)); }
+  if (x) x.innerHTML = rowExtras(i);
+}
 function renderItems(){
-  const head = `<div class="head"><span>Product</span><span>Qty</span><span>Amount</span><span></span></div>`;
+  const head = `<div class="head"><span>Product</span><span>Qty</span><span>Each</span><span>Amount</span><span></span></div>`;
   $("items").innerHTML = head + items.map((it, i) => {
     const p = byId[it.pid];
-    const amt = p ? p.price * it.qty : 0;
-    const mismatch = p && it.msgPrice != null && Math.abs(it.msgPrice - amt) > 0.009
-      ? `<div class="warn">The message said ${money(it.msgPrice)} for this line. Using your price list: ${money(amt)}.</div>` : "";
+    const amt = p ? unitPrice(it) * it.qty : 0;
+    const custom = p && it.price != null;
     return `<div class="item">
       <select id="it-p-${i}" data-i="${i}" data-f="pid" aria-label="Product for line ${i+1}">${productOptions(it.pid)}</select>
-      <input id="it-q-${i}" data-i="${i}" data-f="qty" type="number" min="1" step="1" inputmode="numeric" value="${it.qty}" aria-label="Quantity for line ${i+1}">
-      <input value="${money(amt)}" readonly tabindex="-1" aria-label="Amount for line ${i+1}" class="mono">
+      <label class="f"><span class="lbl">Qty</span><input id="it-q-${i}" data-i="${i}" data-f="qty" type="number" min="1" step="1" inputmode="numeric" value="${it.qty}" aria-label="Quantity for line ${i+1}"></label>
+      <label class="f"><span class="lbl">Each ($)</span><input id="it-e-${i}" data-i="${i}" data-f="price" type="number" min="0" step="0.01" inputmode="decimal" value="${priceBox(unitPrice(it))}" aria-label="Price each for line ${i+1}" class="mono${custom ? " custom" : ""}"></label>
+      <label class="f"><span class="lbl">Amount</span><input id="it-a-${i}" value="${money(amt)}" readonly tabindex="-1" aria-label="Amount for line ${i+1}" class="mono"></label>
       <button class="x" type="button" data-rm="${i}" aria-label="Remove line ${i+1}">✕</button>
-      ${mismatch}
+      <div id="it-x-${i}" style="display:contents">${rowExtras(i)}</div>
     </div>`;
   }).join("");
   if (!items.length) $("items").insertAdjacentHTML("beforeend", `<p class="hint">No items yet. Add one below.</p>`);
 }
+// typed price: blank or the price-list price means "use the price list"
+function setPrice(it, raw){
+  const v = parseFloat(raw), list = byId[it.pid] ? byId[it.pid].price : 0;
+  if (raw === "" || isNaN(v) || v < 0 || Math.abs(v - list) < 0.005) delete it.price;
+  else it.price = Math.round(v * 100) / 100;
+}
+// while typing: just the amount and totals (re-drawing the row would close the phone keyboard)
+$("items").addEventListener("input", e => {
+  const el = e.target, i = +el.dataset.i; if (isNaN(i) || !items[i]) return;
+  if (el.dataset.f === "price") setPrice(items[i], el.value.trim());
+  else if (el.dataset.f === "qty") { const q = parseInt(el.value, 10); if (q >= 1) items[i].qty = q; else return; }
+  else return;
+  refreshRow(i); update();
+});
 $("items").addEventListener("change", e => {
   const el = e.target, i = +el.dataset.i; if (isNaN(i)) return;
-  if (el.dataset.f === "pid") { items[i].pid = el.value; items[i].msgPrice = null; }
-  if (el.dataset.f === "qty") items[i].qty = Math.max(1, parseInt(el.value, 10) || 1);
-  renderItems(); update();
+  if (el.dataset.f === "pid") { items[i].pid = el.value; items[i].msgPrice = null; delete items[i].price; renderItems(); update(); return; }
+  if (el.dataset.f === "qty") { items[i].qty = Math.max(1, parseInt(el.value, 10) || 1); el.value = items[i].qty; }
+  if (el.dataset.f === "price") { setPrice(items[i], el.value.trim()); el.value = priceBox(unitPrice(items[i])); }
+  refreshRow(i); update();
 });
 $("items").addEventListener("click", e => {
-  const b = e.target.closest("[data-rm]"); if (!b) return;
-  items.splice(+b.dataset.rm, 1); renderItems(); update();
+  const r = e.target.closest("[data-reset]"), u = e.target.closest("[data-usemsg]"), b = e.target.closest("[data-rm]");
+  if (r) { const i = +r.dataset.reset; delete items[i].price; refreshRow(i); }
+  else if (u) { const i = +u.dataset.usemsg, it = items[i]; setPrice(it, String(it.msgPrice / it.qty)); refreshRow(i); }
+  else if (b) { items.splice(+b.dataset.rm, 1); renderItems(); }
+  else return;
+  update();
 });
 $("addItem").onclick = () => { items.push({ pid: CATALOG[0].id, qty: 1 }); renderItems(); update(); };
 
@@ -676,7 +725,7 @@ $("clearBtn").onclick = () => {
 
 // ----- Totals -----
 function calc(){
-  const lines = items.filter(it => byId[it.pid]).map(it => ({ ...byId[it.pid], qty:it.qty, amount: byId[it.pid].price * it.qty }));
+  const lines = items.filter(it => byId[it.pid]).map(it => ({ ...byId[it.pid], qty:it.qty, price: unitPrice(it), amount: unitPrice(it) * it.qty }));
   const subtotal = lines.reduce((s, l) => s + l.amount, 0);
   const pay = $("payMethod").value;
   const volPct = $("dVol10").checked ? VOL10_PCT : $("dVol5").checked ? VOL5_PCT : 0;
@@ -1056,7 +1105,7 @@ function currentRecord(){
   return {
     id: d.orderId === "(no order #)" ? "" : d.orderId,
     date: d.date, name: d.name, email: d.email, phone: d.phone, addr: d.addr, notes: d.notes,
-    pay: d.pay, items: items.filter(it => byId[it.pid]).map(it => ({ pid: it.pid, qty: it.qty })),
+    pay: d.pay, items: items.filter(it => byId[it.pid]).map(it => it.price != null ? { pid: it.pid, qty: it.qty, price: it.price } : { pid: it.pid, qty: it.qty }),
     disc: { pay: $("dPay").checked, vol5: $("dVol5").checked, vol10: $("dVol10").checked, gift: $("dGift").checked },
     shipping: d.shipping, subtotal: d.subtotal, total: d.total,
     paidDate: d.type === "receipt" ? d.paidDate : "", tracking: d.tracking

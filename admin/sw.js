@@ -1,6 +1,6 @@
 // Spartan Ops service worker: keeps the app's own files on the phone so it opens fast, even with a weak signal.
 // Orders, inventory and the store data are NOT stored here; they come from Firebase (which keeps its own offline copy).
-const VERSION = "spartan-ops-2";
+const VERSION = "spartan-ops-3";
 const SHELL = ["./", "./ops/", "./manifest.webmanifest", "./icons/ops-192.png", "./icons/ops-512.png", "./icons/ops-apple-180.png", "./icons/ops-64.png", "../images/helmet-192.png"];
 const FIREBASE = "https://www.gstatic.com/firebasejs/";                 // versioned URLs, never change
 
