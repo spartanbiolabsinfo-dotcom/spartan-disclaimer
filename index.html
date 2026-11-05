@@ -1573,7 +1573,7 @@ window.Stats = (() => {
   // where a visitor came from: the vial QR (lands on a COA), the app they tapped the link in, or the page that sent them
   function source(){
     const ua = navigator.userAgent, h = location.hash, src = (new URLSearchParams(location.search).get("src") || "").toLowerCase();
-    if (/^(ig|tt|lt|wa|qr|fb)$/.test(src)) return src;
+    if (/^(ig|tt|lt|wa|qr|fb|shop)$/.test(src)) return src;
     if (h.startsWith("#coa/")) return "qr";
     if (/Instagram/i.test(ua)) return "ig";
     if (/musical_ly|Bytedance|TikTok/i.test(ua)) return "tt";
