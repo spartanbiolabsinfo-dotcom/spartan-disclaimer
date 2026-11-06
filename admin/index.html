@@ -582,7 +582,7 @@ async function loadAnalytics(force){
 const nf = n => Math.round(n).toLocaleString("en-US");
 const pct = (a, b) => b ? Math.round(a / b * 100) + "%" : "–";
 const money0 = n => "$" + Math.round(n).toLocaleString("en-US");
-const SRC = { qr: "Vial QR code", shop: "In-shop ad QR", ig: "Instagram", tt: "TikTok", lt: "Linktree", wa: "WhatsApp", fb: "Facebook", search: "Google / search", direct: "Typed in / bookmark", other: "Other websites" };
+const SRC = { qr: "Vial QR code", shop: "In-shop ad QR", barber: "Barber shop QR", nails: "Nail salon QR", vape: "Vape store QR", ig: "Instagram", tt: "TikTok", lt: "Linktree", wa: "WhatsApp", fb: "Facebook", search: "Google / search", direct: "Typed in / bookmark", other: "Other websites" };
 const CLICKS = [["c-wa", "WhatsApp taps"], ["c-coa", "COAs opened"], ["c-qr", "Vial QR scans"], ["c-ig", "Instagram link"], ["c-tt", "TikTok link"], ["c-lt", "Linktree link"], ["c-gate", "Passed age check"], ["c-decline", "Left at age check"]];
 const PAGES = [["pv-home", "Home"], ["pv-shop", "Shop"], ["pv-product", "Product pages"], ["pv-coa", "COA Library"], ["pv-order", "Order page"]];
 function hbars(rows, total){
