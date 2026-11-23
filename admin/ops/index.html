@@ -1261,8 +1261,12 @@ $("ordList").addEventListener("click", e => {
   else if (act === "open") loadOrderIntoInvoice(o);
   else if (act === "notify") {
     const first = (o.name || "").split(/\s+/)[0] || "there";
-    const msg = o.status === "shipped" || o.status === "delivered"
-      ? `Hi ${first}, your Spartan Biolabs order ${o.id} has shipped via UPS.${o.tracking ? `\nTracking: ${upsLink(o.tracking)}` : ""}\nThe COA for your lot is in the box. Research use only.`
+    // link straight to the store's guided review with this order number filled in
+    const rateLink = new URL("../../", location.href).href.replace(/\/$/, "/") + "#review/" + encodeURIComponent(o.id);
+    const msg = o.status === "delivered"
+      ? `Hi ${first}, your Spartan Biolabs order ${o.id} was delivered. Thank you for ordering!\nHow did we do? Rate your order in 30 seconds (packaging, shipping and service): ${rateLink}`
+      : o.status === "shipped"
+      ? `Hi ${first}, your Spartan Biolabs order ${o.id} has shipped via UPS.${o.tracking ? `\nTracking: ${upsLink(o.tracking)}` : ""}\nThe COA for your lot is in the box. Research use only.\nOnce it arrives, rate your order in 30 seconds: ${rateLink}`
       : o.status === "paid" || o.status === "packed"
       ? `Hi ${first}, payment for order ${o.id} is received. Thank you! We'll send your UPS tracking as soon as it ships.`
       : `Hi ${first}, just checking in on order ${o.id}. Total due is ${orderTotals(o)}. Your invoice has the payment details.`;
