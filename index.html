@@ -540,33 +540,37 @@
   .btn-agree:disabled{background:#e4ddcc;color:#9a937f}
   .btn-decline{color:var(--gold-hi)}
 
-  /* ===== Customer reviews (home) =====
-     Moderated: only reviews the owner approves in Firebase are shown. Product quality, COA, shipping and service only. */
+  /* ===== Customer ratings (home) =====
+     Stars only, no written comments. Customers rate purity, COA match, shipping and service;
+     only ratings the owner approves in Firebase count. */
   .reviews{margin-top:8px}
-  .rev-sum{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:16px 18px;border-radius:12px;background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(28,24,16,.05),0 6px 18px rgba(28,24,16,.06)}
-  .rev-avg{font:600 34px/1 Cinzel,Georgia,serif;color:var(--text)}
-  .rev-avg-k{display:grid;gap:3px;font-size:13px;color:var(--muted)}
+  .rate-card{display:grid;gap:18px;padding:20px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(28,24,16,.05),0 6px 18px rgba(28,24,16,.06)}
+  @media (min-width:720px){ .rate-card{grid-template-columns:220px 1fr;align-items:center;gap:28px;padding:24px 28px} }
+  .rate-overall{display:grid;justify-items:center;gap:6px;text-align:center}
+  @media (min-width:720px){ .rate-overall{border-right:1px solid #f0eadb;padding-right:24px} }
+  .rate-avg{font:600 52px/1 Cinzel,Georgia,serif;color:var(--text)}
+  .rate-n{font-size:13px;color:var(--muted)}
   .stars{display:inline-flex;gap:2px;color:var(--gold)}
-  .stars svg{width:17px;height:17px}
-  .stars .off{color:#ddd4bf}
-  .rev-topics{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
-  .rev-topics span,.rev-tag{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:#fbf4e1;color:var(--gold-hi);border:1px solid #ecdcae}
-  .rev-sample{margin:10px 0 0;padding:8px 12px;border-radius:8px;background:#fff8e6;border:1px dashed var(--gold);color:var(--gold-hi);font-size:12.5px;font-weight:600}
-  .rev-list{display:grid;gap:10px;margin-top:12px}
-  @media (min-width:640px){ .rev-list{grid-template-columns:repeat(2,1fr)} }
-  @media (min-width:960px){ .rev-list{grid-template-columns:repeat(3,1fr)} }
-  .rev{display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:12px;background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(28,24,16,.05),0 6px 18px rgba(28,24,16,.06)}
-  .rev-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
-  .rev-date{font-size:12px;color:var(--muted)}
-  .rev p{margin:0;color:#3d3930;font-size:14.5px;line-height:1.5}
-  .rev-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:auto;padding-top:6px;border-top:1px solid #f0eadb;font-size:12.5px;color:var(--muted)}
-  .rev-meta b{color:var(--text);font-weight:600}
-  .rev-lot{display:inline-flex;align-items:center;gap:4px;color:var(--good);font-weight:600}
-  .rev-lot svg{width:14px;height:14px}
-  .rev-tags{display:flex;flex-wrap:wrap;gap:5px}
-  .rev-tag{font-size:11px;padding:2px 8px}
-  .rev-more{display:block;margin:12px auto 0;background:none;border:none;color:var(--gold-hi);font:600 14px Inter,sans-serif;cursor:pointer;text-decoration:underline}
-  .rev-empty{padding:18px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px;margin-top:12px}
+  .stars svg{width:18px;height:18px}
+  .rate-overall .stars svg{width:22px;height:22px}
+  .stars .off{color:#e6dec9}
+  .rate-topics{display:grid;gap:12px}
+  .rate-row{display:grid;grid-template-columns:96px 1fr 30px;align-items:center;gap:12px;font-size:14px}
+  .rate-row b{font-weight:600;color:var(--text)}
+  .rate-bar{height:8px;border-radius:999px;background:#f1ecdf;overflow:hidden}
+  .rate-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#d8b04c,#c19a35)}
+  .rate-row span{text-align:right;font-weight:700;color:var(--gold-hi)}
+  .rate-sample{margin:10px 0 0;padding:8px 12px;border-radius:8px;background:#fff8e6;border:1px dashed var(--gold);color:var(--gold-hi);font-size:12.5px;font-weight:600}
+  .rate-prods{display:grid;gap:8px;margin-top:12px}
+  @media (min-width:640px){ .rate-prods{grid-template-columns:repeat(2,1fr)} }
+  @media (min-width:960px){ .rate-prods{grid-template-columns:repeat(3,1fr)} }
+  .rate-prod{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:10px;background:#fff;border:1px solid var(--line);text-decoration:none;color:var(--text)}
+  .rate-prod:hover{border-color:var(--gold)}
+  .rate-prod b{font-weight:600;font-size:14px}
+  .rate-prod small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .rate-prod .stars svg{width:14px;height:14px}
+  .rate-prod-r{display:grid;justify-items:end;gap:2px;font-size:12px;color:var(--muted);white-space:nowrap}
+  .rate-empty{padding:18px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px}
   .rev-actions{display:flex;justify-content:center;margin-top:16px}
   .rev-actions .cta{max-width:280px}
   .rev-policy{text-align:center;font-size:12px;color:var(--muted);margin:10px auto 0;max-width:520px}
@@ -576,22 +580,32 @@
   .rev-form select{width:100%;padding:11px 12px;border-radius:8px;font:inherit;font-size:16px;background:#fbfaf7;border:1.5px solid #d9d1bd;color:var(--text)}
   .rev-row{display:grid;gap:0 12px}
   @media (min-width:560px){ .rev-row{grid-template-columns:1fr 1fr} }
-  .rate-pick{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:4px}
+  .rate-list{display:grid;gap:4px;margin-top:6px}
+  .rate-line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #f0eadb}
+  .rate-line:last-child{border-bottom:none}
+  .rate-line > b{font-size:14.5px;color:var(--text)}
+  .rate-line > b small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+  .rate-pick{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:2px;flex-shrink:0}
   .rate-pick input{position:absolute;opacity:0;width:1px;height:1px}
-  .rate-pick label{margin:0 !important;cursor:pointer;color:#ddd4bf}
-  .rate-pick label svg{width:34px;height:34px}
+  .rate-pick label{margin:0 !important;cursor:pointer;color:#e0d8c3}
+  .rate-pick label svg{width:30px;height:30px;display:block}
   .rate-pick input:checked ~ label,.rate-pick label:hover,.rate-pick label:hover ~ label{color:var(--gold)}
   .rate-pick input:focus-visible + label{outline:2px solid var(--gold);border-radius:4px}
-  .chips{display:flex;flex-wrap:wrap;gap:8px}
-  .chips label{margin:0 !important;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;border:1.5px solid #d9d1bd;background:#fff;color:var(--text) !important;font-weight:600;font-size:13.5px;cursor:pointer}
-  .chips input{width:auto;margin:0;accent-color:var(--gold)}
-  .chips label:has(input:checked){background:#fbf4e1;border-color:var(--gold)}
-  .rev-count{text-align:right;font-size:12px;color:var(--muted);margin-top:4px}
-  .rev-guard{margin-top:8px;padding:10px 12px;border-radius:8px;background:#fdf1ee;border:1px solid #f0c4b8;color:#a3361d;font-size:13px}
-  .rev-ok{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:13.5px;color:#3d3930 !important;font-weight:400 !important}
-  .rev-ok input{width:auto;margin-top:3px;accent-color:var(--gold)}
   .rev-form .rev-btns{display:flex;gap:10px;margin-top:16px}
   .rev-form .rev-btns .cta{max-width:none}
+  .g-steps{display:flex;gap:6px;margin:14px 0 4px}
+  .g-steps i{flex:1;height:5px;border-radius:999px;background:#ece5d3}
+  .g-steps i.on{background:var(--gold)}
+  .g-k{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-hi);margin-top:10px}
+  .g-q{margin-top:14px}
+  .g-q > b{display:block;font-size:14.5px;color:var(--text);margin-bottom:8px}
+  .g-opts{display:flex;flex-wrap:wrap;gap:8px}
+  .g-opts label{margin:0 !important;flex:1 1 0;min-width:90px;text-align:center;padding:12px 10px;border-radius:10px;border:1.5px solid #d9d1bd;background:#fff;color:var(--text) !important;font-weight:600;font-size:14px;cursor:pointer}
+  .g-opts input{position:absolute;opacity:0;width:1px;height:1px}
+  .g-opts label:has(input:checked){background:#fbf4e1;border-color:var(--gold)}
+  .g-opts label:has(input:focus-visible){outline:2px solid var(--gold)}
+  .rate-facts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;padding-top:14px;border-top:1px solid #f0eadb}
+  .rate-facts span{font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:#fbf4e1;color:var(--gold-hi);border:1px solid #ecdcae}
   .rev-done{margin-top:16px;padding:18px;text-align:center;border-radius:12px;background:#f1f8f3;border:1px solid #bfdcc9;color:#1e5a36}
   .rev-done b{display:block;font-size:16px;margin-bottom:4px}
 </style>
@@ -669,40 +683,35 @@
     <section class="reviews" id="reviews" aria-labelledby="revT">
       <h2 class="sect" id="revT">Customer reviews</h2>
       <div id="revBox"></div>
-      <div class="rev-actions"><button type="button" class="cta" id="revOpen">Write a review</button></div>
-      <p class="rev-policy">Every review is checked by our team before it appears. Reviews cover product quality, COA match, packaging, shipping and service only. All products are for research use only.</p>
+      <div class="rev-actions"><button type="button" class="cta" id="revOpen">Review your order</button></div>
+      <p class="rev-policy">Ratings come from customers and are checked by our team before they count. All products are for research use only.</p>
 
       <form class="f rev-form" id="revForm" hidden novalidate>
-        <h3>Write a review</h3>
-        <p class="rev-lead">Tell other researchers about purity, your COA, packaging, shipping or our service. We don't post reviews that describe personal use, dosing or effects.</p>
-        <label>Your rating</label>
-        <div class="rate-pick" role="radiogroup" aria-label="Rating">
-          <input type="radio" name="rate" id="rate5" value="5"><label for="rate5" title="5 stars"></label>
-          <input type="radio" name="rate" id="rate4" value="4"><label for="rate4" title="4 stars"></label>
-          <input type="radio" name="rate" id="rate3" value="3"><label for="rate3" title="3 stars"></label>
-          <input type="radio" name="rate" id="rate2" value="2"><label for="rate2" title="2 stars"></label>
-          <input type="radio" name="rate" id="rate1" value="1"><label for="rate1" title="1 star"></label>
+        <div class="g-steps" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+        <div class="g-step" data-step="1">
+          <div class="g-k">Step 1 of 3</div>
+          <h3>Which product did you get?</h3>
+          <label for="revProduct">Product</label><select id="revProduct"></select>
+          <label for="revLot">Lot number (optional)</label><input id="revLot" spellcheck="false" autocapitalize="characters" maxlength="24" placeholder="From your vial label">
         </div>
-        <div class="rev-row">
-          <div><label for="revProduct">Product</label><select id="revProduct"></select></div>
-          <div><label for="revLot">Lot number (optional)</label><input id="revLot" spellcheck="false" autocapitalize="characters" maxlength="24" placeholder="From your vial label"></div>
+        <div class="g-step" data-step="2" hidden>
+          <div class="g-k">Step 2 of 3</div>
+          <h3>How did we do?</h3>
+          <p class="rev-lead">Tap the stars for each line. Skip any you can't judge.</p>
+          <div class="rate-list" id="rateList"></div>
         </div>
-        <label>What is your review about?</label>
-        <div class="chips" id="revTopics"></div>
-        <label for="revText">Your review</label>
-        <textarea id="revText" maxlength="500" rows="4" placeholder="e.g. COA matched my lot, vials arrived well packed and on time."></textarea>
-        <div class="rev-count" id="revCount">0 / 500</div>
-        <div class="rev-guard" id="revGuard" hidden></div>
-        <label for="revName">Name to show (optional)</label>
-        <input id="revName" maxlength="30" autocomplete="off" placeholder="First name and initial, e.g. Jordan M.">
-        <label class="rev-ok"><input type="checkbox" id="revAgree"><span>My review is about product quality, the COA, packaging, shipping or service. It doesn't describe using any product on people or animals.</span></label>
+        <div class="g-step" data-step="3" hidden>
+          <div class="g-k">Step 3 of 3</div>
+          <h3>Two quick questions</h3>
+          <div id="choiceList"></div>
+        </div>
         <div class="err" id="revErr"></div>
         <div class="rev-btns">
-          <button type="button" class="cta" id="revCancel">Cancel</button>
-          <button type="submit" class="cta gold" id="revSend">Submit for review</button>
+          <button type="button" class="cta" id="revBack">Cancel</button>
+          <button type="button" class="cta gold" id="revNext">Next</button>
         </div>
       </form>
-      <div class="rev-done" id="revDone" hidden role="status"><b>Thanks, your review was sent ✓</b>Our team checks every review before it appears on the site.</div>
+      <div class="rev-done" id="revDone" hidden role="status"><b>Thanks for your review ✓</b>It will count once our team has checked it.</div>
     </section>
 
     <section class="home-contact">
@@ -1862,37 +1871,39 @@ if (savedPay) { const r = document.querySelector(`input[name=pay][value="${saved
 document.querySelectorAll('input[name=pay]').forEach(r => r.onchange = () => { renderSummary(); saveCart(); });
 loadCustomer();
 
-// ----- Customer reviews (home page) -----
-// Moderated: visitors can only add a "pending" review; the owner approves it before anyone sees it.
-// Reviews stay on product quality, COA, packaging, shipping and service. No email or phone is ever asked for.
-// REVIEW_SAMPLES shows made-up example reviews while there are no approved ones (preview only: set false before going live).
+// ----- Customer ratings (home page) -----
+// Guided review, no written comments: stars (1-5) for purity, COA match, packaging, shipping and service,
+// plus two preset questions (would you order again, how long delivery took).
+// Moderated: visitors can only add a "pending" rating; the owner approves it before it counts.
+// No name, email or phone is ever asked for.
+// REVIEW_SAMPLES shows made-up example ratings while there are no approved ones (preview only: set false before going live).
+// (The earlier version with written comments is in git history: commit ff05f7d.)
 const REVIEW_SAMPLES = true;
-const REVIEW_TOPICS = ["Purity", "COA match", "Packaging", "Shipping", "Service"];
-// Words that suggest personal use or effects: the form asks the visitor to reword before sending.
-const REVIEW_BLOCK = /\b(inject\w*|pinn?(ed|ing)|dos(e|es|ed|ing|age)|took|taking|felt|recover(y|ed|ing)?|heal(ed|ing|s)?|lost \d+|weight|fat|lbs?|pounds|appetite|muscle|sleep|pain|injur\w*|tendon|joint|skin|wrinkle|side ?effects?|results? (on|for) me|my (body|face|knee|shoulder|back|doctor)|cycle|stack(ed|ing)?|mcg|iu|subq|sub-q|intramuscular|cured?|treatment|symptoms?|anxiety|focus|energy|mood)\b/i;
-const REVIEW_SAMPLE_LIST = [
-  { name:"Jordan M.", product:"klow80", rating:5, tags:["COA match","Packaging"], lot:true, date:"2026-11-12",
-    text:"Lot number on the vial matched the COA in the library exactly. Vials came sealed, labeled clearly and packed in foam with a cold pack." },
-  { name:"Research lab, TX", product:"reta30", rating:5, tags:["Purity","COA match"], lot:true, date:"2026-11-04",
-    text:"Third-party report showed 99%+ purity and the lot was easy to look up. Exactly what we need for our records." },
-  { name:"Chris R.", product:"wolverine", rating:5, tags:["Shipping","Service"], date:"2026-10-29",
-    text:"Ordered on Monday, UPS tracking came by WhatsApp the same day and the box arrived Wednesday. Quick answers to every question." },
-  { name:"A. Patel", product:"ss31", rating:4, tags:["Packaging","Service"], date:"2026-10-18",
-    text:"Well packed and the COA was in the box. One vial cap was loose on arrival and they sent a replacement right away, no hassle." },
-  { name:"Dana K.", product:"nad", rating:5, tags:["Purity","Shipping"], lot:true, date:"2026-10-09",
-    text:"Clean lyophilized powder, COA on file for the lot, and flat-rate shipping kept it simple. Will order again." },
-  { name:"M. Torres", product:"selank", rating:5, tags:["Service"], date:"2026-09-30",
-    text:"Asked about a lot number before ordering and got the full certificate within minutes. Great communication." }
+const RATE_TOPICS = [
+  { k:"purity",   label:"Purity",    hint:"Matches the purity on the COA" },
+  { k:"coa",      label:"COA match", hint:"Lot on your vial matches its certificate" },
+  { k:"packaging",label:"Packaging", hint:"Sealed, labeled and well packed" },
+  { k:"shipping", label:"Shipping",  hint:"Speed and tracking" },
+  { k:"service",  label:"Service",   hint:"Answers and help with your order" }
 ];
+const RATE_CHOICES = [
+  { k:"again",    q:"Would you order from us again?", opts:["Yes", "Maybe", "No"] },
+  { k:"delivery", q:"How long did delivery take?",     opts:["1-2 days", "3-4 days", "5+ days"] }
+];
+// [product, purity, coa, packaging, shipping, service, order again, delivery]: 0 = skipped
+const REVIEW_SAMPLE_LIST = [
+  ["klow80",5,5,5,5,5,"Yes","1-2 days"],["klow80",5,5,5,4,5,"Yes","3-4 days"],["klow80",5,5,4,5,5,"Yes","1-2 days"],["klow80",4,5,5,5,5,"Yes","3-4 days"],["klow80",5,5,5,5,4,"Yes","1-2 days"],
+  ["reta30",5,5,5,5,5,"Yes","1-2 days"],["reta30",5,5,5,4,5,"Yes","3-4 days"],["reta30",5,5,5,5,5,"Yes","1-2 days"],["reta30",5,5,4,5,5,"Yes","1-2 days"],["reta30",5,5,4,3,5,"Maybe","5+ days"],["reta30",5,5,5,5,5,"Yes","3-4 days"],
+  ["wolverine",5,5,5,5,5,"Yes","1-2 days"],["wolverine",0,5,5,5,5,"Yes","3-4 days"],["wolverine",5,5,5,4,5,"Yes","3-4 days"],["wolverine",5,5,5,5,5,"Yes","1-2 days"],
+  ["glow",5,5,5,5,5,"Yes","1-2 days"],["glow",4,5,4,4,5,"Maybe","3-4 days"],["glow",5,5,5,5,5,"Yes","1-2 days"],
+  ["nad",5,5,5,5,5,"Yes","1-2 days"],["nad",5,4,5,5,5,"Yes","3-4 days"],["ss31",5,5,3,4,4,"Yes","3-4 days"],["ss31",5,5,5,5,5,"Yes","1-2 days"],["selank",0,5,5,5,5,"Yes","1-2 days"],["tesamorelin",5,5,5,5,5,"Yes","3-4 days"]
+].map(([product, purity, coa, packaging, shipping, service, again, delivery]) => ({ product, ratings: { purity, coa, packaging, shipping, service }, again, delivery }));
 var Reviews = (() => {
-  let list = null, loading = false, showAll = false;
+  let list = null, loading = false;
   const starSvg = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>';
-  const stars = n => `<span class="stars" role="img" aria-label="${n} out of 5 stars">${[1,2,3,4,5].map(i => i <= Math.round(n) ? starSvg : starSvg.replace('fill="currentColor"', 'fill="currentColor" class="off"')).join("")}</span>`;
-  const pname = r => { const p = PRODUCTS.find(x => x.id === r.product); return p ? p.name + " " + p.spec : (r.productName || ""); };
-  const when = d => { const t = d ? new Date(d) : null; return t && !isNaN(t) ? t.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" }) : ""; };
-  // "Lot on file" only when the lot they typed matches a certificate in the COA Library
-  const lotOk = r => r.lot === true || (!!r.lot && (coaList || []).some(c => String(c.lot).toUpperCase() === String(r.lot).toUpperCase()));
-  const shieldSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="m9 12 2 2 4-4"/></svg>';
+  const stars = n => `<span class="stars" role="img" aria-label="${n.toFixed(1)} out of 5 stars">${[1,2,3,4,5].map(i => i <= Math.round(n) ? starSvg : starSvg.replace('fill="currentColor"', 'fill="currentColor" class="off"')).join("")}</span>`;
+  const vals = r => RATE_TOPICS.map(t => +(r.ratings || {})[t.k] || 0).filter(v => v >= 1 && v <= 5);
+  const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
   function load(){
     if (list || loading) return; loading = true;
     whenCloud(c => c.reviews().then(r => { list = r; }).catch(() => { list = []; }).finally(() => { loading = false; render(); }));
@@ -1900,71 +1911,74 @@ var Reviews = (() => {
   function render(){
     const box = $("revBox"); if (!box) return;
     load();
-    const real = (list || []).slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const real = (list || []).filter(r => vals(r).length);
     const sample = !real.length && REVIEW_SAMPLES;
     const rows = sample ? REVIEW_SAMPLE_LIST : real;
-    if (!rows.length){ box.innerHTML = list ? `<div class="rev-empty">No reviews yet. Ordered from us? Be the first to share how it went.</div>` : ""; return; }
-    const avg = rows.reduce((s, r) => s + (+r.rating || 0), 0) / rows.length;
-    const counts = {}; rows.forEach(r => (r.tags || []).forEach(t => counts[t] = (counts[t] || 0) + 1));
-    const top = REVIEW_TOPICS.filter(t => counts[t]).sort((a, b) => counts[b] - counts[a]).slice(0, 4);
-    const shown = showAll ? rows : rows.slice(0, 3);
+    if (!rows.length){ box.innerHTML = list ? `<div class="rate-empty">No ratings yet. Ordered from us? Be the first to rate your order.</div>` : ""; return; }
+    const overall = mean(rows.map(r => mean(vals(r))));
+    const topic = t => mean(rows.map(r => +(r.ratings || {})[t.k] || 0).filter(v => v >= 1));
+    const byProd = {};
+    rows.forEach(r => (byProd[r.product] = byProd[r.product] || []).push(mean(vals(r))));
+    const share = (k, v) => { const a = rows.filter(r => r[k]); return a.length ? a.filter(r => r[k] === v).length / a.length : 0; };
+    const again = rows.some(r => r.again) ? Math.round(share("again", "Yes") * 100) : 0;
+    const quick = rows.some(r => r.delivery) ? Math.round((share("delivery", "1-2 days") + share("delivery", "3-4 days")) * 100) : 0;
+    const prods = PRODUCTS.filter(p => byProd[p.id]).sort((a, b) => byProd[b.id].length - byProd[a.id].length).slice(0, 6);
     box.innerHTML = `
-      <div class="rev-sum">
-        <div class="rev-avg">${avg.toFixed(1)}</div>
-        <div class="rev-avg-k">${stars(avg)}<span>${rows.length} review${rows.length === 1 ? "" : "s"}</span></div>
-        <div class="rev-topics" aria-label="Most mentioned">${top.map(t => `<span>${esc(t)}</span>`).join("")}</div>
+      <div class="rate-card">
+        <div class="rate-overall"><div class="rate-avg">${overall.toFixed(1)}</div>${stars(overall)}<div class="rate-n">from ${rows.length} review${rows.length === 1 ? "" : "s"}</div></div>
+        <div class="rate-topics">${RATE_TOPICS.map(t => { const v = topic(t); return `
+          <div class="rate-row"><b>${esc(t.label)}</b><div class="rate-bar" aria-hidden="true"><i style="width:${(v / 5 * 100).toFixed(0)}%"></i></div><span>${v ? v.toFixed(1) : "–"}</span></div>`; }).join("")}
+        </div>
+        ${again || quick ? `<div class="rate-facts">${again ? `<span>${again}% would order again</span>` : ""}${quick ? `<span>${quick}% delivered within 4 days</span>` : ""}</div>` : ""}
       </div>
-      ${sample ? `<div class="rev-sample">Preview only: these are sample reviews. They disappear as soon as you approve real ones.</div>` : ""}
-      <div class="rev-list">${shown.map(r => `
-        <article class="rev">
-          <div class="rev-top">${stars(+r.rating || 0)}<span class="rev-date">${esc(when(r.date))}</span></div>
-          <p>${esc(r.text)}</p>
-          <div class="rev-tags">${(r.tags || []).map(t => `<span class="rev-tag">${esc(t)}</span>`).join("")}</div>
-          <div class="rev-meta"><b>${esc(r.name || "Verified customer")}</b>${pname(r) ? `<span>· ${esc(pname(r))}</span>` : ""}${lotOk(r) ? `<span class="rev-lot">${shieldSvg}Lot on file</span>` : ""}</div>
-        </article>`).join("")}</div>
-      ${rows.length > 3 ? `<button type="button" class="rev-more" id="revMore">${showAll ? "Show fewer" : `Show all ${rows.length} reviews`}</button>` : ""}`;
-    const more = $("revMore"); if (more) more.onclick = () => { showAll = !showAll; render(); };
+      ${sample ? `<div class="rate-sample">Preview only: these are sample ratings. They disappear as soon as you approve real ones.</div>` : ""}
+      ${prods.length ? `<div class="rate-prods">${prods.map(p => { const v = mean(byProd[p.id]); return `
+        <a class="rate-prod" href="#p/${esc(p.id)}"><div><b>${esc(p.name)}</b><small>${esc(p.spec)}</small></div>
+          <div class="rate-prod-r">${stars(v)}<span>${v.toFixed(1)} · ${byProd[p.id].length} rating${byProd[p.id].length === 1 ? "" : "s"}</span></div></a>`; }).join("")}</div>` : ""}`;
   }
-  function guard(){
-    const t = $("revText").value, m = t.match(REVIEW_BLOCK);
-    $("revCount").textContent = t.length + " / 500";
-    $("revGuard").hidden = !m;
-    if (m) $("revGuard").innerHTML = `Please reword: reviews can't mention personal use, dosing or effects (found "<b>${esc(m[0])}</b>"). Keep it to purity, the COA, packaging, shipping or service.`;
-    return !m;
+  let step = 1;
+  function go(n){
+    step = n; $("revErr").textContent = "";
+    document.querySelectorAll(".g-step").forEach(el => el.hidden = +el.dataset.step !== n);
+    document.querySelectorAll(".g-steps i").forEach((el, i) => el.classList.toggle("on", i < n));
+    $("revBack").textContent = n === 1 ? "Cancel" : "Back";
+    $("revNext").textContent = n === 3 ? "Send review" : "Next";
   }
   function open(){
     $("revProduct").innerHTML = `<option value="">Choose a product</option>` + PRODUCTS.map(p => `<option value="${esc(p.id)}">${esc(p.name + " " + p.spec)}</option>`).join("");
-    $("revTopics").innerHTML = REVIEW_TOPICS.map(t => `<label><input type="checkbox" value="${esc(t)}">${esc(t)}</label>`).join("");
+    $("rateList").innerHTML = RATE_TOPICS.map(t => `
+      <div class="rate-line"><b>${esc(t.label)}<small>${esc(t.hint)}</small></b>
+        <div class="rate-pick" role="radiogroup" aria-label="${esc(t.label)} rating">${[5,4,3,2,1].map(n =>
+          `<input type="radio" name="rate-${t.k}" id="rate-${t.k}-${n}" value="${n}"><label for="rate-${t.k}-${n}" title="${n} star${n === 1 ? "" : "s"}">${starSvg}</label>`).join("")}</div>
+      </div>`).join("");
+    $("choiceList").innerHTML = RATE_CHOICES.map(c => `
+      <div class="g-q" role="radiogroup" aria-label="${esc(c.q)}"><b>${esc(c.q)}</b><div class="g-opts">${c.opts.map(o =>
+        `<label><input type="radio" name="ch-${c.k}" value="${esc(o)}">${esc(o)}</label>`).join("")}</div></div>`).join("");
+    $("revForm").reset(); go(1);
     $("revForm").hidden = false; $("revDone").hidden = true; $("revOpen").parentNode.hidden = true;
     $("revForm").scrollIntoView({ behavior:"smooth", block:"start" });
   }
   function close(){ $("revForm").hidden = true; $("revOpen").parentNode.hidden = false; $("revErr").textContent = ""; }
-  async function submit(e){
-    e.preventDefault();
-    const rating = +(document.querySelector('input[name="rate"]:checked') || {}).value || 0;
-    const product = $("revProduct").value, text = $("revText").value.trim(), name = $("revName").value.trim();
-    const lot = $("revLot").value.trim().toUpperCase(), tags = [...$("revTopics").querySelectorAll("input:checked")].map(i => i.value);
-    const err = m => { $("revErr").textContent = m; return false; };
-    if (!rating) return err("Pick a star rating.");
-    if (!product) return err("Choose the product you're reviewing.");
-    if (!tags.length) return err("Pick at least one topic.");
-    if (text.length < 20) return err("Write at least a sentence (20 characters).");
-    if (!guard()) return err("Please reword the highlighted part first.");
-    if (REVIEW_BLOCK.test(name)) return err("Please use just a first name and initial.");
-    if (!$("revAgree").checked) return err("Tick the box to confirm what your review covers.");
-    const p = PRODUCTS.find(x => x.id === product);
-    $("revSend").disabled = true; $("revErr").textContent = "";
+  const ratingsNow = () => { const r = {}; RATE_TOPICS.forEach(t => { const c = document.querySelector(`input[name="rate-${t.k}"]:checked`); if (c) r[t.k] = +c.value; }); return r; };
+  async function next(){
+    const err = m => { $("revErr").textContent = m; };
+    if (step === 1){ if (!$("revProduct").value) return err("Choose the product you're reviewing."); return go(2); }
+    if (step === 2){ if (!Object.keys(ratingsNow()).length) return err("Tap the stars for at least one line."); return go(3); }
+    const product = $("revProduct").value, p = PRODUCTS.find(x => x.id === product);
+    const rec = { product, productName: p ? p.name + " " + p.spec : "", lot: $("revLot").value.trim().toUpperCase(), ratings: ratingsNow() };
+    RATE_CHOICES.forEach(c => { const x = document.querySelector(`input[name="ch-${c.k}"]:checked`); if (x) rec[c.k] = x.value; });
+    $("revNext").disabled = true;
     try {
-      await new Promise((res, rej) => whenCloud(c => c.submitReview({ name, product, productName: p ? p.name + " " + p.spec : "", lot, rating, tags, text }).then(res, rej)));
-      $("revForm").reset(); $("revCount").textContent = "0 / 500"; close();
-      $("revOpen").parentNode.hidden = true; $("revDone").hidden = false;
+      await new Promise((res, rej) => whenCloud(c => c.submitReview(rec).then(res, rej)));
+      close(); $("revOpen").parentNode.hidden = true; $("revDone").hidden = false;
     } catch (x) { err("Couldn't send right now. Check your connection and try again."); }
-    finally { $("revSend").disabled = false; }
+    finally { $("revNext").disabled = false; }
   }
   if ($("revForm")){
-    $("revOpen").onclick = open; $("revCancel").onclick = close;
-    $("revText").addEventListener("input", guard); $("revForm").addEventListener("submit", submit);
-    document.querySelectorAll(".rate-pick label").forEach(l => l.innerHTML = starSvg);
+    $("revOpen").onclick = open;
+    $("revBack").onclick = () => step === 1 ? close() : go(step - 1);
+    $("revNext").onclick = next;
+    $("revForm").addEventListener("submit", e => { e.preventDefault(); next(); });
   }
   return { render };
 })();
@@ -1989,11 +2003,11 @@ window.StoreCloud = {
   submitOrder(rec){ return setDoc(doc(db, "orders", rec.id), rec); },
   // one more for today on an anonymous counter (stats/<month>~<key>, a field per day); the rules allow exactly +1
   bump(month, field, key){ return setDoc(doc(db, "stats", month + "~" + key), { [field]: increment(1) }, { merge: true }); },
-  // Reviews: anyone can send one as "pending"; only reviews the owner approved can be read here
+  // Ratings: anyone can send one as "pending"; only ratings the owner approved can be read here
   submitReview(r){ return addDoc(collection(db, "reviews"), { ...r, status: "pending", created: serverTimestamp() }); },
   async reviews(){
     const s = await getDocs(query(collection(db, "reviews"), where("status", "==", "approved")));
-    return s.docs.map(d => { const r = d.data(); return { ...r, date: r.created && r.created.toDate ? r.created.toDate().toISOString() : "" }; });
+    return s.docs.map(d => d.data());
   },
   async image(id){ const s = await getDoc(doc(db, "storeImages", id)); return s.exists() ? s.data().data || null : null; },
   coaFile(c){
