@@ -560,7 +560,11 @@
   .rate-bar{height:8px;border-radius:999px;background:#f1ecdf;overflow:hidden}
   .rate-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#d8b04c,#c19a35)}
   .rate-row span{text-align:right;font-weight:700;color:var(--gold-hi)}
-  .rate-sample{margin:10px 0 0;padding:8px 12px;border-radius:8px;background:#fff8e6;border:1px dashed var(--gold);color:var(--gold-hi);font-size:12.5px;font-weight:600}
+  .home-rev{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 10px;margin:18px 0 0;padding:14px 16px;border-radius:12px;background:#fff;border:1px solid var(--line);text-decoration:none;color:var(--text);font-size:14px}
+  .home-rev:hover{border-color:var(--gold)}
+  .home-rev b{font-size:16px}
+  .home-rev > span:not(.stars){color:var(--muted)}
+  .home-rev em{font-style:normal;font-weight:600;color:var(--gold-hi)}
   .rate-prods{display:grid;gap:8px;margin-top:12px}
   @media (min-width:640px){ .rate-prods{grid-template-columns:repeat(2,1fr)} }
   @media (min-width:960px){ .rate-prods{grid-template-columns:repeat(3,1fr)} }
@@ -658,6 +662,8 @@
     <span class="tdiv" aria-hidden="true"></span>
     <a href="#coa" data-tab="coa">COA Library</a>
     <span class="tdiv" aria-hidden="true"></span>
+    <a href="#reviews" data-tab="reviews">Reviews</a>
+    <span class="tdiv" aria-hidden="true"></span>
     <a href="#order" data-tab="order" id="orderTab">Order</a>
   </nav>
 
@@ -684,8 +690,20 @@
       <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg><b>Flat-rate UPS shipping</b><span><span class="ship-amt">$25</span> per order, tracking sent by WhatsApp.</span></div>
     </div>
 
-    <section class="reviews" id="reviews" aria-labelledby="revT">
+    <div id="homeRev"></div>
+
+    <section class="home-contact">
+      <h2 class="sect">Questions?</h2>
+      <p class="note">Message us on WhatsApp for orders, lot numbers or anything else.</p>
+      <a class="cta wa-link home-wa" href="https://wa.me/12089571737" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.7 7.4L3.5 20.5l1.4-4.1A8.5 8.5 0 1 1 20.5 11.8z"/><path d="M9 8.6c.2-.4.5-.4.8-.4h.4c.2 0 .4 0 .5.4l.6 1.4c.1.2 0 .4-.1.6l-.5.6c-.1.1-.1.3 0 .5.6 1 1.4 1.8 2.4 2.3.2.1.4.1.5 0l.6-.7c.2-.2.4-.2.6-.1l1.4.7c.2.1.3.3.3.5v.4c0 .5-.3 1-.8 1.2-.6.2-1.4.3-2.6-.2-1.6-.7-3-2.1-3.8-3.6-.5-1-.6-1.8-.4-2.6z" fill="currentColor" stroke="none"/></svg><span>WhatsApp <span class="wa-num">+1 (208) 957-1737</span></span></a>
+    </section>
+  </section>
+
+  <!-- ===== REVIEWS ===== -->
+  <section class="panel" id="panel-reviews">
+    <section class="reviews" aria-labelledby="revT">
       <h2 class="sect" id="revT">Customer reviews</h2>
+      <p class="note">Every review comes from a real, shipped order and is checked by our team before it counts.</p>
       <div id="revBox"></div>
       <div class="rev-actions"><button type="button" class="cta" id="revOpen">Review your order</button></div>
       <p class="rev-policy">Ratings come from customers and are checked by our team before they count. All products are for research use only.</p>
@@ -721,12 +739,6 @@
         </div>
       </form>
       <div class="rev-done" id="revDone" hidden role="status"><b>Thanks for your review ✓</b>It will count once our team has checked it.</div>
-    </section>
-
-    <section class="home-contact">
-      <h2 class="sect">Questions?</h2>
-      <p class="note">Message us on WhatsApp for orders, lot numbers or anything else.</p>
-      <a class="cta wa-link home-wa" href="https://wa.me/12089571737" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.7 7.4L3.5 20.5l1.4-4.1A8.5 8.5 0 1 1 20.5 11.8z"/><path d="M9 8.6c.2-.4.5-.4.8-.4h.4c.2 0 .4 0 .5.4l.6 1.4c.1.2 0 .4-.1.6l-.5.6c-.1.1-.1.3 0 .5.6 1 1.4 1.8 2.4 2.3.2.1.4.1.5 0l.6-.7c.2-.2.4-.2.6-.1l1.4.7c.2.1.3.3.3.5v.4c0 .5-.3 1-.8 1.2-.6.2-1.4.3-2.6-.2-1.6-.7-3-2.1-3.8-3.6-.5-1-.6-1.8-.4-2.6z" fill="currentColor" stroke="none"/></svg><span>WhatsApp <span class="wa-num">+1 (208) 957-1737</span></span></a>
     </section>
   </section>
 
@@ -1210,11 +1222,12 @@ function route(){
     if (h.startsWith("coa/")) { const lot = decodeURIComponent(h.slice(4)); if (!routedOnce) { coaFromScan = true; try { history.replaceState(null, "", "#home"); history.pushState(null, "", "#coa/" + h.slice(4)); } catch (e) {} } openCoa(lot); }
   }
   else if (h === "catalog" || h === "shop") view = "catalog";
+  else if (h === "reviews") { view = "reviews"; Reviews.render(); }
   else { view = "home"; loadCoas().then(renderHomeCoa); }
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + view));
   Stats.page(view === "catalog" ? "shop" : view);
   if (view === "product") Stats.product(h.slice(2));
-  const tabFor = { home: "home", catalog: "catalog", product: "catalog", coa: "coa", order: "order" }[view];
+  const tabFor = { home: "home", catalog: "catalog", product: "catalog", coa: "coa", reviews: "reviews", order: "order" }[view];
   document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === tabFor));
   updateBars();
   if (!(view === "coa" && prevView === "coa")) window.scrollTo(0, 0);
@@ -1886,9 +1899,7 @@ loadCustomer();
 // Moderated: visitors can only add a "pending" rating; the owner approves it before it counts.
 // Verified buyers only: the review is saved under its order number, so the Firestore rules can check the order
 // exists and has shipped, and each order can leave just one review. No name, email or phone is ever asked for.
-// REVIEW_SAMPLES shows made-up example ratings while there are no approved ones (preview only: set false before going live).
 // (The earlier version with written comments is in git history: commit ff05f7d.)
-const REVIEW_SAMPLES = true;
 const RATE_TOPICS = [
   { k:"purity",   label:"Purity",    hint:"Matches the purity on the COA" },
   { k:"coa",      label:"COA match", hint:"Lot on your vial matches its certificate" },
@@ -1900,14 +1911,6 @@ const RATE_CHOICES = [
   { k:"again",    q:"Would you order from us again?", opts:["Yes", "Maybe", "No"] },
   { k:"delivery", q:"How long did delivery take?",     opts:["1-2 days", "3-4 days", "5+ days"] }
 ];
-// [product, purity, coa, packaging, shipping, service, order again, delivery]: 0 = skipped
-const REVIEW_SAMPLE_LIST = [
-  ["klow80",5,5,5,5,5,"Yes","1-2 days"],["klow80",5,5,5,4,5,"Yes","3-4 days"],["klow80",5,5,4,5,5,"Yes","1-2 days"],["klow80",4,5,5,5,5,"Yes","3-4 days"],["klow80",5,5,5,5,4,"Yes","1-2 days"],
-  ["reta30",5,5,5,5,5,"Yes","1-2 days"],["reta30",5,5,5,4,5,"Yes","3-4 days"],["reta30",5,5,5,5,5,"Yes","1-2 days"],["reta30",5,5,4,5,5,"Yes","1-2 days"],["reta30",5,5,4,3,5,"Maybe","5+ days"],["reta30",5,5,5,5,5,"Yes","3-4 days"],
-  ["wolverine",5,5,5,5,5,"Yes","1-2 days"],["wolverine",0,5,5,5,5,"Yes","3-4 days"],["wolverine",5,5,5,4,5,"Yes","3-4 days"],["wolverine",5,5,5,5,5,"Yes","1-2 days"],
-  ["glow",5,5,5,5,5,"Yes","1-2 days"],["glow",4,5,4,4,5,"Maybe","3-4 days"],["glow",5,5,5,5,5,"Yes","1-2 days"],
-  ["nad",5,5,5,5,5,"Yes","1-2 days"],["nad",5,4,5,5,5,"Yes","3-4 days"],["ss31",5,5,3,4,4,"Yes","3-4 days"],["ss31",5,5,5,5,5,"Yes","1-2 days"],["selank",0,5,5,5,5,"Yes","1-2 days"],["tesamorelin",5,5,5,5,5,"Yes","3-4 days"]
-].map(([product, purity, coa, packaging, shipping, service, again, delivery]) => ({ product, ratings: { purity, coa, packaging, shipping, service }, again, delivery }));
 var Reviews = (() => {
   let list = null, loading = false;
   const starSvg = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>';
@@ -1918,13 +1921,20 @@ var Reviews = (() => {
     if (list || loading) return; loading = true;
     whenCloud(c => c.reviews().then(r => { list = r; }).catch(() => { list = []; }).finally(() => { loading = false; render(); }));
   }
+  // small score line on the home page, only once there are approved reviews
+  function renderHomeTeaser(rows){
+    const el = $("homeRev"); if (!el) return;
+    if (!rows.length){ el.innerHTML = ""; return; }
+    const v = mean(rows.map(r => mean(vals(r))));
+    el.innerHTML = `<a class="home-rev" href="#reviews">${stars(v)}<b>${v.toFixed(1)}</b><span>from ${rows.length} verified customer review${rows.length === 1 ? "" : "s"}</span><em>See reviews →</em></a>`;
+  }
   function render(){
     const box = $("revBox"); if (!box) return;
     load();
     const real = (list || []).filter(r => vals(r).length);
-    const sample = !real.length && REVIEW_SAMPLES;
-    const rows = sample ? REVIEW_SAMPLE_LIST : real;
-    if (!rows.length){ box.innerHTML = list ? `<div class="rate-empty">No ratings yet. Ordered from us? Be the first to rate your order.</div>` : ""; return; }
+    const rows = real;
+    renderHomeTeaser(rows);
+    if (!rows.length){ box.innerHTML = list ? `<div class="rate-empty">No reviews yet. Ordered from us? Once your order ships, be the first to review it.</div>` : ""; return; }
     const overall = mean(rows.map(r => mean(vals(r))));
     const topic = t => mean(rows.map(r => +(r.ratings || {})[t.k] || 0).filter(v => v >= 1));
     const byProd = {};
@@ -1941,7 +1951,6 @@ var Reviews = (() => {
         </div>
         ${again || quick ? `<div class="rate-facts">${again ? `<span>${again}% would order again</span>` : ""}${quick ? `<span>${quick}% delivered within 4 days</span>` : ""}</div>` : ""}
       </div>
-      ${sample ? `<div class="rate-sample">Preview only: these are sample ratings. They disappear as soon as you approve real ones.</div>` : ""}
       ${prods.length ? `<div class="rate-prods">${prods.map(p => { const v = mean(byProd[p.id]); return `
         <a class="rate-prod" href="#p/${esc(p.id)}"><div><b>${esc(p.name)}</b><small>${esc(p.spec)}</small></div>
           <div class="rate-prod-r">${stars(v)}<span>${v.toFixed(1)} · ${byProd[p.id].length} rating${byProd[p.id].length === 1 ? "" : "s"}</span></div></a>`; }).join("")}</div>` : ""}`;

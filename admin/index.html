@@ -125,6 +125,17 @@
   .split{display:flex;height:12px;border-radius:4px;overflow:hidden;gap:2px;margin:6px 0}
   .split i{display:block;background:var(--acc)} .split i+i{background:#9aa9bd}
   .anote{font-size:12.5px;color:var(--muted);margin:4px 0 16px}
+  .tabs button{position:relative}
+  .rv-badge{position:absolute;top:-7px;right:-5px;min-width:18px;height:18px;line-height:18px;padding:0 5px;border-radius:999px;background:#b42318;color:#fff;font-size:11px;font-weight:700}
+  @media (max-width:420px){ .tabs{gap:4px} .tabs button{font-size:13px;padding:0 2px} }
+  .rv{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .rv-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .rv-top b{font-size:15px}
+  .rv-stars{color:#c19a35;letter-spacing:1px;white-space:nowrap}
+  .rv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:4px 14px;margin:10px 0;font-size:13.5px}
+  .rv-grid span{display:flex;justify-content:space-between;gap:6px}
+  .rv-grid i{font-style:normal;color:var(--muted)}
+  .rv-acts{display:flex;gap:8px;flex-wrap:wrap}
   .chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.03em;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:1px;border:1px solid var(--line);color:var(--muted)}
   .chip.gold{border-color:rgba(212,175,55,.6);color:var(--gold-hi)}
   .chip.good{border-color:rgba(127,191,127,.55);color:var(--good)}
@@ -242,6 +253,7 @@
       <nav class="tabs" role="tablist">
         <button type="button" data-tab="products" class="on">Products</button>
         <button type="button" data-tab="coas"><span class="lg">COA Library</span><span class="sm">COAs</span></button>
+        <button type="button" data-tab="reviews"><span class="lg">Reviews</span><span class="sm">Revs</span><b class="rv-badge" id="rvBadge" hidden></b></button>
         <button type="button" data-tab="settings">Settings</button>
         <button type="button" data-tab="team">Team</button>
         <button type="button" data-tab="stats"><span class="lg">Analytics</span><span class="sm">Stats</span></button>
@@ -266,6 +278,15 @@
       <div class="bar"><h2>COA Library <span class="muted" id="cCount"></span></h2><button class="btn gold" id="addCoa" type="button">+ Add COA</button></div>
       <p class="muted" style="margin:-6px 0 14px">Each lot shows up in the store's COA Library and on its product's page. Vial QR codes link to <b>…/#coa/LOT-NUMBER</b>.</p>
       <div id="cList"></div>
+    </section>
+
+    <section id="tab-reviews" hidden>
+      <div class="bar"><h2>Reviews <span class="muted" id="rvCount"></span></h2></div>
+      <p class="muted" style="margin:-6px 0 14px">Customers rate a shipped or delivered order from the store's Reviews tab: stars only, no written text. Nothing shows on the store until you approve it.</p>
+      <div class="ana-range" role="group" aria-label="Filter" id="rvFilter">
+        <button type="button" data-rv="pending">Waiting</button><button type="button" data-rv="approved">Approved</button><button type="button" data-rv="hidden">Hidden</button><button type="button" data-rv="all">All</button>
+      </div>
+      <div id="rvList"><div class="empty">Loading…</div></div>
     </section>
 
     <section id="tab-team" hidden>
@@ -419,7 +440,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, connectAuthEmulator }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFirestore, collection, doc, onSnapshot, getDoc, getDocs, query, where, documentId, writeBatch }
+import { getFirestore, collection, doc, onSnapshot, getDoc, getDocs, query, where, documentId, writeBatch, updateDoc, deleteDoc }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 // Only this account can change the store (the Firestore rules enforce the same thing)
@@ -524,12 +545,14 @@ onAuthStateChanged(auth, async user => {
   const fail = e => toast(e && e.code === "permission-denied" ? "Can't read the store data: check the Firestore rules." : "Can't reach the cloud right now.", true);
   unsubs.push(onSnapshot(doc(db, "store", "settings"), s => { settings = s.exists() ? s.data() : null; gotSettings = true; seedTeam(); render(); }, fail));
   unsubs.push(onSnapshot(collection(db, "storeProducts"), s => { products = s.docs.map(d => ({ ...d.data(), id: d.id })); gotProducts = true; render(); }, fail));
+  unsubs.push(onSnapshot(collection(db, "reviews"), s => { reviews = s.docs.map(d => ({ ...d.data(), _id: d.id })); gotReviews = true; reviewBadge(); if (tab === "reviews") renderReviews(); },
+    e => { reviewsErr = true; if (tab === "reviews") renderReviews(); }));
   unsubs.push(onSnapshot(collection(db, "storeCoas"), s => { coas = s.docs.map(d => ({ ...d.data(), _id: d.id })); gotCoas = true; render(); }, fail));
 });
 
 // ---------- tabs ----------
 document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { tab = b.dataset.tab; try { history.replaceState(null, "", "#" + tab); localStorage.setItem("sp_last", "admin:" + tab); } catch (e) {} render(); window.scrollTo(0, 0); });
-{ const h = location.hash.slice(1); if (["products", "coas", "settings", "team", "stats"].includes(h)) tab = h; }
+{ const h = location.hash.slice(1); if (["products", "coas", "reviews", "settings", "team", "stats"].includes(h)) tab = h; }
 try { localStorage.setItem("sp_last", "admin:" + tab); } catch (e) {}
 if ("serviceWorker" in navigator && location.hostname !== "localhost") addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
 
@@ -539,15 +562,65 @@ function render(){
   $("loading").hidden = ready;
   $("setup").hidden = !ready || imported;
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
-  ["products", "coas", "settings", "team", "stats"].forEach(t => $("tab-" + t).hidden = !ready || !imported || t !== tab);
+  ["products", "coas", "reviews", "settings", "team", "stats"].forEach(t => $("tab-" + t).hidden = !ready || !imported || t !== tab);
   if (!ready || !imported) return;
   if (tab === "stats") loadAnalytics(false);
   if (tab === "team") renderTeam();
+  if (tab === "reviews") renderReviews();
   if (tab === "products") renderProducts();
   if (tab === "coas") renderCoas();
   if (tab === "settings" && !settingsDirty) fillSettings();
   if (tab === "settings") fillAlerts();
 }
+
+// ---------- Reviews: customers' star ratings (reviews/<order number>), shown on the store only once approved ----------
+let reviews = [], gotReviews = false, reviewsErr = false, rvFilter = "pending";
+const RV_TOPICS = [["purity", "Purity"], ["coa", "COA match"], ["packaging", "Packaging"], ["shipping", "Shipping"], ["service", "Service"]];
+const rvStatus = r => r.status === "approved" ? "approved" : r.status === "hidden" ? "hidden" : "pending";
+const rvWhen = r => r.created && r.created.toDate ? r.created.toDate() : null;
+function reviewBadge(){
+  const n = reviews.filter(r => rvStatus(r) === "pending").length;
+  $("rvBadge").hidden = !n; $("rvBadge").textContent = n;
+}
+function renderReviews(){
+  document.querySelectorAll("#rvFilter button").forEach(b => b.classList.toggle("on", b.dataset.rv === rvFilter));
+  if (reviewsErr && !gotReviews){ $("rvList").innerHTML = `<div class="empty">Can't read reviews yet: publish the updated Firestore rules, then reload.</div>`; return; }
+  if (!gotReviews) return;
+  const counts = { pending: 0, approved: 0, hidden: 0 }; reviews.forEach(r => counts[rvStatus(r)]++);
+  $("rvCount").textContent = `· ${counts.pending} waiting · ${counts.approved} approved`;
+  const list = reviews.filter(r => rvFilter === "all" || rvStatus(r) === rvFilter)
+    .sort((a, b) => (rvWhen(b) || 0) - (rvWhen(a) || 0));
+  if (!list.length){ $("rvList").innerHTML = `<div class="empty">${rvFilter === "pending" ? "No reviews waiting. New ones show up here as customers send them." : "Nothing here yet."}</div>`; return; }
+  $("rvList").innerHTML = list.map(r => {
+    const vals = RV_TOPICS.map(([k]) => +(r.ratings || {})[k] || 0).filter(v => v >= 1 && v <= 5);
+    const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+    const st = rvStatus(r), when = rvWhen(r);
+    return `<div class="rv">
+      <div class="rv-top"><div><b>${esc(r.productName || r.product || "")}</b>
+        <span class="chip ${st === "approved" ? "good" : st === "hidden" ? "" : "warn"}">${st === "pending" ? "Waiting" : st === "approved" ? "Approved" : "Hidden"}</span></div>
+        <span class="rv-stars" title="${avg.toFixed(1)} average">${"★".repeat(Math.round(avg))}${"☆".repeat(5 - Math.round(avg))} ${avg.toFixed(1)}</span></div>
+      <div class="muted" style="font-size:13px;margin-top:2px">Order ${esc(r._id)}${r.lot ? " · lot " + esc(r.lot) : ""}${when ? " · " + when.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""}</div>
+      <div class="rv-grid">${RV_TOPICS.map(([k, l]) => `<span><i>${l}</i>${(r.ratings || {})[k] ? (r.ratings[k] + "★") : "–"}</span>`).join("")}
+        <span><i>Order again</i>${esc(r.again || "–")}</span><span><i>Delivery</i>${esc(r.delivery || "–")}</span></div>
+      <div class="rv-acts">
+        ${st !== "approved" ? `<button type="button" class="btn sm gold" data-rv-set="approved" data-id="${esc(r._id)}">Approve</button>` : ""}
+        ${st !== "hidden" ? `<button type="button" class="btn sm" data-rv-set="hidden" data-id="${esc(r._id)}">Hide</button>` : ""}
+        <button type="button" class="btn sm danger" data-rv-del="${esc(r._id)}">Delete</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+document.querySelectorAll("#rvFilter button").forEach(b => b.onclick = () => { rvFilter = b.dataset.rv; renderReviews(); });
+$("rvList").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  try {
+    if (b.dataset.rvSet){ b.disabled = true; await updateDoc(doc(db, "reviews", b.dataset.id), { status: b.dataset.rvSet }); toast(b.dataset.rvSet === "approved" ? "Approved: it now counts on the store" : "Hidden from the store"); }
+    else if (b.dataset.rvDel){
+      if (!confirm(`Delete the review for order ${b.dataset.rvDel}?\n\nThat order could then be reviewed again. Hide keeps it off the store without allowing that.`)) return;
+      await deleteDoc(doc(db, "reviews", b.dataset.rvDel)); toast("Review deleted");
+    }
+  } catch (x) { b.disabled = false; toast(x && x.code === "permission-denied" ? "Not saved: check the Firestore rules." : "Can't reach the cloud right now.", true); }
+});
 
 // ---------- Analytics: anonymous daily counts the store keeps (stats/<YYYY-MM>~<key>, one number per day) ----------
 // Days are US Mountain time (UTC-6), same as the store and the Firestore rules. 90 days are read once, then filtered here.
