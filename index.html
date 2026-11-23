@@ -541,7 +541,7 @@
   .btn-decline{color:var(--gold-hi)}
 
   /* ===== Customer ratings (home) =====
-     Stars only, no written comments. Customers rate purity, COA match, shipping and service;
+     Stars only, no written comments. Customers rate packaging, shipping and service;
      only ratings the owner approves in Firebase count. */
   .reviews{margin-top:8px}
   .rate-card{display:grid;gap:18px;padding:20px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(28,24,16,.05),0 6px 18px rgba(28,24,16,.06)}
@@ -1894,15 +1894,13 @@ document.querySelectorAll('input[name=pay]').forEach(r => r.onchange = () => { r
 loadCustomer();
 
 // ----- Customer ratings (home page) -----
-// Guided review, no written comments: stars (1-5) for purity, COA match, packaging, shipping and service,
+// Guided review, no written comments: stars (1-5) for packaging, shipping and service,
 // plus two preset questions (would you order again, how long delivery took).
 // Moderated: visitors can only add a "pending" rating; the owner approves it before it counts.
 // Verified buyers only: the review is saved under its order number, so the Firestore rules can check the order
 // exists and has shipped, and each order can leave just one review. No name, email or phone is ever asked for.
 // (The earlier version with written comments is in git history: commit ff05f7d.)
 const RATE_TOPICS = [
-  { k:"purity",   label:"Purity",    hint:"Matches the purity on the COA" },
-  { k:"coa",      label:"COA match", hint:"Lot on your vial matches its certificate" },
   { k:"packaging",label:"Packaging", hint:"Sealed, labeled and well packed" },
   { k:"shipping", label:"Shipping",  hint:"Speed and tracking" },
   { k:"service",  label:"Service",   hint:"Answers and help with your order" }

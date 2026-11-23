@@ -575,7 +575,7 @@ function render(){
 
 // ---------- Reviews: customers' star ratings (reviews/<order number>), shown on the store only once approved ----------
 let reviews = [], gotReviews = false, reviewsErr = false, rvFilter = "pending";
-const RV_TOPICS = [["purity", "Purity"], ["coa", "COA match"], ["packaging", "Packaging"], ["shipping", "Shipping"], ["service", "Service"]];
+const RV_TOPICS = [["packaging", "Packaging"], ["shipping", "Shipping"], ["service", "Service"]];
 const rvStatus = r => r.status === "approved" ? "approved" : r.status === "hidden" ? "hidden" : "pending";
 const rvWhen = r => r.created && r.created.toDate ? r.created.toDate() : null;
 function reviewBadge(){
