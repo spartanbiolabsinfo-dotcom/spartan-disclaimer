@@ -1268,7 +1268,7 @@ $("ordList").addEventListener("click", e => {
       : o.status === "shipped"
       ? `Hi ${first}, your Spartan Biolabs order ${o.id} has shipped via UPS.${o.tracking ? `\nTracking: ${upsLink(o.tracking)}` : ""}\nThe COA for your lot is in the box. Research use only.\nOnce it arrives, rate your order in 30 seconds: ${rateLink}`
       : o.status === "paid" || o.status === "packed"
-      ? `Hi ${first}, payment for order ${o.id} is received. Thank you! We'll send your UPS tracking as soon as it ships.`
+      ? `Hi ${first}, payment for order ${o.id} is received. Thank you! We'll send your UPS tracking as soon as it ships.\nTrack your order anytime: ${new URL("../../", location.href).href}#track/${encodeURIComponent(o.id)}`
       : `Hi ${first}, just checking in on order ${o.id}. Total due is ${orderTotals(o)}. Your invoice has the payment details.`;
     window.open(`https://wa.me/${waNumber(o.phone)}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
   }
@@ -1675,12 +1675,47 @@ function startSync(role){
   unsubs.push(onSnapshot(collection(d, "storeProducts"), snap => window.setOpsCatalog && window.setOpsCatalog(snap.docs.map(x => ({ ...x.data(), id: x.id }))), () => {}));
   (role === "rep" ? ["orders", "inventory"] : ["orders", "supply", "inventory"]).forEach(c => {
     unsubs.push(onSnapshot(collection(d, c), { includeMetadataChanges: true },
-      snap => S.apply(c, snap.docs.map(x => [x.id, x.data()]), snap.metadata),
+      snap => {
+        S.apply(c, snap.docs.map(x => [x.id, x.data()]), snap.metadata);
+        if (c === "orders" && !snap.metadata.fromCache && !snap.metadata.hasPendingWrites) syncOrderStatus(snap.docs);
+      },
       err => S.error(c, err)));
   });
   unsubs.push(onSnapshot(doc(d, "meta", "settings"), { includeMetadataChanges: true },
     snap => S.apply("settings", snap.exists() ? snap.data() : null, snap.metadata),
     err => S.error("settings", err)));
+}
+
+// ---- Order tracking on the store: publish only each order's status (orderStatus/<order number>) ----
+// status, UPS tracking and order date. Never the name, address, items or totals. Best-effort: an order
+// save never waits on this, and if the rules don't allow it yet it quietly stops until the app reopens.
+const ST_KEY = "ops_status_sent", ST_OK = ["awaiting", "paid", "packed", "shipped", "delivered", "cancelled"];
+let stSent = {}, stOff = false, stBusy = false;
+try { stSent = JSON.parse(localStorage.getItem(ST_KEY) || "{}") || {}; } catch (e) {}
+async function syncOrderStatus(docs){
+  if (stOff || stBusy) return;
+  const puts = [], live = new Set();
+  docs.forEach(x => {
+    const id = x.id; if (!/^SB-\d{6}-[A-Z0-9]{4}$/.test(id)) return;
+    const o = x.data() || {}; live.add(id);
+    const rec = { status: ST_OK.includes(o.status) ? o.status : "awaiting", tracking: String(o.tracking || "").slice(0, 40), date: String(o.date || "").slice(0, 10) };
+    const key = rec.status + "|" + rec.tracking + "|" + rec.date;
+    if (stSent[id] !== key) puts.push([id, rec, key]);
+  });
+  const dels = Object.keys(stSent).filter(id => !live.has(id));
+  if (!puts.length && !dels.length) return;
+  stBusy = true;
+  try {
+    const d = getDb(), ops = [...puts.map(p => ["set", p]), ...dels.map(id => ["del", id])];
+    for (let i = 0; i < ops.length; i += 400) {
+      const b = writeBatch(d);
+      ops.slice(i, i + 400).forEach(([k, v]) => k === "set" ? b.set(doc(d, "orderStatus", v[0]), { ...v[1], updated: new Date().toISOString() }) : b.delete(doc(d, "orderStatus", v)));
+      await b.commit();
+    }
+    puts.forEach(p => stSent[p[0]] = p[2]); dels.forEach(id => delete stSent[id]);
+    try { localStorage.setItem(ST_KEY, JSON.stringify(stSent)); } catch (e) {}
+  } catch (e) { if (e && e.code === "permission-denied") stOff = true; console.warn("order status sync", e); }
+  finally { stBusy = false; }
 }
 
 window.Cloud = {

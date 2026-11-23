@@ -99,6 +99,20 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // ----- Order tracking: the store's "Track your order" page -----
+    // orderStatus/<order number> holds only status, UPS tracking and order date (no name, address or items).
+    // Anyone with the order number can look one up (no browsing the list); Ops (staff) keeps them current.
+    match /orderStatus/{id} {
+      allow get: if true;
+      allow list: if isStaff();
+      allow create, update: if isStaff() && id.matches('^SB-[0-9]{6}-[A-Z0-9]{4}$')
+        && request.resource.data.keys().hasOnly(['status', 'tracking', 'date', 'updated'])
+        && request.resource.data.status in ['awaiting', 'paid', 'packed', 'shipped', 'delivered', 'cancelled']
+        && str(request.resource.data.tracking, 0, 40) && str(request.resource.data.date, 0, 10)
+        && str(request.resource.data.updated, 10, 40);
+      allow delete: if isStaff();
+    }
+
     // ----- Public store: anyone can view, only admins can change -----
     match /store/{id}         { allow read: if true; allow write: if isAdmin(); }
     match /storeProducts/{id} { allow read: if true; allow write: if isAdmin(); }

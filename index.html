@@ -560,6 +560,36 @@
   .rate-bar{height:8px;border-radius:999px;background:#f1ecdf;overflow:hidden}
   .rate-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#d8b04c,#c19a35)}
   .rate-row span{text-align:right;font-weight:700;color:var(--gold-hi)}
+  .trk-form{margin-top:12px;max-width:none}
+  .trk-mine{margin-top:12px;font-size:13px;color:var(--muted)}
+  .trk-mine a{display:inline-block;margin:6px 6px 0 0;padding:7px 12px;border-radius:999px;border:1.5px solid #d9d1bd;background:#fff;color:var(--text);font:600 13px ui-monospace,Menlo,Consolas,monospace;text-decoration:none}
+  .trk-mine a:hover{border-color:var(--gold)}
+  .trk{margin-top:16px;padding:18px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(28,24,16,.05),0 6px 18px rgba(28,24,16,.06)}
+  .trk-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .trk-top b{font:700 16px ui-monospace,Menlo,Consolas,monospace;color:var(--text)}
+  .trk-top span{font-size:13px;color:var(--muted)}
+  .trk-now{margin:10px 0 4px;font:600 22px Cinzel,Georgia,serif;color:var(--text)}
+  .trk-sub{font-size:14px;color:#4f4a3f;margin:0}
+  .trk-steps{list-style:none;margin:16px 0 4px;padding:0;display:grid;gap:0}
+  .trk-steps li{position:relative;display:flex;align-items:center;gap:12px;padding:8px 0;font-size:14.5px;color:#a39c8a}
+  .trk-steps li::before{content:"";flex:none;width:14px;height:14px;border-radius:50%;border:2px solid #d9d1bd;background:#fff;z-index:1}
+  .trk-steps li:not(:last-child)::after{content:"";position:absolute;left:8px;top:24px;bottom:-8px;width:2px;background:#ece5d3}
+  .trk-steps li.done{color:var(--text)}
+  .trk-steps li.done::before{background:var(--gold);border-color:var(--gold)}
+  .trk-steps li.done:not(:last-child)::after{background:var(--gold)}
+  .trk-steps li.now{color:var(--text);font-weight:700}
+  .trk-steps li.now::before{box-shadow:0 0 0 4px rgba(193,154,53,.2)}
+  .trk-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .trk-acts .cta{flex:1 1 180px;max-width:none}
+  .trk-msg{margin-top:16px;padding:16px;border-radius:12px;background:#fff;border:1px dashed var(--line);color:#4f4a3f;font-size:14px}
+  .trk-cancel{color:#b42318}
+  .home-acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .home-acts .cta{flex:1 1 220px;max-width:340px}
+  .my-row{flex-wrap:wrap}
+  .my-row .my-info{flex:1 1 100%}
+  a.my-pdf{text-decoration:none;display:inline-block}
+  .my-acts{display:flex;gap:6px;flex-wrap:wrap}
+  .my-note{margin:8px 0 0;font-size:13px;color:var(--good);font-weight:600}
   .prate{display:inline-flex;align-items:center;gap:4px;margin:4px 0 2px;font-size:13px;color:var(--muted);text-decoration:none}
   .prate svg{width:15px;height:15px;color:var(--gold)}
   .prate b{color:var(--text);font-weight:700}
@@ -700,9 +730,21 @@
 
     <section class="home-contact">
       <h2 class="sect">Questions?</h2>
-      <p class="note">Message us on WhatsApp for orders, lot numbers or anything else.</p>
-      <a class="cta wa-link home-wa" href="https://wa.me/12089571737" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.7 7.4L3.5 20.5l1.4-4.1A8.5 8.5 0 1 1 20.5 11.8z"/><path d="M9 8.6c.2-.4.5-.4.8-.4h.4c.2 0 .4 0 .5.4l.6 1.4c.1.2 0 .4-.1.6l-.5.6c-.1.1-.1.3 0 .5.6 1 1.4 1.8 2.4 2.3.2.1.4.1.5 0l.6-.7c.2-.2.4-.2.6-.1l1.4.7c.2.1.3.3.3.5v.4c0 .5-.3 1-.8 1.2-.6.2-1.4.3-2.6-.2-1.6-.7-3-2.1-3.8-3.6-.5-1-.6-1.8-.4-2.6z" fill="currentColor" stroke="none"/></svg><span>WhatsApp <span class="wa-num">+1 (208) 957-1737</span></span></a>
+      <p class="note">Message us on WhatsApp for orders, lot numbers or anything else, or check where your order is.</p>
+      <div class="home-acts"><a class="cta wa-link home-wa" href="https://wa.me/12089571737" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.7 7.4L3.5 20.5l1.4-4.1A8.5 8.5 0 1 1 20.5 11.8z"/><path d="M9 8.6c.2-.4.5-.4.8-.4h.4c.2 0 .4 0 .5.4l.6 1.4c.1.2 0 .4-.1.6l-.5.6c-.1.1-.1.3 0 .5.6 1 1.4 1.8 2.4 2.3.2.1.4.1.5 0l.6-.7c.2-.2.4-.2.6-.1l1.4.7c.2.1.3.3.3.5v.4c0 .5-.3 1-.8 1.2-.6.2-1.4.3-2.6-.2-1.6-.7-3-2.1-3.8-3.6-.5-1-.6-1.8-.4-2.6z" fill="currentColor" stroke="none"/></svg><span>WhatsApp <span class="wa-num">+1 (208) 957-1737</span></span></a><a class="cta" href="#track"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg><span>Track your order</span></a></div>
     </section>
+  </section>
+
+  <!-- ===== TRACK AN ORDER ===== -->
+  <section class="panel" id="panel-track">
+    <h2 class="sect">Track your order</h2>
+    <p class="note">Enter the order number from your PDF copy or your WhatsApp order message.</p>
+    <form class="coa-hero-form trk-form" id="trkForm" autocomplete="off">
+      <div class="coa-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input id="trkId" type="search" spellcheck="false" autocapitalize="characters" maxlength="20" placeholder="SB-261123-AB12" aria-label="Order number"></div>
+      <button type="submit" class="cta gold">Track</button>
+    </form>
+    <div class="trk-mine" id="trkMine" hidden></div>
+    <div id="trkOut" aria-live="polite"></div>
   </section>
 
   <!-- ===== REVIEWS ===== -->
@@ -776,10 +818,11 @@
   <!-- ===== ORDER ===== -->
   <section class="panel" id="panel-order">
     <details class="my-orders" id="myOrders" hidden>
-      <summary>📄 My orders (<span id="myCount">0</span>) · re-download your PDF copies</summary>
+      <summary>📄 My orders (<span id="myCount">0</span>) · order again, track or get your PDF</summary>
       <div id="myList"></div>
       <p class="my-note">Saved on this device only. We can't see this list.</p>
     </details>
+    <p class="my-note" id="myNote" hidden role="status"></p>
     <h2 class="step"><span class="n">1</span>Your Products</h2>
     <p class="note">Adjust quantities here, or add more from the <a href="#catalog">catalog</a>.</p>
     <div id="products"></div>
@@ -827,6 +870,7 @@
       <div class="sent-actions">
         <button type="button" class="linkbtn" id="sentPdf">Save my copy (PDF)</button>
         <button type="button" class="linkbtn" id="sentAgain">WhatsApp didn't open? Try again</button>
+        <a class="linkbtn" id="sentTrack" href="#track">Track this order</a>
       </div>
     </div>
     <p class="note" style="margin-top:6px">Tap <b>Place Order</b> to review your order, then send it to us on WhatsApp. You'll receive a quote confirmation and payment details by reply. Questions? <a class="wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener">Message us on WhatsApp</a>.</p>
@@ -834,7 +878,7 @@
 
   <footer class="site">
     <p>Every Spartan Biolabs peptide lot is independently verified by a third-party laboratory.</p>
-    <p><a class="wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener">WhatsApp: <span class="wa-num">+1 (208) 957-1737</span></a></p>
+    <p><a class="wa-link" href="https://wa.me/12089571737" target="_blank" rel="noopener">WhatsApp: <span class="wa-num">+1 (208) 957-1737</span></a> · <a class="wa-link" href="#track">Track your order</a></p>
     <div class="social-line foot"><a href="https://www.instagram.com/Spartan.bio.labs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg><span>Instagram</span></a><a href="https://www.tiktok.com/@spartanblabs" target="_blank" rel="noopener" aria-label="Spartan Biolabs on TikTok"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.3 2.3 1.7 3.9 4 4.1v3.1c-1.5.1-2.9-.4-4-1.2v6.3c0 3.4-2.6 5.7-5.8 5.7-3.1 0-5.6-2.5-5.6-5.6 0-3.5 3.1-6 6.6-5.4v3.3c-1.6-.4-3.3.7-3.3 2.2 0 1.3 1 2.3 2.3 2.3 1.4 0 2.4-1 2.4-2.6V3h3.4z"/></svg><span>TikTok</span></a><a href="https://linktr.ee/spartanbiolabs.info" target="_blank" rel="noopener" aria-label="All Spartan Biolabs links on Linktree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 13.5V21"/><path d="M12 3v7"/><path d="M5.5 5.5 12 10l6.5-4.5"/><path d="M4 11h16"/><path d="M5.5 16.5 12 12l6.5 4.5"/></svg><span>Linktree</span></a></div>
     <p style="font-size:11px;color:#555;margin-top:10px">Research Use Only. Not for human or veterinary use.</p>
   </footer>
@@ -1241,6 +1285,7 @@ function route(){
     if (h.startsWith("coa/")) { const lot = decodeURIComponent(h.slice(4)); if (!routedOnce) { coaFromScan = true; try { history.replaceState(null, "", "#home"); history.pushState(null, "", "#coa/" + h.slice(4)); } catch (e) {} } openCoa(lot); }
   }
   else if (h === "catalog" || h === "shop") view = "catalog";
+  else if (h === "track" || h.startsWith("track/")) { view = "track"; Track.show(h.startsWith("track/") ? decodeURIComponent(h.slice(6)) : ""); }
   else if (h === "reviews" || h.startsWith("review/")) {
     view = "reviews"; Reviews.render();
     if (h.startsWith("review/")){
@@ -1253,7 +1298,7 @@ function route(){
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + view));
   Stats.page(view === "catalog" ? "shop" : view);
   if (view === "product") Stats.product(h.slice(2));
-  const tabFor = { home: "home", catalog: "catalog", product: "catalog", coa: "coa", reviews: "reviews", order: "order" }[view];
+  const tabFor = { home: "home", catalog: "catalog", product: "catalog", coa: "coa", reviews: "reviews", track: "order", order: "order" }[view];
   document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("active", a.dataset.tab === tabFor));
   updateBars();
   if (!(view === "coa" && prevView === "coa")) window.scrollTo(0, 0);
@@ -1317,16 +1362,39 @@ function renderMyOrders(){
   $("myList").innerHTML = a.map((o, i) => `
     <div class="my-row">
       <div class="my-info"><b>${esc(o.id)}</b><span>${esc(new Date(o.at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}))} · ${o.items.reduce((s,x) => s + x.q, 0)} item${o.items.reduce((s,x) => s + x.q, 0) === 1 ? "" : "s"} · ${money(o.total)}</span></div>
-      <button type="button" class="my-pdf" data-i="${i}">View PDF</button>
-      <button type="button" class="my-del" data-del="${i}" aria-label="Remove ${esc(o.id)} from this device">✕</button>
+      <div class="my-acts">
+        <button type="button" class="my-pdf" data-again="${i}">Order again</button>
+        <a class="my-pdf" href="#track/${encodeURIComponent(o.id)}">Track</a>
+        <button type="button" class="my-pdf" data-i="${i}">PDF</button>
+        <button type="button" class="my-del" data-del="${i}" aria-label="Remove ${esc(o.id)} from this device">✕</button>
+      </div>
     </div>`).join("");
 }
 $("myList").addEventListener("click", e => {
-  const a = myOrders(), v = e.target.closest("[data-i]"), del = e.target.closest("[data-del]");
+  const a = myOrders(), v = e.target.closest("[data-i]"), del = e.target.closest("[data-del]"), again = e.target.closest("[data-again]");
+  if (again) { orderAgain(a[+again.dataset.again]); return; }
   if (v) openViewer(a[+v.dataset.i], "copy");
   if (del && confirm(`Remove order ${a[+del.dataset.del].id} from this device?`)) { a.splice(+del.dataset.del, 1); setMyOrders(a); }
 });
 renderMyOrders();
+// "Order again": puts a saved order's items back in the cart (products still on the store and in stock)
+function orderAgain(o){
+  if (!o) return;
+  let added = 0; const missing = [];
+  (o.items || []).forEach(it => {
+    const p = PRODUCTS.find(x => x.name === it.name && x.spec === it.spec);
+    if (!p || p.soldOut || p.soon) { missing.push(it.name + " " + it.spec); return; }
+    qty[p.id] = (qty[p.id] || 0) + (+it.q || 1); added += +it.q || 1;
+  });
+  Stats.hit("c-reorder");
+  refreshAll();
+  $("myOrders").open = false;
+  const note = added ? `Added ${added} item${added === 1 ? "" : "s"} from ${o.id} to your order.` : `Nothing from ${o.id} is available right now.`;
+  $("myNote").textContent = note + (missing.length ? ` Not available now: ${missing.join(", ")}.` : "");
+  $("myNote").hidden = false;
+  if (location.hash !== "#order") location.hash = "#order";
+  setTimeout(() => $("myNote").scrollIntoView({ block: "center", behavior: "smooth" }), 50);
+}
 
 // Step 1: PLACE ORDER checks the form and opens the PDF review
 $("send").onclick = () => {
@@ -1366,6 +1434,7 @@ function pingAlerts(id){
 function placeOrder(){
   openWhatsApp(); sendToOps(); saveCart(true); rememberOrder(viewing || snapshot());
   $("sentId").textContent = orderId(); $("sent").hidden = false;
+  $("sentTrack").href = "#track/" + encodeURIComponent(orderId());
   $("sent").scrollIntoView({ block:"center", behavior:"smooth" });
 }
 
@@ -1919,6 +1988,65 @@ if (savedPay) { const r = document.querySelector(`input[name=pay][value="${saved
 document.querySelectorAll('input[name=pay]').forEach(r => r.onchange = () => { renderSummary(); saveCart(); });
 loadCustomer();
 
+// ----- Track an order -----
+// Ops publishes just the status of each order (orderStatus/<order number>: status, tracking, date). No names or addresses.
+const Track = (() => {
+  const RE = /^SB-\d{6}-[A-Z0-9]{4}$/;
+  const STEPS = [["awaiting", "Order received, waiting for payment"], ["paid", "Payment received"], ["packed", "Packed"], ["shipped", "Shipped with UPS"], ["delivered", "Delivered"]];
+  const HEAD = { awaiting: "Waiting for payment", paid: "Paid, getting it ready", packed: "Packed, shipping soon", shipped: "On its way", delivered: "Delivered" };
+  const SUB = {
+    awaiting: "We sent your total and payment details on WhatsApp. Once payment comes in, we get your order ready.",
+    paid: "Thank you! We're getting your order ready to ship.",
+    packed: "Your order is packed and goes out with UPS shortly.",
+    shipped: "Your order is with UPS. Use the tracking link for delivery updates.",
+    delivered: "Your order was delivered. Thank you for ordering!"
+  };
+  const day = d => { const t = d ? new Date(d + "T12:00:00") : null; return t && !isNaN(t) ? t.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""; };
+  function mine(){
+    const a = (typeof myOrders === "function" ? myOrders() : []).slice(0, 5);
+    $("trkMine").hidden = !a.length;
+    $("trkMine").innerHTML = a.length ? `Your orders on this device:<br>${a.map(o => `<a href="#track/${encodeURIComponent(o.id)}">${esc(o.id)}</a>`).join("")}` : "";
+  }
+  function show(id){
+    mine();
+    id = String(id || "").trim().toUpperCase();
+    $("trkId").value = id;
+    if (!id){ $("trkOut").innerHTML = ""; return; }
+    if (!RE.test(id)){ $("trkOut").innerHTML = `<div class="trk-msg">That doesn't look like an order number. It looks like <b>SB-261123-AB12</b>.</div>`; return; }
+    $("trkOut").innerHTML = `<div class="trk-msg">Looking up ${esc(id)}…</div>`;
+    whenCloud(c => c.orderStatus(id).then(st => {
+      if ($("trkId").value !== id) return;
+      if (!st){
+        $("trkOut").innerHTML = `<div class="trk-msg"><b>We can't find ${esc(id)} yet.</b><br>A new order shows up here once our team has seen it, usually within a few hours. Check the number, or <a class="wa-link" href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Hi, checking on order " + id)}" target="_blank" rel="noopener">ask us on WhatsApp</a>.</div>`;
+        return;
+      }
+      if (st.status === "cancelled"){
+        $("trkOut").innerHTML = `<div class="trk"><div class="trk-top"><b>${esc(id)}</b><span>${esc(day(st.date))}</span></div><div class="trk-now trk-cancel">Cancelled</div><p class="trk-sub">This order was cancelled. Questions? <a class="wa-link" href="https://wa.me/${WHATSAPP}" target="_blank" rel="noopener">Message us on WhatsApp</a>.</p></div>`;
+        return;
+      }
+      const at = Math.max(0, STEPS.findIndex(s => s[0] === st.status));
+      const k = STEPS[at][0];
+      $("trkOut").innerHTML = `<div class="trk">
+        <div class="trk-top"><b>${esc(id)}</b><span>${st.date ? "Ordered " + esc(day(st.date)) : ""}</span></div>
+        <div class="trk-now">${esc(HEAD[k])}</div>
+        <p class="trk-sub">${esc(SUB[k])}</p>
+        <ol class="trk-steps">${STEPS.map((s, i) => `<li class="${i < at ? "done" : i === at ? "done now" : ""}">${esc(s[1])}</li>`).join("")}</ol>
+        <div class="trk-acts">
+          ${st.tracking && (k === "shipped" || k === "delivered") ? `<a class="cta gold" href="https://www.ups.com/track?tracknum=${encodeURIComponent(st.tracking)}" target="_blank" rel="noopener">Track on UPS</a>` : ""}
+          ${k === "shipped" || k === "delivered" ? `<a class="cta" href="#review/${encodeURIComponent(id)}">Rate your order</a>` : ""}
+          <a class="cta" href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Hi, a question about order " + id)}" target="_blank" rel="noopener">Ask on WhatsApp</a>
+        </div>
+      </div>`;
+    }).catch(() => { $("trkOut").innerHTML = `<div class="trk-msg">Can't check right now. Check your connection and try again.</div>`; }));
+  }
+  $("trkForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const id = $("trkId").value.trim().toUpperCase();
+    if (location.hash === "#track/" + id) show(id); else location.hash = "#track/" + encodeURIComponent(id);
+  });
+  return { show };
+})();
+
 // ----- Customer ratings (home page) -----
 // Guided review, no written comments: stars (1-5) for packaging, shipping and service,
 // plus two preset questions (would you order again, how long delivery took).
@@ -2093,6 +2221,8 @@ window.StoreCloud = {
     const s = await getDocs(query(collection(db, "reviews"), where("status", "==", "approved")));
     return s.docs.map(d => d.data());
   },
+  // Order tracking: just the status Ops publishes for an order number (no customer details)
+  async orderStatus(id){ const s = await getDoc(doc(db, "orderStatus", id)); return s.exists() ? s.data() : null; },
   async image(id){ const s = await getDoc(doc(db, "storeImages", id)); return s.exists() ? s.data().data || null : null; },
   coaFile(c){
     const k = c._id + "@" + (c.file.v || 0);
