@@ -597,6 +597,10 @@
   .g-steps i{flex:1;height:5px;border-radius:999px;background:#ece5d3}
   .g-steps i.on{background:var(--gold)}
   .g-k{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-hi);margin-top:10px}
+  .g-hint{font-size:12px;color:var(--muted);margin:5px 0 0}
+  .g-mine{margin-top:10px}
+  .g-mine > b{display:block;font-size:13px;color:var(--text);margin-bottom:6px}
+  .g-mine .g-opts label{flex:0 1 auto;padding:9px 12px;font-size:13px}
   .g-q{margin-top:14px}
   .g-q > b{display:block;font-size:14.5px;color:var(--text);margin-bottom:8px}
   .g-opts{display:flex;flex-wrap:wrap;gap:8px}
@@ -690,7 +694,12 @@
         <div class="g-steps" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
         <div class="g-step" data-step="1">
           <div class="g-k">Step 1 of 3</div>
-          <h3>Which product did you get?</h3>
+          <h3>Which order are you reviewing?</h3>
+          <p class="rev-lead">Only real orders can be reviewed, once each, after they ship. No email or account needed.</p>
+          <div class="g-mine" id="revMine" hidden></div>
+          <label for="revOrder">Order number</label>
+          <input id="revOrder" spellcheck="false" autocapitalize="characters" autocomplete="off" maxlength="20" placeholder="SB-261123-AB12">
+          <p class="g-hint">It's on your PDF copy and at the top of your WhatsApp order message.</p>
           <label for="revProduct">Product</label><select id="revProduct"></select>
           <label for="revLot">Lot number (optional)</label><input id="revLot" spellcheck="false" autocapitalize="characters" maxlength="24" placeholder="From your vial label">
         </div>
@@ -1875,7 +1884,8 @@ loadCustomer();
 // Guided review, no written comments: stars (1-5) for purity, COA match, packaging, shipping and service,
 // plus two preset questions (would you order again, how long delivery took).
 // Moderated: visitors can only add a "pending" rating; the owner approves it before it counts.
-// No name, email or phone is ever asked for.
+// Verified buyers only: the review is saved under its order number, so the Firestore rules can check the order
+// exists and has shipped, and each order can leave just one review. No name, email or phone is ever asked for.
 // REVIEW_SAMPLES shows made-up example ratings while there are no approved ones (preview only: set false before going live).
 // (The earlier version with written comments is in git history: commit ff05f7d.)
 const REVIEW_SAMPLES = true;
@@ -1944,8 +1954,21 @@ var Reviews = (() => {
     $("revBack").textContent = n === 1 ? "Cancel" : "Back";
     $("revNext").textContent = n === 3 ? "Send review" : "Next";
   }
+  const ORDER_RE = /^SB-\d{6}-[A-Z0-9]{4}$/;
+  function fillProducts(order){
+    const items = order && Array.isArray(order.items) ? order.items : null;
+    const list = items ? PRODUCTS.filter(p => items.some(i => i.name === p.name && i.spec === p.spec)) : [];
+    const use = list.length ? list : PRODUCTS;
+    $("revProduct").innerHTML = (use.length === 1 ? "" : `<option value="">Choose a product</option>`) + use.map(p => `<option value="${esc(p.id)}">${esc(p.name + " " + p.spec)}</option>`).join("");
+  }
   function open(){
-    $("revProduct").innerHTML = `<option value="">Choose a product</option>` + PRODUCTS.map(p => `<option value="${esc(p.id)}">${esc(p.name + " " + p.spec)}</option>`).join("");
+    fillProducts(null);
+    // orders placed on this phone are offered as one-tap choices (kept on the device only)
+    const mine = (typeof myOrders === "function" ? myOrders() : []).slice(0, 4);
+    $("revMine").hidden = !mine.length;
+    $("revMine").innerHTML = mine.length ? `<b>Your orders on this device</b><div class="g-opts">${mine.map(o =>
+      `<label><input type="radio" name="mine" value="${esc(o.id)}">${esc(o.id)}</label>`).join("")}</div>` : "";
+    $("revMine").querySelectorAll("input").forEach(i => i.onchange = () => { $("revOrder").value = i.value; fillProducts(mine.find(o => o.id === i.value)); });
     $("rateList").innerHTML = RATE_TOPICS.map(t => `
       <div class="rate-line"><b>${esc(t.label)}<small>${esc(t.hint)}</small></b>
         <div class="rate-pick" role="radiogroup" aria-label="${esc(t.label)} rating">${[5,4,3,2,1].map(n =>
@@ -1962,16 +1985,25 @@ var Reviews = (() => {
   const ratingsNow = () => { const r = {}; RATE_TOPICS.forEach(t => { const c = document.querySelector(`input[name="rate-${t.k}"]:checked`); if (c) r[t.k] = +c.value; }); return r; };
   async function next(){
     const err = m => { $("revErr").textContent = m; };
-    if (step === 1){ if (!$("revProduct").value) return err("Choose the product you're reviewing."); return go(2); }
+    if (step === 1){
+      const o = $("revOrder").value.trim().toUpperCase(); $("revOrder").value = o;
+      if (!ORDER_RE.test(o)) return err("Enter your order number, like SB-261123-AB12.");
+      if (!$("revProduct").value) return err("Choose the product you're reviewing.");
+      return go(2);
+    }
     if (step === 2){ if (!Object.keys(ratingsNow()).length) return err("Tap the stars for at least one line."); return go(3); }
     const product = $("revProduct").value, p = PRODUCTS.find(x => x.id === product);
-    const rec = { product, productName: p ? p.name + " " + p.spec : "", lot: $("revLot").value.trim().toUpperCase(), ratings: ratingsNow() };
+    const rec = { order: $("revOrder").value, product, productName: p ? p.name + " " + p.spec : "", lot: $("revLot").value.trim().toUpperCase(), ratings: ratingsNow() };
     RATE_CHOICES.forEach(c => { const x = document.querySelector(`input[name="ch-${c.k}"]:checked`); if (x) rec[c.k] = x.value; });
     $("revNext").disabled = true;
     try {
       await new Promise((res, rej) => whenCloud(c => c.submitReview(rec).then(res, rej)));
       close(); $("revOpen").parentNode.hidden = true; $("revDone").hidden = false;
-    } catch (x) { err("Couldn't send right now. Check your connection and try again."); }
+    } catch (x) {
+      err(x && x.code === "permission-denied"
+        ? "We couldn't take a review for this order number. Check the number: reviews open once an order has shipped, and each order can be reviewed once."
+        : "Couldn't send right now. Check your connection and try again.");
+    }
     finally { $("revNext").disabled = false; }
   }
   if ($("revForm")){
@@ -1988,7 +2020,7 @@ refreshAll(); route(); Stats.visit();
 <script type="module">
 // Reads the live catalog, COAs and store settings from Firebase. Visitors can only read; edits happen on admin/.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, collection, increment, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js";
+import { getFirestore, doc, getDoc, getDocs, setDoc, collection, increment, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js";
 const app = initializeApp({
   apiKey: "AIzaSyB0p79ljDiBWzE9Pv0xJxQYg4nYOMMLFig",
   authDomain: "spartan-ops.firebaseapp.com",
@@ -2004,7 +2036,7 @@ window.StoreCloud = {
   // one more for today on an anonymous counter (stats/<month>~<key>, a field per day); the rules allow exactly +1
   bump(month, field, key){ return setDoc(doc(db, "stats", month + "~" + key), { [field]: increment(1) }, { merge: true }); },
   // Ratings: anyone can send one as "pending"; only ratings the owner approved can be read here
-  submitReview(r){ return addDoc(collection(db, "reviews"), { ...r, status: "pending", created: serverTimestamp() }); },
+  submitReview({ order, ...r }){ return setDoc(doc(db, "reviews", order), { ...r, status: "pending", created: serverTimestamp() }); },
   async reviews(){
     const s = await getDocs(query(collection(db, "reviews"), where("status", "==", "approved")));
     return s.docs.map(d => d.data());
