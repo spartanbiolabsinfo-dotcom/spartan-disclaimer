@@ -136,6 +136,16 @@
   .rv-grid span{display:flex;justify-content:space-between;gap:6px}
   .rv-grid i{font-style:normal;color:var(--muted)}
   .rv-acts{display:flex;gap:8px;flex-wrap:wrap}
+  .ana-range button small{font-weight:500;opacity:.75;margin-left:4px}
+  .rl-card .two{grid-template-columns:1fr 1.3fr}
+  .rl-out{margin-top:12px;border:1px solid rgba(212,175,55,.45);border-radius:10px;padding:12px;background:var(--panel2)}
+  .rl-msg{font-size:14px;line-height:1.45;word-break:break-word;margin:6px 0 10px}
+  .rl-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+  .rl-row:first-child{border-top:0}
+  .rl-row .sub{color:var(--muted);font-size:12.5px}
+  .rl-row .rv-acts{flex:none}
+  .rv-via{font-size:12.5px;color:var(--muted)}
+  @media (max-width:560px){ .rl-card .two{grid-template-columns:1fr} }
   .chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.03em;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:1px;border:1px solid var(--line);color:var(--muted)}
   .chip.gold{border-color:rgba(212,175,55,.6);color:var(--gold-hi)}
   .chip.good{border-color:rgba(127,191,127,.55);color:var(--good)}
@@ -282,7 +292,19 @@
 
     <section id="tab-reviews" hidden>
       <div class="bar"><h2>Reviews <span class="muted" id="rvCount"></span></h2></div>
-      <p class="muted" style="margin:-6px 0 14px">Customers rate a shipped or delivered order from the store's Reviews tab: stars only, no written text. Nothing shows on the store until you approve it.</p>
+      <p class="muted" style="margin:-6px 0 14px">Customers rate a shipped or delivered order from the store's Reviews tab: stars only, no written text. Nothing shows on the store until you approve it. Approved ones move to the <b>Approved</b> filter, where you can unpublish them.</p>
+      <div class="acard rl-card">
+        <h3>Ordered in person? <span class="muted">Send them a review link</span></h3>
+        <form class="f" id="rlForm" autocomplete="off">
+          <div class="two">
+            <label>Who it's for <span class="hint">Just a note for you. Never shown on the store.</span><input type="text" id="rlName" maxlength="60" placeholder="First name or nickname"></label>
+            <label>Product they got <span class="hint">The review counts for this product.</span><select id="rlProduct"></select></label>
+          </div>
+          <button class="btn gold" type="submit" id="rlMake">Create review link</button>
+        </form>
+        <div class="rl-out" id="rlOut" hidden></div>
+        <details id="rlListWrap" style="margin-top:12px" hidden><summary class="muted" style="cursor:pointer;font-weight:600;font-size:13.5px">Links you've made <span id="rlListN"></span></summary><div id="rlList" style="margin-top:6px"></div></details>
+      </div>
       <div class="ana-range" role="group" aria-label="Filter" id="rvFilter">
         <button type="button" data-rv="pending">Waiting</button><button type="button" data-rv="approved">Approved</button><button type="button" data-rv="hidden">Hidden</button><button type="button" data-rv="all">All</button>
       </div>
@@ -305,7 +327,7 @@
 
     <section id="tab-stats" hidden>
       <div class="bar"><h2>Analytics <span class="muted" id="anaWhen"></span></h2><button class="btn sm" id="anaRefresh" type="button">Refresh</button></div>
-      <div class="ana-range" role="group" aria-label="Time range">
+      <div class="ana-range" role="group" aria-label="Time range" id="anaRange">
         <button type="button" data-range="1">Today</button><button type="button" data-range="7">7 days</button><button type="button" data-range="30">30 days</button><button type="button" data-range="90">90 days</button>
       </div>
       <div id="anaBox"><div class="empty">Loading…</div></div>
@@ -440,7 +462,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, connectAuthEmulator }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFirestore, collection, doc, onSnapshot, getDoc, getDocs, query, where, documentId, writeBatch, updateDoc, deleteDoc }
+import { getFirestore, collection, doc, onSnapshot, getDoc, getDocs, query, where, documentId, writeBatch, updateDoc, deleteDoc, setDoc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 // Only this account can change the store (the Firestore rules enforce the same thing)
@@ -547,6 +569,8 @@ onAuthStateChanged(auth, async user => {
   unsubs.push(onSnapshot(collection(db, "storeProducts"), s => { products = s.docs.map(d => ({ ...d.data(), id: d.id })); gotProducts = true; render(); }, fail));
   unsubs.push(onSnapshot(collection(db, "reviews"), s => { reviews = s.docs.map(d => ({ ...d.data(), _id: d.id })); gotReviews = true; reviewBadge(); if (tab === "reviews") renderReviews(); },
     e => { reviewsErr = true; if (tab === "reviews") renderReviews(); }));
+  unsubs.push(onSnapshot(collection(db, "reviewLinks"), s => { rlinks = s.docs.map(d => ({ ...d.data(), _id: d.id })); gotLinks = true; if (tab === "reviews") renderReviews(); },
+    e => { rlinksErr = true; if (tab === "reviews") renderReviews(); }));
   unsubs.push(onSnapshot(collection(db, "storeCoas"), s => { coas = s.docs.map(d => ({ ...d.data(), _id: d.id })); gotCoas = true; render(); }, fail));
 });
 
@@ -584,13 +608,16 @@ function reviewBadge(){
 }
 function renderReviews(){
   document.querySelectorAll("#rvFilter button").forEach(b => b.classList.toggle("on", b.dataset.rv === rvFilter));
+  renderLinks();
   if (reviewsErr && !gotReviews){ $("rvList").innerHTML = `<div class="empty">Can't read reviews yet: publish the updated Firestore rules, then reload.</div>`; return; }
   if (!gotReviews) return;
   const counts = { pending: 0, approved: 0, hidden: 0 }; reviews.forEach(r => counts[rvStatus(r)]++);
   $("rvCount").textContent = `· ${counts.pending} waiting · ${counts.approved} approved`;
+  const lab = { pending: "Waiting", approved: "Approved", hidden: "Hidden", all: "All" };
+  document.querySelectorAll("#rvFilter button").forEach(b => { const n = b.dataset.rv === "all" ? reviews.length : counts[b.dataset.rv]; b.innerHTML = `${lab[b.dataset.rv]}<small>${n}</small>`; });
   const list = reviews.filter(r => rvFilter === "all" || rvStatus(r) === rvFilter)
     .sort((a, b) => (rvWhen(b) || 0) - (rvWhen(a) || 0));
-  if (!list.length){ $("rvList").innerHTML = `<div class="empty">${rvFilter === "pending" ? "No reviews waiting. New ones show up here as customers send them." : "Nothing here yet."}</div>`; return; }
+  if (!list.length){ $("rvList").innerHTML = `<div class="empty">${rvFilter === "pending" ? "No reviews waiting. New ones show up here as customers send them." : rvFilter === "approved" ? "Nothing approved yet. Approved reviews live here, and you can unpublish them any time." : "Nothing here yet."}</div>`; return; }
   $("rvList").innerHTML = list.map(r => {
     const vals = RV_TOPICS.map(([k]) => +(r.ratings || {})[k] || 0).filter(v => v >= 1 && v <= 5);
     const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
@@ -599,12 +626,12 @@ function renderReviews(){
       <div class="rv-top"><div><b>${esc(r.productName || r.product || "")}</b>
         <span class="chip ${st === "approved" ? "good" : st === "hidden" ? "" : "warn"}">${st === "pending" ? "Waiting" : st === "approved" ? "Approved" : "Hidden"}</span></div>
         <span class="rv-stars" title="${avg.toFixed(1)} average">${"★".repeat(Math.round(avg))}${"☆".repeat(5 - Math.round(avg))} ${avg.toFixed(1)}</span></div>
-      <div class="muted" style="font-size:13px;margin-top:2px">Order ${esc(r._id)}${r.lot ? " · lot " + esc(r.lot) : ""}${when ? " · " + when.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""}</div>
+      <div class="muted" style="font-size:13px;margin-top:2px">${isLinkId(r._id) ? `Personal order${linkFor(r._id) ? " · " + esc(linkFor(r._id)) : ""} · link ${esc(r._id)}` : "Order " + esc(r._id)}${r.lot ? " · lot " + esc(r.lot) : ""}${when ? " · " + when.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""}</div>
       <div class="rv-grid">${RV_TOPICS.map(([k, l]) => `<span><i>${l}</i>${(r.ratings || {})[k] ? (r.ratings[k] + "★") : "–"}</span>`).join("")}
         <span><i>Order again</i>${esc(r.again || "–")}</span><span><i>Delivery</i>${esc(r.delivery || "–")}</span></div>
       <div class="rv-acts">
         ${st !== "approved" ? `<button type="button" class="btn sm gold" data-rv-set="approved" data-id="${esc(r._id)}">Approve</button>` : ""}
-        ${st !== "hidden" ? `<button type="button" class="btn sm" data-rv-set="hidden" data-id="${esc(r._id)}">Hide</button>` : ""}
+        ${st !== "hidden" ? `<button type="button" class="btn sm" data-rv-set="hidden" data-id="${esc(r._id)}">${st === "approved" ? "Unpublish" : "Hide"}</button>` : ""}
         <button type="button" class="btn sm danger" data-rv-del="${esc(r._id)}">Delete</button>
       </div>
     </div>`;
@@ -614,14 +641,81 @@ document.querySelectorAll("#rvFilter button").forEach(b => b.onclick = () => { r
 $("rvList").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   try {
-    if (b.dataset.rvSet){ b.disabled = true; await updateDoc(doc(db, "reviews", b.dataset.id), { status: b.dataset.rvSet }); toast(b.dataset.rvSet === "approved" ? "Approved: it now counts on the store" : "Hidden from the store"); }
+    if (b.dataset.rvSet){ b.disabled = true; await updateDoc(doc(db, "reviews", b.dataset.id), { status: b.dataset.rvSet }); toast(b.dataset.rvSet === "approved" ? "Approved: it now counts on the store (see the Approved filter)" : "Taken off the store (see the Hidden filter)"); }
     else if (b.dataset.rvDel){
-      if (!confirm(`Delete the review for order ${b.dataset.rvDel}?\n\nThat order could then be reviewed again. Hide keeps it off the store without allowing that.`)) return;
+      if (!confirm(`Delete the review for ${isLinkId(b.dataset.rvDel) ? "link" : "order"} ${b.dataset.rvDel}?\n\nIt could then be reviewed again. Hide keeps it off the store without allowing that.`)) return;
       await deleteDoc(doc(db, "reviews", b.dataset.rvDel)); toast("Review deleted");
     }
   } catch (x) { b.disabled = false; toast(x && x.code === "permission-denied" ? "Not saved: check the Firestore rules." : "Can't reach the cloud right now.", true); }
 });
 
+// ---------- Review links for customers who ordered in person (reviewLinks/<code>) ----------
+// The link opens the store's review form for one product. The review is saved as reviews/<code>, so each link works once,
+// and it still waits here for approval like any other. Only a first name or nickname is kept (never email or phone):
+// you copy the link and send it yourself.
+let rlinks = [], gotLinks = false, rlinksErr = false;
+const LINK_RE = /^PL-[A-HJ-NP-Z2-9]{8}$/;
+const isLinkId = id => LINK_RE.test(id || "");
+const linkFor = id => { const l = rlinks.find(x => x._id === id); return l ? l.name || "" : ""; };
+const storeBase = () => new URL("../", location.href).href;
+const linkUrl = l => storeBase() + "#review/" + l._id + "/" + encodeURIComponent(l.product);
+const linkMsg = l => `Hi${l.name ? " " + l.name : ""}, thanks for your order with Spartan Biolabs! If you have a minute, could you rate it here? It's a few taps, no account needed: ${linkUrl(l)}`;
+function newCode(){
+  const A = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint8Array(8));
+  return "PL-" + Array.from(r, x => A[x % A.length]).join("");
+}
+function renderLinks(){
+  const sel = $("rlProduct"), keep = sel.value;
+  const ps = products.filter(p => !p.hidden).sort((a, b) => (a.order || 0) - (b.order || 0));
+  const opts = `<option value="">Choose a product</option>` + ps.map(p => `<option value="${esc(p.id)}">${esc((p.name + " " + (p.spec || "")).trim())}</option>`).join("");
+  if (sel.dataset.sig !== opts){ sel.innerHTML = opts; sel.dataset.sig = opts; sel.value = keep; }
+  const used = id => reviews.some(r => r._id === id);
+  const list = rlinks.slice().sort((a, b) => ((b.created && b.created.toMillis ? b.created.toMillis() : 0) - (a.created && a.created.toMillis ? a.created.toMillis() : 0)));
+  $("rlListWrap").hidden = !list.length && !rlinksErr;
+  $("rlListN").textContent = list.length ? `(${list.filter(l => !used(l._id)).length} not used yet)` : "";
+  $("rlList").innerHTML = rlinksErr && !gotLinks ? `<div class="muted" style="font-size:13px">Can't read review links yet: publish the updated Firestore rules, then reload.</div>`
+    : list.map(l => { const u = used(l._id); return `<div class="rl-row"><div><b>${esc(l.name || "No name")}</b> <span class="chip ${u ? "good" : "warn"}">${u ? "Reviewed" : "Not used yet"}</span>
+        <div class="sub">${esc(l.productName || l.product)} · ${esc(l._id)}</div></div>
+        <div class="rv-acts">${u ? "" : `<button type="button" class="btn sm" data-rl-copy="${esc(l._id)}">Copy</button><button type="button" class="btn sm danger" data-rl-del="${esc(l._id)}">Cancel</button>`}</div></div>`; }).join("");
+}
+let shown = null;
+function showLink(l){
+  shown = l;
+  const share = navigator.share ? `<button type="button" class="btn sm gold" data-rl-share="${esc(l._id)}">Share…</button>` : "";
+  $("rlOut").innerHTML = `<b>Link ready${l.name ? " for " + esc(l.name) : ""}</b> <span class="muted" style="font-size:12.5px">· works once</span>
+    <div class="rl-msg" id="rlMsg">${esc(linkMsg(l))}</div>
+    <div class="rv-acts">${share}<button type="button" class="btn sm ${share ? "" : "gold"}" data-rl-copy="${esc(l._id)}">Copy message</button><button type="button" class="btn sm" data-rl-copy-link="${esc(l._id)}">Copy link only</button></div>
+    <p class="muted" style="font-size:12.5px;margin-top:8px">Text or DM it yourself. Their review shows up under Waiting, marked "Personal order".</p>`;
+  $("rlOut").hidden = false;
+}
+async function copyText(t){
+  try { await navigator.clipboard.writeText(t); toast("Copied"); }
+  catch (e) { prompt("Copy this:", t); }
+}
+$("rlForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const product = $("rlProduct").value, p = products.find(x => x.id === product);
+  if (!p) return toast("Choose the product they got.", true);
+  const name = $("rlName").value.trim().slice(0, 60);
+  const l = { name, product, productName: (p.name + " " + (p.spec || "")).trim(), created: serverTimestamp() };
+  $("rlMake").disabled = true;
+  try {
+    const id = newCode(); await setDoc(doc(db, "reviewLinks", id), l);
+    showLink({ ...l, _id: id }); $("rlForm").reset();
+  } catch (x) { toast(x && x.code === "permission-denied" ? "Not saved: publish the updated Firestore rules first." : "Can't reach the cloud right now.", true); }
+  finally { $("rlMake").disabled = false; }
+});
+document.querySelector(".rl-card").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-rl-copy],button[data-rl-copy-link],button[data-rl-share],button[data-rl-del]"); if (!b) return;
+  const id = b.dataset.rlCopy || b.dataset.rlCopyLink || b.dataset.rlShare || b.dataset.rlDel;
+  const l = rlinks.find(x => x._id === id) || (shown && shown._id === id ? shown : null); if (!l) return;
+  if (b.dataset.rlCopy) return copyText(linkMsg(l));
+  if (b.dataset.rlCopyLink) return copyText(linkUrl(l));
+  if (b.dataset.rlShare) { try { await navigator.share({ text: linkMsg(l) }); } catch (x) {} return; }
+  if (!confirm(`Cancel the review link for ${l.name || "this customer"}?\n\nIt will stop working.`)) return;
+  try { await deleteDoc(doc(db, "reviewLinks", id)); toast("Link cancelled"); if (!$("rlOut").hidden && $("rlOut").innerHTML.includes(id)) $("rlOut").hidden = true; }
+  catch (x) { toast("Can't reach the cloud right now.", true); }
+});
 // ---------- Analytics: anonymous daily counts the store keeps (stats/<YYYY-MM>~<key>, one number per day) ----------
 // Days are US Mountain time (UTC-6), same as the store and the Firestore rules. 90 days are read once, then filtered here.
 let anaRange = 30, ana = null, anaBusy = false, anaAt = 0, anaHot = -1;
@@ -663,7 +757,7 @@ function hbars(rows, total){
   return `<div class="hb">${rows.map(([lab, n, extra]) => `<span class="lab" title="${esc(lab)}">${esc(lab)}</span><span class="trk"><i style="width:${n ? Math.max(1.5, n / max * 100) : 0}%"></i></span><span class="val">${nf(n)}${extra !== undefined ? `<small>${extra}</small>` : total ? `<small>${pct(n, total)}</small>` : ""}</span>`).join("")}</div>`;
 }
 function renderAnalytics(){
-  document.querySelectorAll(".ana-range button").forEach(b => b.classList.toggle("on", +b.dataset.range === anaRange));
+  document.querySelectorAll("#anaRange button").forEach(b => b.classList.toggle("on", +b.dataset.range === anaRange));
   $("anaRefresh").disabled = anaBusy; $("anaRefresh").textContent = anaBusy ? "Loading…" : "Refresh";
   $("anaWhen").textContent = ana && !ana.error ? "Updated " + new Date(anaAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
   if (!ana) { $("anaBox").innerHTML = `<div class="empty">Loading…</div>`; return; }
@@ -736,7 +830,7 @@ function renderAnalytics(){
     dc.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") hide(); });
   }
 }
-document.querySelectorAll(".ana-range button").forEach(b => b.onclick = () => { anaRange = +b.dataset.range; anaHot = -1; renderAnalytics(); });
+document.querySelectorAll("#anaRange button").forEach(b => b.onclick = () => { anaRange = +b.dataset.range; anaHot = -1; renderAnalytics(); });
 $("anaRefresh").onclick = () => loadAnalytics(true);
 
 // ---------- Phone alerts: the link to the alerts script (admin/alerts/SpartanAlerts.gs), kept in store/settings ----------

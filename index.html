@@ -718,12 +718,12 @@
         <div class="g-steps" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
         <div class="g-step" data-step="1">
           <div class="g-k">Step 1 of 3</div>
-          <h3>Which order are you reviewing?</h3>
-          <p class="rev-lead">Only real orders can be reviewed, once each, after they ship. No email or account needed.</p>
+          <h3 id="revH1">Which order are you reviewing?</h3>
+          <p class="rev-lead" id="revLead1">Only real orders can be reviewed, once each, after they ship. No email or account needed.</p>
           <div class="g-mine" id="revMine" hidden></div>
-          <label for="revOrder">Order number</label>
+          <label for="revOrder" id="revOrderL">Order number</label>
           <input id="revOrder" spellcheck="false" autocapitalize="characters" autocomplete="off" maxlength="20" placeholder="SB-261123-AB12">
-          <p class="g-hint">It's on your PDF copy and at the top of your WhatsApp order message.</p>
+          <p class="g-hint" id="revHint">It's on your PDF copy and at the top of your WhatsApp order message.</p>
           <label for="revProduct">Product</label><select id="revProduct"></select>
           <label for="revLot">Lot number (optional)</label><input id="revLot" spellcheck="false" autocapitalize="characters" maxlength="24" placeholder="From your vial label">
         </div>
@@ -1244,9 +1244,9 @@ function route(){
   else if (h === "reviews" || h.startsWith("review/")) {
     view = "reviews"; Reviews.render();
     if (h.startsWith("review/")){
-      const id = decodeURIComponent(h.slice(7)).toUpperCase();
+      const [id, prod] = h.slice(7).split("/").map(x => decodeURIComponent(x || ""));
       try { history.replaceState(null, "", "#reviews"); } catch (e) {}
-      setTimeout(() => Reviews.open(id), 0);
+      setTimeout(() => Reviews.open(id.toUpperCase(), prod), 0);
     }
   }
   else { view = "home"; loadCoas().then(renderHomeCoa); }
@@ -1925,6 +1925,7 @@ loadCustomer();
 // Moderated: visitors can only add a "pending" rating; the owner approves it before it counts.
 // Verified buyers only: the review is saved under its order number, so the Firestore rules can check the order
 // exists and has shipped, and each order can leave just one review. No name, email or phone is ever asked for.
+// Customers who ordered in person get a one-time link from Admin instead (reviews/PL-XXXXXXXX, checked against reviewLinks).
 // (The earlier version with written comments is in git history: commit ff05f7d.)
 const RATE_TOPICS = [
   { k:"packaging",label:"Packaging", hint:"Sealed, labeled and well packed" },
@@ -1968,6 +1969,7 @@ var Reviews = (() => {
   }
   function render(){
     const box = $("revBox"); if (!box) return;
+    linkProduct();
     load();
     const real = (list || []).filter(r => vals(r).length);
     const rows = real;
@@ -2002,14 +2004,30 @@ var Reviews = (() => {
     $("revNext").textContent = n === 3 ? "Send review" : "Next";
   }
   const ORDER_RE = /^SB-\d{6}-[A-Z0-9]{4}$/;
-  function fillProducts(order){
+  // Personal-order links from the team (#review/PL-XXXXXXXX/<product>): one product, works once
+  const LINK_RE = /^PL-[A-HJ-NP-Z2-9]{8}$/;
+  let viaLink = false, linkProd = "";
+  // the live catalog can arrive after the link opens the form: pick the link's product once it's there
+  function linkProduct(){
+    if (!viaLink || !linkProd || $("revForm").hidden || $("revProduct").value === linkProd) return;
+    if (PRODUCTS.some(p => p.id === linkProd)){ fillProducts(null, linkProd); $("revProduct").value = linkProd; }
+  }
+  function fillProducts(order, only){
     const items = order && Array.isArray(order.items) ? order.items : null;
-    const list = items ? PRODUCTS.filter(p => items.some(i => i.name === p.name && i.spec === p.spec)) : [];
+    const list = only ? PRODUCTS.filter(p => p.id === only) : items ? PRODUCTS.filter(p => items.some(i => i.name === p.name && i.spec === p.spec)) : [];
     const use = list.length ? list : PRODUCTS;
     $("revProduct").innerHTML = (use.length === 1 ? "" : `<option value="">Choose a product</option>`) + use.map(p => `<option value="${esc(p.id)}">${esc(p.name + " " + p.spec)}</option>`).join("");
   }
-  function open(prefill){
-    fillProducts(null);
+  function linkMode(on){
+    viaLink = on;
+    $("revOrder").readOnly = on; if (!on) linkProd = "";
+    $("revH1").textContent = on ? "Rate your order" : "Which order are you reviewing?";
+    $("revOrderL").textContent = on ? "Your review link" : "Order number";
+    $("revHint").textContent = on ? "This link is just for you and works once." : "It's on your PDF copy and at the top of your WhatsApp order message.";
+    $("revLead1").textContent = on ? "Thanks for ordering with us. It takes about 30 seconds. No email or account needed." : "Only real orders can be reviewed, once each, after they ship. No email or account needed.";
+  }
+  function open(prefill, prod){
+    fillProducts(null); linkMode(false);
     // orders placed on this phone are offered as one-tap choices (kept on the device only)
     const mine = (typeof myOrders === "function" ? myOrders() : []).slice(0, 4);
     $("revMine").hidden = !mine.length;
@@ -2025,11 +2043,16 @@ var Reviews = (() => {
       <div class="g-q" role="radiogroup" aria-label="${esc(c.q)}"><b>${esc(c.q)}</b><div class="g-opts">${c.opts.map(o =>
         `<label><input type="radio" name="ch-${c.k}" value="${esc(o)}">${esc(o)}</label>`).join("")}</div></div>`).join("");
     $("revForm").reset(); go(1);
-    if (prefill && ORDER_RE.test(prefill)){                 // came from the "Rate your order" link in our WhatsApp message
+    if (prefill && LINK_RE.test(prefill)){
+      linkMode(true); $("revOrder").value = prefill; $("revMine").hidden = true;
+      linkProd = prod || "";
+    }
+    else if (prefill && ORDER_RE.test(prefill)){                 // came from the "Rate your order" link in our WhatsApp message
       $("revOrder").value = prefill;
       const m = mine.find(o => o.id === prefill); if (m) { fillProducts(m); const i = $("revMine").querySelector(`input[value="${prefill}"]`); if (i) i.checked = true; }
     }
     $("revForm").hidden = false; $("revDone").hidden = true; $("revOpen").parentNode.hidden = true;
+    linkProduct();
     $("revForm").scrollIntoView({ behavior:"smooth", block:"start" });
   }
   function close(){ $("revForm").hidden = true; $("revOpen").parentNode.hidden = false; $("revErr").textContent = ""; }
@@ -2038,7 +2061,7 @@ var Reviews = (() => {
     const err = m => { $("revErr").textContent = m; };
     if (step === 1){
       const o = $("revOrder").value.trim().toUpperCase(); $("revOrder").value = o;
-      if (!ORDER_RE.test(o)) return err("Enter your order number, like SB-261123-AB12.");
+      if (!ORDER_RE.test(o) && !LINK_RE.test(o)) return err("Enter your order number, like SB-261123-AB12.");
       if (!$("revProduct").value) return err("Choose the product you're reviewing.");
       return go(2);
     }
@@ -2052,7 +2075,8 @@ var Reviews = (() => {
       close(); $("revOpen").parentNode.hidden = true; $("revDone").hidden = false;
     } catch (x) {
       err(x && x.code === "permission-denied"
-        ? "We couldn't take a review for this order number. Check the number: reviews open once an order has shipped, and each order can be reviewed once."
+        ? viaLink ? "This review link has already been used or is no longer active. Message us on WhatsApp if that's a mistake."
+        : "We couldn't take a review for this order number. Check the number: reviews open once an order has shipped, and each order can be reviewed once."
         : "Couldn't send right now. Check your connection and try again.");
     }
     finally { $("revNext").disabled = false; }

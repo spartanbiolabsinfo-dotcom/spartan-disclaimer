@@ -74,15 +74,22 @@ service cloud.firestore {
 
     // ----- Customer reviews (guided: stars + preset answers, no free text, no email/phone) -----
     // Each review's ID is its order number. Only a Shipped or Delivered order can leave one, once.
+    // Customers who ordered in person get a one-time link from Admin: their review's ID is the link code
+    // (PL-XXXXXXXX), the link must still exist, and the product must match the one the link was made for.
     // Reviews start "pending"; the site shows only ones an admin set to "approved".
     function star(m, k) { return !(k in m) || (m[k] is int && m[k] >= 1 && m[k] <= 5); }
     function validReview(id, d) {
-      return id.matches('^SB-[0-9]{6}-[A-Z0-9]{4}$')
+      return (
+          (id.matches('^SB-[0-9]{6}-[A-Z0-9]{4}$')
+            && exists(/databases/$(database)/documents/orders/$(id))
+            && get(/databases/$(database)/documents/orders/$(id)).data.status in ['shipped', 'delivered'])
+          || (id.matches('^PL-[A-HJ-NP-Z2-9]{8}$')
+            && exists(/databases/$(database)/documents/reviewLinks/$(id))
+            && get(/databases/$(database)/documents/reviewLinks/$(id)).data.product == d.product)
+        )
         && d.keys().hasOnly(['product', 'productName', 'lot', 'ratings', 'again', 'delivery', 'status', 'created'])
         && d.keys().hasAll(['product', 'ratings', 'status', 'created'])
         && d.status == 'pending' && d.created == request.time
-        && exists(/databases/$(database)/documents/orders/$(id))
-        && get(/databases/$(database)/documents/orders/$(id)).data.status in ['shipped', 'delivered']
         && str(d.product, 1, 60)
         && (!('productName' in d) || str(d.productName, 0, 80))
         && (!('lot' in d) || str(d.lot, 0, 24))
@@ -97,6 +104,14 @@ service cloud.firestore {
       allow read: if resource.data.status == 'approved' || isAdmin();
       allow create: if validReview(id, request.resource.data);
       allow update, delete: if isAdmin();
+    }
+    // Review links (Admin > Reviews > "Ordered in person?"). Admins only: a first name/nickname and a product, never email or phone.
+    match /reviewLinks/{id} {
+      allow read, delete: if isAdmin();
+      allow create: if isAdmin() && id.matches('^PL-[A-HJ-NP-Z2-9]{8}$')
+        && request.resource.data.keys().hasOnly(['name', 'product', 'productName', 'created'])
+        && str(request.resource.data.name, 0, 60) && str(request.resource.data.product, 1, 60)
+        && str(request.resource.data.productName, 0, 80);
     }
 
     // ----- Public store: anyone can view, only admins can change -----
